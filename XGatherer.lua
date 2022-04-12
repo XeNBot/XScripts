@@ -103,7 +103,10 @@ function XGatherer:tick()
 				end)
 			end
 		else
-			TaskManager:Interact(closestNode)
+			if TargetSystem.targetObjID ~= closestNode.id then
+				TargetSystem:setTarget(closestNode)
+			end
+			Keyboard.SendKey(96)
 		end
 	end
 end
