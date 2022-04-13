@@ -38,7 +38,7 @@ function XGatherer:tick()
 	self:agentCheck()
 
 	if self.menu["ACTION_SETTINGS"]["USE_SNEAK"].bool then
-		self:checkSneak()
+		--self:checkSneak()
 	end
 
 	local closestNode = self:getClosestGatheringNode()
@@ -69,7 +69,6 @@ function XGatherer:tick()
 		if self.menu["ACTION_SETTINGS"]["USE_SPRINT"].bool and ActionManager:CanUseAction(5, 4, player.id) then
 			ActionManager:RequestAction(5, 4, player.id)
 		end
-
 		TaskManager:WalkToWaypoint(self.status.currentWaypoint, player, function (waypoint)
 			print("Finished Walking to waypoint [".. os.date( "!%a %b %d, %H:%M", os.time() - 7 * 60 * 60 ) .. "]", waypoint)
 			self.status.currentWaypoint = nil
@@ -104,7 +103,7 @@ function XGatherer:tick()
 			end
 		else
 			if TargetSystem.targetObjID ~= closestNode.id then
-				TargetSystem:setTarget(closestNode)
+				TargetSystem.setTarget(closestNode)
 			end
 			Keyboard.SendKey(96)
 		end
