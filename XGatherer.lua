@@ -44,7 +44,6 @@ function XGatherer:tick()
 	local closestNode = self:getClosestGatheringNode()
 
 	if closestNode == nil or closestNode.pos:dist(player.pos) >  3.5 then
-
 		self.status.nodeSkills = false
 
 		if self.status.goalWaypoint == nil or self.status.goalObj == nil then
@@ -66,8 +65,8 @@ function XGatherer:tick()
 			return
 		end
 
-		if self.menu["ACTION_SETTINGS"]["USE_SPRINT"].bool and ActionManager:CanUseAction(5, 4, player.id) then
-			ActionManager:RequestAction(5, 4, player.id)
+		if self.menu["ACTION_SETTINGS"]["USE_SPRINT"].bool and ActionManager.CanUseAction(5, 4, player.id) then
+			ActionManager.UseAction(5, 4, player.id)
 		end
 		TaskManager:WalkToWaypoint(self.status.currentWaypoint, player, function (waypoint)
 			print("Finished Walking to waypoint [".. os.date( "!%a %b %d, %H:%M", os.time() - 7 * 60 * 60 ) .. "]", waypoint)
@@ -102,8 +101,8 @@ function XGatherer:tick()
 				end)
 			end
 		else
-			if TargetSystem.targetObjID ~= closestNode.id then
-				TargetSystem.setTarget(closestNode)
+			if TargetManager.TargetObjId ~= closestNode.id then
+				TargetManager.SetTarget(closestNode)
 			end
 			Keyboard.SendKey(96)
 		end
@@ -157,12 +156,12 @@ end
 
 function XGatherer:useNodeSkills(nodeObj)
 
-	if self.menu["ACTION_SETTINGS"]["USE_SHARP_VISION"].bool and player.gatheringPoints > 50 then
-		ActionManager:RequestAction(1, 235, nodeObj.id)
+	if self.menu["ACTION_SETTINGS"]["USE_SHARP_VISION"].bool and player.GP > 50 then
+		ActionManager.UseAction(1, 235, nodeObj.id)
 	end
 
-	if self.menu["ACTION_SETTINGS"]["USE_SHARP_VISION2"].bool and player.gatheringPoints > 100 then
-		ActionManager:RequestAction(1, 237, nodeObj.id)
+	if self.menu["ACTION_SETTINGS"]["USE_SHARP_VISION2"].bool and player.GP > 100 then
+		ActionManager.UseAction(1, 237, nodeObj.id)
 	end
 
 	self.status.nodeSkills = true
@@ -178,8 +177,8 @@ function XGatherer:checkSneak()
 		end
 	end
 	local actionId = player.classJob == 17 and 304 or 303
-	if not hasSneak and ActionManager:CanUseAction(1, actionId, TARGET_INVALID_ID) then
-		ActionManager:RequestAction(1, actionId, player.id)
+	if not hasSneak and ActionManager.CanUseAction(1, actionId, TARGET_INVALID_ID) then
+		ActionManager.UseAction(1, actionId, player.id)
 	end
 end
 
@@ -246,7 +245,7 @@ function XGatherer:buildGatherQueue(npcId)
 end
 
 function XGatherer:drawGatherableNodes(maxDistance)
-	local nodes = ObjectManager.gathering
+	local nodes = ObjectManager.Gathering
 
 	for i, node in ipairs(nodes) do
 		if node.isTargetable and node.pos:dist(player.pos) < maxDistance then
@@ -257,7 +256,7 @@ function XGatherer:drawGatherableNodes(maxDistance)
 end
 
 function XGatherer:drawPossibleNodes(maxDistance)
-	local nodes = ObjectManager.gathering
+	local nodes = ObjectManager.Gathering
 
 	for i, node in ipairs(nodes) do
 		if not node.isTargetable and node.pos:dist(player.pos) < maxDistance then
@@ -270,7 +269,7 @@ end
 function XGatherer:getClosestGatheringNode()
 	local closestNode = nil
 
-	for i, obj in pairs(ObjectManager.gathering) do
+	for i, obj in pairs(ObjectManager.Gathering) do
 		if obj.isTargetable then
 			if closestNode == nil or obj.pos:dist(player.pos) < closestNode.pos:dist(player.pos) then
 				closestNode = obj
@@ -288,9 +287,9 @@ function XGatherer:getClosestNodeWithWaypoint()
 	local currentMapId    = tostring(AgentModule.currentMapId)
 	local currentRegionId = self:getMapRegion(currentMapId)
 	
-	for i, obj in ipairs(ObjectManager.gathering) do
+	for i, obj in ipairs(ObjectManager.Gathering) do
 
-		if obj.kind == OBJ_TYPE_GATHERING and obj.isTargetable then
+		if obj.isTargetable then
 
 			for i , waypoint in ipairs(self.grid[currentRegionId].maps[currentMapId].mapWaypoints) do
 
