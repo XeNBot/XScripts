@@ -38,7 +38,7 @@ function XGatherer:tick()
 	self:agentCheck()
 
 	if self.menu["ACTION_SETTINGS"]["USE_SNEAK"].bool then
-		--self:checkSneak()
+		self:checkSneak()
 	end
 
 	local closestNode = self:getClosestGatheringNode()
