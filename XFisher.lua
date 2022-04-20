@@ -22,8 +22,9 @@ function XFisher:initialize()
 	end)
 
 	
-	Callbacks:Add(CALLBACK_FISH_BITE, function()
+	Callbacks:Add(CALLBACK_FISH_BITE, function(marks)
 		-- Uses Hook whenever a fish bites
+		print("Fish just bit and has " .. marks .. " marks")
 		ActionManager.UseAction(1, 296, TARGET_INVALID_ID)
 		Keyboard.SendKey(96)
 	end)
