@@ -1,17 +1,23 @@
 local XPVP = Class("XPVP")
 
-function XPVP:initialize()
+function XPVP:initMenu()
 	
 	self.menu = Menu("XPVP")
 		self.menu:label("XPVP Version 1.0") self.menu:separator() self.menu:space()
-		self.menu:subMenu("Actions", "ACTIONS")
-			
+		
+		self.menu:subMenu("Target Settings", "TARGET")
+			self.menu["TARGET"]:checkbox("Get Target Auto", "AUTO", true)
+			self.menu["TARGET"]:checkbox("Don't Attack Guard", "GUARD_CHECK", true)
+			self.menu["TARGET"]:combobox("Mode", "MODE", {"Lowest Health", "Closest"})
+		
+		self.menu:subMenu("Action Settings", "ACTIONS")
+
 			self.menu["ACTIONS"]:subMenu("Common", "COMMON")
 				self.menu["ACTIONS"]["COMMON"]:checkbox("Use Purify",     "PURIFY", true)
 				self.menu["ACTIONS"]["COMMON"]:checkbox("Use Recuperate", "RECUPERATE", true)
 				self.menu["ACTIONS"]["COMMON"]:checkbox("Use Guard",      "GUARD", true)
+				self.menu["ACTIONS"]["COMMON"]:checkbox("Use Sprint",     "SPRINT", true)
 
-			self.menu["ACTIONS"]:space()
 
 			self.menu["ACTIONS"]:subMenu("Dragoon", "DRG")
 				self.menu["ACTIONS"]["DRG"]:checkbox("Use Wheeling Thrust Combo", "WHEELING", true)
@@ -24,7 +30,6 @@ function XPVP:initialize()
 				self.menu["ACTIONS"]["DRG"]:checkbox("Use Sky High To Execute",   "SKYHIGH", true)
 				self.menu["ACTIONS"]["DRG"]:number("Min Enemies To Execute",      "SKYHIGHNUM", 2)
 
-			self.menu["ACTIONS"]:space()
 
 			self.menu["ACTIONS"]:subMenu("Machinist", "MCH")
 				self.menu["ACTIONS"]["MCH"]:checkbox("Use Blast Charge",      "BLAST", true)
@@ -32,15 +37,33 @@ function XPVP:initialize()
 				self.menu["ACTIONS"]["MCH"]:checkbox("Use Chain Saw",         "CHAINSAW", true)
 				self.menu["ACTIONS"]["MCH"]:checkbox("Use Wild Fire",         "WILDFIRE", true)
 				self.menu["ACTIONS"]["MCH"]:checkbox("Use Marksman Spite",    "SPITE", true)
-				
+
+			self.menu["ACTIONS"]:subMenu("Samurai", "SAM")
+				self.menu["ACTIONS"]["SAM"]:checkbox("Use Kasha Combo",         "KASHA", true)
+				self.menu["ACTIONS"]["SAM"]:checkbox("Use Ogi Namiriki",        "OGI",  true)
+				self.menu["ACTIONS"]["SAM"]:checkbox("Use Soten",               "SOTEN", true)
+				self.menu["ACTIONS"]["SAM"]:checkbox("Use Chiten",              "CHITEN", true)
+				self.menu["ACTIONS"]["SAM"]:checkbox("Use Mineuchi",            "MINEUCHI", true)
+				self.menu["ACTIONS"]["SAM"]:checkbox("Use Meikyo Shisui",       "MEI", true)
+				self.menu["ACTIONS"]["SAM"]:checkbox("Only Use Shisui When CC", "MEI_CC", true)
+				self.menu["ACTIONS"]["SAM"]:checkbox("Use Zantetsuken",         "ZANTET", true)
+		
+		self.menu:subMenu("Extra Settings", "EXTRA")
+			self.menu["EXTRA"]:checkbox("Practice Combo Dummies", "PRACTICE", true)
 
 	self.menu:space() self.menu:space() self.menu:space()	
 	
-	self.menu:comboBox("Combo Mode", "COMBO_MODE", {"Always On", "On Hotkey"}, 0)
+	self.menu:combobox("Combo Mode", "COMBO_MODE", {"Always On", "On Hotkey"}, 0)
 
 	self.menu:space() self.menu:space()
 
-	self.menu:label("ComboKey is X")
+	self.menu:hotkey("ComboKey", "COMBO_KEY", 88)
+
+end
+
+function XPVP:initialize()
+	
+	self:initMenu()	
 
 	self.none = -536870912
 
@@ -51,20 +74,30 @@ function XPVP:initialize()
 
 			guard      = Action(1, 29054),
 			recuperate = Action(1, 29711),
-			purify     = Action(1, 29056)
+			purify     = Action(1, 29056),
+			sprint     = Action(1, 29057)
 		},
 
 		samurai = {
 
 			--- Kasha Combo
-			yukikaze  = Action(1, 29523),
-			gekko     = Action(1, 29524),
-			kasha     = Action(1, 29525),
+			yukikaze    = Action(1, 29523),
+			gekko       = Action(1, 29524),
+			kasha       = Action(1, 29525),
+			hyosetsu    = Action(1, 29526),
+			mangetsu    = Action(1, 29527),
+			oka         = Action(1, 29528),
 
-			soten     = Action(1, 29532),
 
-			ogi       = Action(1, 29530),
-			mei       = Action(1, 29536)
+
+			soten       = Action(1, 29532),
+			chiten      = Action(1, 29533),
+
+			mineuchi    = Action(1, 29535),
+			ogi         = Action(1, 29530),
+			mei         = Action(1, 29536),
+
+			zantetsuken = Action(1, 29537)
 
 		},
 
@@ -113,21 +146,24 @@ function XPVP:initialize()
 		487, 1150, 1254, 1731, 1758, 2252, 2658, 3219
 	}
 
-
-	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(type, id, targetId, result)
-		--print("Used Action: ", type, id, targetId)		
-	end)
+	self.targetFilter    = function (target) return self:TargetFilter(target) end
+	self.dragoonEXFilter = function (target) return self:DragoonExecuteFilter(target) end
 
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
+
+	print("Loaded XPVP!")
 
 end
 
 function XPVP:Tick()
+	-- PVP Maps
+	if AgentModule.currentMapId ~= 759 and AgentModule.currentMapId ~= 51 and AgentModule.currentMapId ~= 760 and AgentModule.currentMapId ~= 761 then return end
+	-- Guard
 	if player:hasStatus(3054) then return end
 
-	self:CommonActions()
+	if self:CommonActions() then return end
 
-	if (self.menu["COMBO_MODE"].int == 0 and not Keyboard.IsKeyDown(88))  or Keyboard.IsKeyDown(88) then
+	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or self.menu["COMBO_KEY"].keyDown then
 		if player.classJob == 34 then
 			self:SamuraiCombo()			
 		elseif player.classJob == 22 then
@@ -138,16 +174,27 @@ function XPVP:Tick()
 	end
 end
 
+function XPVP:TargetFilter(target)
+	if self.menu["TARGET"]["GUARD_CHECK"].bool then
+		return not target:hasStatus(3054)
+	end
+	return true
+end
+
 function XPVP:GetTarget(range)
+	if AgentModule.currentMapId == 51 then
+		return TargetManager.Target
+	end
+
 	local target = nil
 
-	for i, object in ipairs(ObjectManager.EnemyPlayers) do
-		if object.health > 0 and object.pos:dist(player.pos) <= range then
-			if target == nil or (target ~= nil and object.health < target.health) then
-				target = object
-			end
-		end		
+	if self.menu["TARGET"]["MODE"].int == 0 then
+		return ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)
+	else
+		return ObjectManager.GetClosestEnemy(self.targetFilter)
+
 	end
+
 	return target
 end
 
@@ -155,22 +202,32 @@ function XPVP:CommonActions()
 	local actions = self.actions.common
 	local menu    = self.menu["ACTIONS"]["COMMON"]
 
-	if menu["PURIFY"].bool and actions.purify:canUse(self.none) then
-			self:Purify(actions)
+	if menu["SPRINT"].bool and self:EnemiesAround(player, 30) == 0 and not player:hasStatus(1342) and actions.sprint:canUse(self.none) then
+		actions.sprint:use(self.none)
+		return true
+	elseif menu["PURIFY"].bool and self:ShouldPurify() and actions.purify:canUse(self.none) then
+		actions.purify:use(self.none)
+		return true
 	elseif menu["RECUPERATE"].bool and (player.maxHealth - player.health) > 15000 and actions.recuperate:canUse(self.none) then
 		actions.recuperate:use(self.none)
+		return true
 	elseif menu["GUARD"].bool and player.health < 20000 and self:EnemiesAround(player, 10) > 1 and actions.guard:canUse(self.none) then
-		print("guarding")
 		actions.guard:use(self.none)
+		return true
 	end
+
+	return false
 
 end
 
-function XPVP:Purify(actions)
-	
+function XPVP:ShouldPurify()
 	for i, statusId in ipairs(self.purify_statusIds) do
 		if player:hasStatus(statusId) then
-			actions.purify:use(self.none)
+			if player.classJob == 34 and self.menu["ACTIONS"]["SAM"]["MEI"].bool and self.actions.samurai.mei:canUse(self.none) then
+				self.actions.samurai.mei:use(self.none)
+				return false
+			end
+			return true
 		end
 	end
 
@@ -181,8 +238,7 @@ function XPVP:MachinistCombo()
 
 	if menu["SPITE"].bool and self:MachinistExecute() then return end
 
-	local target = TargetManager.Target
-	--local target = self:GetTarget(24)
+	local target = self:GetTarget(24)
 
 
 	if target == nil or not target.valid then return end
@@ -211,7 +267,7 @@ end
 
 function XPVP:MachinistExecute()
 	local spite = self.actions.machinist.spite
-	for i, object in ipairs(ObjectManager.EnemyPlayers) do
+	for i, object in ipairs(ObjectManager.GetEnemyPlayers()) do
 
 		if object.health > 15000 and object.health < 35000 and spite:canUse(object.id) then
 			spite:use(object.id)
@@ -222,25 +278,30 @@ function XPVP:MachinistExecute()
 end
 
 function XPVP:DragoonCombo()
-	local menu = self.menu["ACTIONS"]["DRG"]
+	local menu    = self.menu["ACTIONS"]["DRG"]
+	local actions = self.actions.dragoon
 
-	if menu["SKYHIGH"].bool and self:DragoonExecute() then return end
+	if menu["SKYHIGH"].bool and self:DragoonExecute(actions) then return end
 
-	--local target = TargetManager.Target
 	local target    = self:GetTarget(6)
 	local farTarget = self:GetTarget(15)
 
-	if target == nil and farTarget == nil then return end
-
-	local actions        = self.actions.dragoon
-
-	if farTarget ~= nil and farTarget.pos:dist(player.pos) > 5.5 then
+	if target == nil and farTarget == nil  then return end
+	
+	if farTarget ~= nil and farTarget.valid and farTarget.pos:dist(player.pos) > 5.5 then
+		
+		TargetManager.SetTarget(farTarget)
+		
 		if menu["ELUSIVEJUMP"].bool and actions.elusivejump:canUse(farTarget.id) then
 			actions.elusivejump:use(farTarget.id)
 		elseif menu["HIGHJUMP"].bool and actions.highjump:canUse(farTarget.id) then
 		    actions.highjump:use(farTarget.id)
 		end
-	elseif target ~= nil then
+
+	elseif target ~= nil and target.valid then
+		
+		TargetManager.SetTarget(target)
+
 		if menu["ROAR"].bool and self:EnemiesAround(player, 10) >= menu["ROARNUM"].int and actions.roar:canUse(self.none) then
 			actions.roar:use(self.none)
 		elseif menu["GEIRS"].bool and actions.geirs:canUse(target.id) then
@@ -258,46 +319,93 @@ function XPVP:DragoonCombo()
 
 end
 
-function XPVP:DragoonExecute()	
-	local skyhigh = self.actions.dragoon.skyhigh
+function XPVP:DragoonExecuteFilter(target)
+	if target.pos:dist(player.pos) <= 10 and target.health > 5000 and target.health < 20000  then
+		return true
+	end
+	return false
+end
 
-	if not skyhigh:canUse(self.none) then return false end
+function XPVP:DragoonExecute(actions)
 
-	local executeCount = 0
+	if actions.skyhigh:canUse(self.none) or player:hasStatus(1342) then
 
-	for i, object in ipairs(ObjectManager.EnemyPlayers) do
+		local executeCount = 0
 
-		if object.health > 5000 and object.health < 20000 and skyhigh:canUse(object.id) then
+		for i, object in ipairs(ObjectManager.GetEnemyPlayers(self.dragoonEXFilter)) do
 			executeCount = executeCount + 1
 		end
-
-	end
-	
-	if executeCount >= self.menu["ACTIONS"]["DRG"]["SKYHIGHNUM"].int then
-		print("using skyhigh")
-		skyhigh:use(self.none)
-		return true
+		
+		if executeCount >= self.menu["ACTIONS"]["DRG"]["SKYHIGHNUM"].int then
+			actions.skyhigh:use(self.none)
+			return true
+		end
 	end
 
 	return false
 end
 
+function XPVP:SamuraiExecute()
+	local zantetsuken = self.actions.samurai.zantetsuken
+
+	for i, object in ipairs(ObjectManager.GetEnemyPlayers()) do
+		local damage = 24000
+		-- extra kuzushi damage
+		if object:hasStatus(3202) then damage = damage + object.maxHealth end
+
+		if object.health > 10000 and object.health < damage and zantetsuken:canUse(object.id) then
+			zantetsuken:use(object.id)
+			return true
+		end
+	end
+	return false
+end
+
 function XPVP:SamuraiCombo()
 	
-	local actions        = self.actions.samurai
-	local targetDistance = target.pos:dist(player.pos)
+	local menu    = self.menu["ACTIONS"]["SAM"]
+	local actions = self.actions.samurai
 	
-	if actions.soten:canUse(target.id) and targetDistance > 5 then
+	-- Chiten
+	if menu["CHITEN"].bool and self:EnemiesAround(player, 8) > 0 and not player:hasStatus(1240) and actions.chiten:canUse(self.none) then
+		actions.chiten:use(self.none)
+	end
+
+	if menu["ZANTET"].bool and self:SamuraiExecute() then return end
+
+	local farTarget = self:GetTarget(20)
+
+	if farTarget ~= nil and farTarget.valid and farTarget.pos:dist(player.pos) > 5.5 and not player:hasStatus(3201) then
+		
+		TargetManager.SetTarget(farTarget)
+		
+		if menu["SOTEN"].bool and actions.soten:canUse(farTarget.id) then
+			actions.soten:use(farTarget.id)
+			return
+		end
+	end
+
+	local target = self:GetTarget(5)
+
+	if target == nil or not target.valid then return end
+
+	if menu["MINEUCHI"].bool and actions.mineuchi:canUse(target.id) then
+		actions.mineuchi:use(target.id)
+	elseif menu["OGI"].bool and actions.ogi:canUse(target.id) then
+		actions.ogi:use(target.id)
+	elseif menu["SOTEN"].bool and actions.soten:canUse(target.id) and not player:hasStatus(3201) then
 		actions.soten:use(target.id)
-	elseif not player:hasStatus(3203) and actions.mei:canUse(self.none) and targetDistance < 3 then
-		actions.mei:use(self.none)
-	elseif player:hasStatus(3203) and actions.mei:canUse(target.id) and targetDistance < 3 then
-		actions.mei:use(target.id)
-	elseif actions.kasha:canUse(target.id) then
+	elseif menu["KASHA"].bool and actions.oka:canUse(target.id) then
+		actions.oka:use(target.id)
+	elseif menu["KASHA"].bool and actions.mangetsu:canUse(target.id) then
+		actions.mangetsu:use(target.id)
+	elseif menu["KASHA"].bool and actions.hyosetsu:canUse(target.id) then
+		actions.hyosetsu:use(target.id)
+	elseif menu["KASHA"].bool and actions.kasha:canUse(target.id) then
 		actions.kasha:use(target.id)
-	elseif actions.gekko:canUse(target.id) then
+	elseif menu["KASHA"].bool and actions.gekko:canUse(target.id) then
 		actions.gekko:use(target.id)
-	elseif actions.yukikaze:canUse(target.id) then
+	elseif menu["KASHA"].bool and actions.yukikaze:canUse(target.id) then
 		actions.yukikaze:use(target.id)
 	end
 
@@ -306,7 +414,7 @@ end
 function XPVP:EnemiesAround(obj, dist)
 	local count = 0
 
-	for i, battle_obj in ipairs(ObjectManager.EnemyPlayers) do
+	for i, battle_obj in ipairs(ObjectManager.GetEnemyPlayers()) do
 
 		if battle_obj.pos:dist(obj.pos) < dist then
 			count = count + 1
