@@ -1,4 +1,4 @@
--- Creates new local XFisher class
+--- Creates new local XFisher class
 local XFisher = Class("XFisher")
 
 -- Class constructor
