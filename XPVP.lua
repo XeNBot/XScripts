@@ -1,7 +1,3 @@
------- AUTO UPDATE TEST
------- AUTO UPDATE TEST
------- AUTO UPDATE TEST
------- AUTO UPDATE TEST
 local XPVP = Class("XPVP")
 
 function XPVP:initMenu()
