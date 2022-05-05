@@ -18,46 +18,71 @@ function XPVP:initMenu()
 				self.menu["ACTIONS"]["COMMON"]:checkbox("Use Guard",      "GUARD", true)
 				self.menu["ACTIONS"]["COMMON"]:checkbox("Use Sprint",     "SPRINT", true)
 
+			self.menu["ACTIONS"]:subMenu("Tanks", "TANK")
+				self.menu["ACTIONS"]["TANK"]:subMenu("Gunbreaker", "GNB")
+				self.menu["ACTIONS"]["TANK"]["GNB"]:checkbox("Use Solid Barrell Combo",   "SOLID", true)
+				self.menu["ACTIONS"]["TANK"]["GNB"]:checkbox("Use Continuation",          "CONTINUE", true)
+				self.menu["ACTIONS"]["TANK"]["GNB"]:checkbox("Use Draw and Junction",     "DRAW", true)
+				self.menu["ACTIONS"]["TANK"]["GNB"]:checkbox("Use Junctioned Cast",       "CAST", true)
+				self.menu["ACTIONS"]["TANK"]["GNB"]:checkbox("Use Double Down",           "DOUBLE", true)
+				self.menu["ACTIONS"]["TANK"]["GNB"]:number("Min Enemies for Double Down", "DOUBLE_MIN", 2)
+				self.menu["ACTIONS"]["TANK"]["GNB"]:checkbox("Use Gnashing Fang",         "FANG", true)
+				self.menu["ACTIONS"]["TANK"]["GNB"]:checkbox("Use Relentless Rush",       "RELENTLESS", true)
+				self.menu["ACTIONS"]["TANK"]["GNB"]:number("Min Enemies for Relentless",  "RELENTLESS_MIN", 3)
 
-			self.menu["ACTIONS"]:subMenu("Dragoon", "DRG")
-				self.menu["ACTIONS"]["DRG"]:checkbox("Use Wheeling Thrust Combo", "WHEELING", true)
-				self.menu["ACTIONS"]["DRG"]:checkbox("Use Chaotic Spring",        "CHAOTIC", true)
-				self.menu["ACTIONS"]["DRG"]:checkbox("Use Geirskogul",            "GEIRS", true)
-				self.menu["ACTIONS"]["DRG"]:checkbox("Use High Jump",             "HIGHJUMP", true)
-				self.menu["ACTIONS"]["DRG"]:checkbox("Use Elusive Jump",          "ELUSIVEJUMP", true)
-				self.menu["ACTIONS"]["DRG"]:checkbox("Use Horrid Roar",           "ROAR", true)
-				self.menu["ACTIONS"]["DRG"]:number("Min Enemies for Roar",        "ROARNUM", 3)
-				self.menu["ACTIONS"]["DRG"]:checkbox("Use Sky High To Execute",   "SKYHIGH", true)
-				self.menu["ACTIONS"]["DRG"]:number("Min Enemies To Execute",      "SKYHIGHNUM", 2)
+			self.menu["ACTIONS"]:subMenu("Melee DPS", "MELEE_DPS")
+
+				self.menu["ACTIONS"]["MELEE_DPS"]:subMenu("Monk", "MNK")
+					self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]:checkbox("Use Phanton Rush Combo",    "RUSH", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]:checkbox("Use Six-sided Star ",       "STAR", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]:checkbox("Use Enlightment",           "ENLIGHTMENT", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]:checkbox("Use Rising Phoenix",        "PHOENIX", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]:number("Min Enemies For Phoenix",     "PHOENIXNUM", 2)
+					self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]:checkbox("Use Riddle of Earth",       "RIDDLE", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]:checkbox("Use Thunderclap",           "THUNDER", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]:checkbox("Use Meteodrive",            "METEO", true)
+
+				self.menu["ACTIONS"]["MELEE_DPS"]:subMenu("Dragoon", "DRG")
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:checkbox("Use Wheeling Thrust Combo", "WHEELING", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:checkbox("Use Chaotic Spring",        "CHAOTIC", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:checkbox("Use Geirskogul",            "GEIRS", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:checkbox("Use High Jump",             "HIGHJUMP", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:checkbox("Use Elusive Jump",          "ELUSIVEJUMP", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:checkbox("Use Horrid Roar",           "ROAR", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:number("Min Enemies for Roar",        "ROARNUM", 3)
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:checkbox("Use Sky High To Execute",   "SKYHIGH", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]:number("Min Enemies To Execute",      "SKYHIGHNUM", 2)
 
 
-			self.menu["ACTIONS"]:subMenu("Machinist", "MCH")
-				self.menu["ACTIONS"]["MCH"]:checkbox("Use Blast Charge",      "BLAST", true)
-				self.menu["ACTIONS"]["MCH"]:checkbox("Use Scattergun",        "SCATTER", true)
-				self.menu["ACTIONS"]["MCH"]:checkbox("Use Chain Saw",         "CHAINSAW", true)
-				self.menu["ACTIONS"]["MCH"]:checkbox("Use Wild Fire",         "WILDFIRE", true)
-				self.menu["ACTIONS"]["MCH"]:checkbox("Use Marksman Spite",    "SPITE", true)
+				self.menu["ACTIONS"]["MELEE_DPS"]:subMenu("Samurai", "SAM")
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Use Kasha Combo",         "KASHA", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Use Ogi Namiriki",        "OGI",  true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Use Soten",               "SOTEN", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Use Chiten",              "CHITEN", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Use Mineuchi",            "MINEUCHI", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Use Meikyo Shisui",       "MEI", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Only Use Shisui When CC", "MEI_CC", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Use Zantetsuken",         "ZANTET", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:checkbox("Zantetsuken Kuzushi only","ZANTETK", true)
 
-			self.menu["ACTIONS"]:subMenu("Samurai", "SAM")
-				self.menu["ACTIONS"]["SAM"]:checkbox("Use Kasha Combo",         "KASHA", true)
-				self.menu["ACTIONS"]["SAM"]:checkbox("Use Ogi Namiriki",        "OGI",  true)
-				self.menu["ACTIONS"]["SAM"]:checkbox("Use Soten",               "SOTEN", true)
-				self.menu["ACTIONS"]["SAM"]:checkbox("Use Chiten",              "CHITEN", true)
-				self.menu["ACTIONS"]["SAM"]:checkbox("Use Mineuchi",            "MINEUCHI", true)
-				self.menu["ACTIONS"]["SAM"]:checkbox("Use Meikyo Shisui",       "MEI", true)
-				self.menu["ACTIONS"]["SAM"]:checkbox("Only Use Shisui When CC", "MEI_CC", true)
-				self.menu["ACTIONS"]["SAM"]:checkbox("Use Zantetsuken",         "ZANTET", true)
+				self.menu["ACTIONS"]["MELEE_DPS"]:subMenu("Reaper", "RPR")
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Infernal Slice Combo", "INFERNAL", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Soul Slice",           "SOUL",  true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Plentyful Harvest",    "HARVEST", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:number("Min Soul Sacrifice Stacks",  "HARVEST_MIN", 6)
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Grim Swathe",          "GRIM", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Death Warrant",        "DEATH", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Hell's Ingress",           "HELL", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Arcane Crest",             "ARCANE", true)
+					self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Tenebrae Lemurum",     "TENEBRAE", true)
 
-			self.menu["ACTIONS"]:subMenu("Reaper", "RPR")
-				self.menu["ACTIONS"]["RPR"]:checkbox("Use Infernal Slice Combo", "INFERNAL", true)
-				self.menu["ACTIONS"]["RPR"]:checkbox("Use Soul Slice",           "SOUL",  true)
-				self.menu["ACTIONS"]["RPR"]:checkbox("Use Plentyful Harvest",    "HARVEST", true)
-				self.menu["ACTIONS"]["RPR"]:number("Min Soul Sacrifice Stacks",  "HARVEST_MIN", 6)
-				self.menu["ACTIONS"]["RPR"]:checkbox("Use Grim Swathe",          "GRIM", true)
-				self.menu["ACTIONS"]["RPR"]:checkbox("Use Death Warrant",        "DEATH", true)
-				self.menu["ACTIONS"]["RPR"]:checkbox("Hell's Ingress",           "HELL", true)
-				self.menu["ACTIONS"]["RPR"]:checkbox("Arcane Crest",             "ARCANE", true)
-				self.menu["ACTIONS"]["RPR"]:checkbox("Use Tenebrae Lemurum",     "TENEBRAE", true)
+			self.menu["ACTIONS"]:subMenu("Physical Ranged DPS", "RANGE_DPS_P")
+				self.menu["ACTIONS"]["RANGE_DPS_P"]:subMenu("Machinist", "MCH")
+					self.menu["ACTIONS"]["RANGE_DPS_P"]["MCH"]:checkbox("Use Blast Charge",      "BLAST", true)
+					self.menu["ACTIONS"]["RANGE_DPS_P"]["MCH"]:checkbox("Use Scattergun",        "SCATTER", true)
+					self.menu["ACTIONS"]["RANGE_DPS_P"]["MCH"]:checkbox("Use Chain Saw",         "CHAINSAW", true)
+					self.menu["ACTIONS"]["RANGE_DPS_P"]["MCH"]:checkbox("Use Wild Fire",         "WILDFIRE", true)
+					self.menu["ACTIONS"]["RANGE_DPS_P"]["MCH"]:checkbox("Use Marksman Spite",    "SPITE", true)			
 
 		
 		self.menu:subMenu("Extra Settings", "EXTRA")
@@ -158,10 +183,43 @@ function XPVP:initialize()
 			hell     = Action(1, 29550),
 			arcane   = Action(1, 29552),
 			tenebrae = Action(1, 29553),
+		},
 
+		monk = {
+			-- Phantom Rush Combo
+			bootshine   = Action(1, 29472),
+			truestrike  = Action(1, 29473),
+			snappunch   = Action(1, 29474),
+			dragonkick  = Action(1, 29475),
+			twinsnakes  = Action(1, 29476),
+			demolish    = Action(1, 29477),
+			phantomrush = Action(1, 29478),
 
+			sidedstar   = Action(1, 29479),
+			enlight     = Action(1, 29480),
+			phoenix     = Action(1, 29481),
+			riddle      = Action(1, 29482),
+			thunderclap = Action(1, 29484),
+			meteodrive  = Action(1, 29485),
 
+		},
 
+		gunbreaker = {
+
+			-- Solid Barrell Combo
+			keen       = Action(1, 29098),
+			brutal     = Action(1, 29099),
+			solid      = Action(1, 29100),
+			burst      = Action(1, 29101),
+
+			fang       = Action(1, 29102),
+			double     = Action(1, 29105),
+			continue   = Action(1, 29106),
+			rough      = Action(1, 29123),
+			draw       = Action(1, 29124),
+			cast       = Action(1, 29125),
+
+			relentless = Action(1, 29130)
 
 		}
 
@@ -201,12 +259,16 @@ function XPVP:Tick()
 	if self:CommonActions() then return end
 
 	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or self.menu["COMBO_KEY"].keyDown then
-		if player.classJob == 34 then
-			self:SamuraiCombo()			
+		if player.classJob == 20 then
+			self:MonkCombo()
 		elseif player.classJob == 22 then
 			self:DragoonCombo()
 		elseif player.classJob == 31 then
 			self:MachinistCombo()
+		elseif player.classJob == 34 then
+			self:SamuraiCombo()
+		elseif player.classJob == 37 then
+			self:GunbreakerCombo()			
 		elseif player.classJob == 39 then
 			self:ReaperCombo()
 		end
@@ -247,7 +309,7 @@ function XPVP:CommonActions()
 	elseif menu["PURIFY"].bool and self:ShouldPurify() and actions.purify:canUse(self.none) then
 		actions.purify:use(self.none)
 		return true
-	elseif player.classJob == 39 and self.menu["ACTIONS"]["RPR"]["ARCANE"].bool and (player.maxHealth - player.health) > 18000 and 
+	elseif player.classJob == 39 and self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]["ARCANE"].bool and (player.maxHealth - player.health) > 18000 and 
 		self.actions.reaper.arcane:canUse(self.none) then
 		self.actions.reaper.arcane:use(self.none)
 		return true
@@ -266,7 +328,7 @@ end
 function XPVP:ShouldPurify()
 	for i, statusId in ipairs(self.purify_statusIds) do
 		if player:hasStatus(statusId) then
-			if player.classJob == 34 and self.menu["ACTIONS"]["SAM"]["MEI"].bool and self.actions.samurai.mei:canUse(self.none) then
+			if player.classJob == 34 and self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]["MEI"].bool and self.actions.samurai.mei:canUse(self.none) then
 				self.actions.samurai.mei:use(self.none)
 				return false
 			end
@@ -276,9 +338,130 @@ function XPVP:ShouldPurify()
 
 end
 
+function XPVP:GunbreakerRush(actions, menu)
+	if player:hasStatus(3052) then
+	 return true 
+	elseif actions.relentless:canUse(self.none) and self:EnemiesAround(player, 5) >= menu["RELENTLESS_MIN"].int then
+		actions.relentless:use(self.none)
+		return true
+	end
+
+	return false
+
+end
+
+function XPVP:GunbreakerCombo()
+	local menu    = self.menu["ACTIONS"]["TANK"]["GNB"]
+	local actions = self.actions.gunbreaker
+
+	if self:GunbreakerRush(actions, menu) then return end
+
+	local farTarget = self:GetTarget(20)
+
+	if farTarget.valid and farTarget.pos:dist(player.pos) > 6 and actions.rough:canUse(farTarget.id) then
+		actions.rough:use(farTarget.id)
+		return
+	end
+
+	local target = self:GetTarget(5)
+
+	if target.valid then
+
+		if menu["DOUBLE"].bool and actions.double:canUse(self.none) and self:EnemiesAround(player, 5) >= menu["DOUBLE_MIN"].int then
+			actions.double:use(self.none)
+		elseif menu["CONTINUE"].bool and actions.continue:canUse(target.id) then
+			actions.continue:use(target.id)
+		elseif menu["SOLID"].bool and actions.burst:canUse(target.id) then
+		    actions.burst:use(target.id)
+		elseif menu["DRAW"].bool and actions.draw:canUse(target.id) then
+		    actions.draw:use(target.id)
+		elseif menu["CAST"].bool and actions.cast:canUse(target.id) then
+		    actions.cast:use(target.id)
+		elseif menu["FANG"].bool and actions.fang:canUse(target.id) then
+			actions.fang:use(target.id)
+		elseif menu["SOLID"].bool and actions.keen:canUse(target.id) then
+			actions.keen:use(target.id)
+		elseif menu["SOLID"].bool and actions.brutal:canUse(target.id) then
+			actions.brutal:use(target.id)
+		elseif menu["SOLID"].bool and actions.solid:canUse(target.id) then
+			actions.solid:use(target.id)
+		end
+
+	end
+
+end
+
+function XPVP:MonkExecute(actions)
+	for i, object in ipairs(ObjectManager.GetEnemyPlayers()) do
+		local damage = 12000
+		-- Extra Damage if enemy doesn't have guard
+		if not object:hasStatus(3054) then
+			damage = damage + 12000
+		end
+		-- Extra Damage from pressure point
+		if object:hasStatus(3172) then
+			damage = damage + 12000
+		end
+		if object.pos:dist(player.pos) < 20 and object.health > 1000 and object.health < damage and actions.meteodrive:canUse(object.id) then
+			actions.meteodrive:use(object.id)
+			return true
+		end
+	end
+	return false
+end
+
+function XPVP:MonkCombo()
+	local menu    = self.menu["ACTIONS"]["MELEE_DPS"]["MNK"]
+	local actions = self.actions.monk
+
+	if menu["METEO"].bool and self:MonkExecute(actions) then return end
+
+	local farTarget = self:GetTarget(20)
+
+	if farTarget.valid and farTarget.pos:dist(player.pos) > 6 and menu["THUNDER"].bool and actions.thunderclap:canUse(farTarget.id) then
+		actions.thunderclap:use(farTarget.id)
+		return
+	end
+
+	local target = self:GetTarget(5)
+
+	if target.valid then
+		local riddle = player:getStatus(3171)
+
+		if menu["ENLIGHTMENT"].bool and actions.enlight:canUse(target.id) then
+			actions.enlight:use(target.id)
+		elseif menu["PHOENIX"].bool and self:EnemiesAround(player, 5) >= menu["PHOENIXNUM"].int and actions.phoenix:canUse(self.none) then
+			actions.phoenix:use(self.none)
+		elseif menu["RIDDLE"].bool and not riddle.valid and actions.riddle:canUse(self.none) then
+			actions.riddle:use(self.none)
+		elseif menu["RIDDLE"].bool and riddle.valid and riddle.remainingTime <= 1.2 then
+			actions.riddle:use(self.none)
+		elseif menu["STAR"].bool and actions.sidedstar:canUse(target.id) then
+			actions.sidedstar:use(target.id)
+		elseif menu["RUSH"].bool and actions.phantomrush:canUse(target.id) then
+			actions.phantomrush:use(target.id)
+		elseif menu["RUSH"].bool and actions.demolish:canUse(target.id) then
+			actions.demolish:use(target.id)
+		elseif menu["RUSH"].bool and actions.twinsnakes:canUse(target.id) then
+			actions.twinsnakes:use(target.id)
+		elseif menu["RUSH"].bool and actions.dragonkick:canUse(target.id) then
+			actions.dragonkick:use(target.id)
+		elseif menu["RUSH"].bool and actions.snappunch:canUse(target.id) then
+			actions.snappunch:use(target.id)
+		elseif menu["RUSH"].bool and actions.truestrike:canUse(target.id) then
+			actions.truestrike:use(target.id)
+		elseif menu["RUSH"].bool and actions.bootshine:canUse(target.id) then
+			actions.bootshine:use(target.id)
+		end
+
+	end
+
+
+end
+
 function XPVP:ReaperEnshrouded(target, status, actions)
 	-- Communio
-	if (status.remainingTime <= 1.5 or status.count == 1) and actions.tenebrae:canUse(target.id) then
+	if (status.remainingTime <= 2 or status.count == 1) and actions.tenebrae:canUse(target.id) then
 		actions.tenebrae:use(target.id)
 	-- Lemure's Slice
 	elseif actions.grim:canUse(target.id) then
@@ -295,7 +478,7 @@ function XPVP:ReaperEnshrouded(target, status, actions)
 end
 
 function XPVP:ReaperCombo()
-	local menu    = self.menu["ACTIONS"]["RPR"]
+	local menu    = self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]
 	local actions = self.actions.reaper
 
 	local farTarget = self:GetTarget(14)
@@ -341,7 +524,7 @@ function XPVP:ReaperCombo()
 end
 
 function XPVP:MachinistCombo()
-	local menu = self.menu["ACTIONS"]["MCH"]
+	local menu = self.menu["ACTIONS"]["RANGE_DPS_P"]["MCH"]
 
 	if menu["SPITE"].bool and self:MachinistExecute() then return end
 
@@ -364,7 +547,9 @@ function XPVP:MachinistCombo()
 	elseif menu["CHAINSAW"].bool and actions.chainsaw:canUse(target.id) then
 		if not player:hasStatus(3158) and actions.analysis:canUse(self.none) then
 			actions.analysis:use(self.none)
-		else
+		elseif player:hasStatus(3151) and target.pos:dist(player.pos) < 12 then
+			actions.chainsaw:use(target.id)
+		elseif not player:hasStatus(3151) then
 			actions.chainsaw:use(target.id)
 		end
 	elseif menu["BLAST"].bool and actions.blast:canUse(target.id) then
@@ -385,7 +570,7 @@ function XPVP:MachinistExecute()
 end
 
 function XPVP:DragoonCombo()
-	local menu    = self.menu["ACTIONS"]["DRG"]
+	local menu    = self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]
 	local actions = self.actions.dragoon
 
 	if menu["SKYHIGH"].bool and self:DragoonExecute(actions) then return end
@@ -399,7 +584,9 @@ function XPVP:DragoonCombo()
 		
 		TargetManager.SetTarget(farTarget)
 		
-		if menu["ELUSIVEJUMP"].bool and actions.elusivejump:canUse(farTarget.id) then
+		if menu["GEIRS"].bool and actions.geirs:canUse(target.id) then
+			actions.geirs:use(target.id)		
+		elseif menu["ELUSIVEJUMP"].bool and actions.elusivejump:canUse(farTarget.id) then
 			actions.elusivejump:use(farTarget.id)
 		elseif menu["HIGHJUMP"].bool and actions.highjump:canUse(farTarget.id) then
 		    actions.highjump:use(farTarget.id)
@@ -443,7 +630,7 @@ function XPVP:DragoonExecute(actions)
 			executeCount = executeCount + 1
 		end
 		
-		if executeCount >= self.menu["ACTIONS"]["DRG"]["SKYHIGHNUM"].int then
+		if executeCount >= self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]["SKYHIGHNUM"].int then
 			actions.skyhigh:use(self.none)
 			return true
 		end
@@ -452,17 +639,21 @@ function XPVP:DragoonExecute(actions)
 	return false
 end
 
-function XPVP:SamuraiExecute()
-	local zantetsuken = self.actions.samurai.zantetsuken
+function XPVP:SamuraiExecute(actions, menu)
+	local zantetsuken = actions.zantetsuken
 
 	for i, object in ipairs(ObjectManager.GetEnemyPlayers()) do
-		local damage = 24000
-		-- extra kuzushi damage
-		if object:hasStatus(3202) then damage = damage + object.maxHealth end
 
-		if object.health > 10000 and object.health < damage and zantetsuken:canUse(object.id) then
-			zantetsuken:use(object.id)
-			return true
+		if (menu["ZANTETK"].bool and object:hasStatus(3202)) or not  menu["ZANTETK"].bool then
+
+			local damage = 24000
+			-- extra kuzushi damage
+			if object:hasStatus(3202) then damage = damage + object.maxHealth end
+
+			if object.health > 10000 and object.health < damage and zantetsuken:canUse(object.id) then
+				zantetsuken:use(object.id)
+				return true
+			end
 		end
 	end
 	return false
@@ -470,7 +661,7 @@ end
 
 function XPVP:SamuraiCombo()
 	
-	local menu    = self.menu["ACTIONS"]["SAM"]
+	local menu    = self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]
 	local actions = self.actions.samurai
 	
 	-- Chiten
@@ -478,7 +669,7 @@ function XPVP:SamuraiCombo()
 		actions.chiten:use(self.none)
 	end
 
-	if menu["ZANTET"].bool and self:SamuraiExecute() then return end
+	if menu["ZANTET"].bool and self:SamuraiExecute(actions, menu) then return end
 
 	local farTarget = self:GetTarget(20)
 
