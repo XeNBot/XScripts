@@ -52,7 +52,7 @@ function Summoner:Tick(getTarget)
 	if target.valid then
 		if menu["STREAM"].bool and self.actions.stream:canUse(target.id) and ObjectManager.EnemiesAroundObject(target, 10) >= menu["STREAM"].int then
 			self.actions.stream:use(target.id)
-		if menu["RUIN"].bool and self.actions.ruin:canUse(target.id) then
+		elseif menu["RUIN"].bool and self.actions.ruin:canUse(target.id) then
 			self.actions.ruin:use(target.id)
 		end
 	end
