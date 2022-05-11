@@ -41,10 +41,6 @@ function Knight:Load(mainMenu)
 		
 end
 
-function Knight:Execute()
-	
-end
-
 function Knight:Tick(getTarget)
 
 	local menu = self.menu["ACTIONS"]["TANK"]["DRK"]

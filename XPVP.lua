@@ -2,30 +2,32 @@ local XPVP = Class("XPVP")
 
 function XPVP:initialize()
 	-- Loads Menu Module
-	self.menu       = LoadModule("XScripts", "/Menus/XPVPMenu")
+	self.menu        = LoadModule("XScripts", "/Menus/XPVPMenu")
 	-- Loads Class Job Modules
 	-- Healers
-	self.scholar    = LoadModule("XScripts", "/Jobs/PVP/Scholar")
+	self.scholar     = LoadModule("XScripts", "/Jobs/PVP/Scholar")
+	self.astrologian = LoadModule("XScripts", "/Jobs/PVP/Astrologian")
 	-- Tanks
-	self.darkknight = LoadModule("XScripts", "/Jobs/PVP/DarkKnight")
-	self.gunbreaker = LoadModule("XScripts", "/Jobs/PVP/Gunbreaker")
+	self.darkknight  = LoadModule("XScripts", "/Jobs/PVP/DarkKnight")
+	self.gunbreaker  = LoadModule("XScripts", "/Jobs/PVP/Gunbreaker")
 	-- Melee DPS
-	self.monk       = LoadModule("XScripts", "/Jobs/PVP/Monk")
-	self.dragoon    = LoadModule("XScripts", "/Jobs/PVP/Dragoon")
-	self.ninja      = LoadModule("XScripts", "/Jobs/PVP/Ninja")
-	self.samurai    = LoadModule("XScripts", "/Jobs/PVP/Samurai")
-	self.reaper     = LoadModule("XScripts", "/Jobs/PVP/Reaper")
+	self.monk        = LoadModule("XScripts", "/Jobs/PVP/Monk")
+	self.dragoon     = LoadModule("XScripts", "/Jobs/PVP/Dragoon")
+	self.ninja       = LoadModule("XScripts", "/Jobs/PVP/Ninja")
+	self.samurai     = LoadModule("XScripts", "/Jobs/PVP/Samurai")
+	self.reaper      = LoadModule("XScripts", "/Jobs/PVP/Reaper")
 	-- Ranged Physical DPS
-	self.machinist  = LoadModule("XScripts", "/Jobs/PVP/Machinist")
-	self.dancer     = LoadModule("XScripts", "/Jobs/PVP/Dancer")
+	self.machinist   = LoadModule("XScripts", "/Jobs/PVP/Machinist")
+	self.dancer      = LoadModule("XScripts", "/Jobs/PVP/Dancer")
 	-- Ranged Magic DPS
-	self.summoner   = LoadModule("XScripts", "/Jobs/PVP/Summoner")
+	self.summoner    = LoadModule("XScripts", "/Jobs/PVP/Summoner")
 	-- Common Actions
-	self.common     = LoadModule("XScripts", "/Jobs/PVP/Common") 
+	self.common      = LoadModule("XScripts", "/Jobs/PVP/Common") 
 
 	-- Loads the menus of each Job
 	-- Healers
 	self.scholar:Load(self.menu)
+	self.astrologian:Load(self.menu)
 	-- Tanks
 	self.darkknight:Load(self.menu)
 	self.gunbreaker:Load(self.menu)
@@ -46,7 +48,7 @@ function XPVP:initialize()
 	self.getTarget    = function (dist) return self:GetTarget(dist) end
 	self.targetFilter = function (target) return self:TargetFilter(target) end
 
-	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)	
+	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
 
 	print("Loaded XPVP!")
 
@@ -75,6 +77,8 @@ function XPVP:Tick()
 			self.machinist:Tick(self.getTarget)
 		elseif player.classJob == 32 then
 			self.darkknight:Tick(self.getTarget)
+		elseif player.classJob == 33 then
+			self.astrologian:Tick(self.getTarget)
 		elseif player.classJob == 34 then
 			self.samurai:Tick(self.getTarget)
 		elseif player.classJob == 37 then

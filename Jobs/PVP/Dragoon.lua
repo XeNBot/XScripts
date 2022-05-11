@@ -17,8 +17,6 @@ function Dragoon:initialize()
 		skyhigh     = Action(1, 29497)
 	}
 
-	self.LBFilter = function (target) return self:ExecuteFilter(target) end
-
 	self.menu = nil
 
 end
@@ -40,20 +38,14 @@ function Dragoon:Load(mainMenu)
 
 end
 
-
-function Dragoon:ExecuteFilter(target)
-	if target.pos:dist(player.pos) <= 10 and target.health > 5000 and target.health < 20000  then
-		return true
-	end
-	return false
-end
-
 function Dragoon:Execute(actions, menu)
 	if actions.skyhigh:canUse() or player:hasStatus(1342) then
 
 		local executeCount = 0
 
-		for i, object in ipairs(ObjectManager.GetEnemyPlayers(self.LBFilter)) do
+		for i, object in ipairs(ObjectManager.GetEnemyPlayers(function(target) return
+				target.pos:dist(player.pos) <= 10 and target.health > 5000 and target.health < 20000 
+			end)) do
 			executeCount = executeCount + 1
 		end
 		
@@ -82,8 +74,8 @@ function Dragoon:Tick(getTarget)
 		
 		TargetManager.SetTarget(farTarget)
 		
-		if menu["GEIRS"].bool and actions.geirs:canUse(target.id) then
-			actions.geirs:use(target.id)		
+		if menu["GEIRS"].bool and actions.geirs:canUse(farTarget.id) then
+			actions.geirs:use(farTarget.id)		
 		elseif menu["ELUSIVEJUMP"].bool and actions.elusivejump:canUse(farTarget.id) then
 			actions.elusivejump:use(farTarget.id)
 		elseif menu["HIGHJUMP"].bool and actions.highjump:canUse(farTarget.id) then
