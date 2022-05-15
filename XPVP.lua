@@ -3,6 +3,8 @@ local XPVP = Class("XPVP")
 function XPVP:initialize()
 	-- Loads Menu Module
 	self.menu        = LoadModule("XScripts", "/Menus/XPVPMenu")
+	-- Log Module
+	self.log         = LoadModule("XScripts", "/Utilities/Log")
 	-- Loads Class Job Modules
 	-- Healers
 	self.scholar     = LoadModule("XScripts", "/Jobs/PVP/Scholar")
@@ -49,8 +51,9 @@ function XPVP:initialize()
 	self.targetFilter = function (target) return self:TargetFilter(target) end
 
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
+	
 
-	print("Loaded XPVP!")
+	self.log:print("XPVP Loaded!")
 
 end
 
@@ -60,33 +63,33 @@ function XPVP:Tick()
 	-- Guard
 	if player:hasStatus(3054) then return end
 
-	if self.common:Tick() then return end
+	if self.common:Tick(self.log) then return end
 
 	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or (self.menu["COMBO_MODE"].int ~= 0 and self.menu["COMBO_KEY"].keyDown) then
 		if player.classJob == 20 then
-			self.monk:Tick(self.getTarget)
+			self.monk:Tick(self.getTarget, self.log)
 		elseif player.classJob == 22 then
-			self.dragoon:Tick(self.getTarget)
+			self.dragoon:Tick(self.getTarget, self.log)
 		elseif player.classJob == 27 then
-			self.summoner:Tick(self.getTarget)
+			self.summoner:Tick(self.getTarget, self.log)
 		elseif player.classJob == 28 then
-			self.scholar:Tick(self.getTarget)
+			self.scholar:Tick(self.getTarget, self.log)
 		elseif player.classJob == 30 then
-			self.ninja:Tick(self.getTarget)
+			self.ninja:Tick(self.getTarget, self.log)
 		elseif player.classJob == 31 then
-			self.machinist:Tick(self.getTarget)
+			self.machinist:Tick(self.getTarget, self.log)
 		elseif player.classJob == 32 then
-			self.darkknight:Tick(self.getTarget)
+			self.darkknight:Tick(self.getTarget, self.log)
 		elseif player.classJob == 33 then
-			self.astrologian:Tick(self.getTarget)
+			self.astrologian:Tick(self.getTarget, self.log)
 		elseif player.classJob == 34 then
-			self.samurai:Tick(self.getTarget)
+			self.samurai:Tick(self.getTarget, self.log)
 		elseif player.classJob == 37 then
-			self.gunbreaker:Tick(self.getTarget)
+			self.gunbreaker:Tick(self.getTarget, self.log)
 		elseif player.classJob == 38 then
-			self.dancer:Tick(self.getTarget)
+			self.dancer:Tick(self.getTarget, self.log)
 		elseif player.classJob == 39 then
-			self.reaper:Tick(self.getTarget)
+			self.reaper:Tick(self.getTarget, self.log)
 		end
 	end
 end
@@ -100,7 +103,7 @@ end
 
 function XPVP:GetTarget(range)
 	-- PVP Training Map
-	if AgentModule.currentMapId == 51 then
+	if AgentModule.currentMapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
 		return TargetManager.Target
 	end
 

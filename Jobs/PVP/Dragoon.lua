@@ -38,7 +38,7 @@ function Dragoon:Load(mainMenu)
 
 end
 
-function Dragoon:Execute(actions, menu)
+function Dragoon:Execute(actions, menu, log)
 	if actions.skyhigh:canUse() or player:hasStatus(1342) then
 
 		local executeCount = 0
@@ -51,6 +51,7 @@ function Dragoon:Execute(actions, menu)
 		
 		if executeCount >= menu["SKYHIGHNUM"].int then
 			actions.skyhigh:use()
+			log:print("Using Sky High")
 			return true
 		end
 	end
@@ -58,12 +59,12 @@ function Dragoon:Execute(actions, menu)
 	return false
 end
 
-function Dragoon:Tick(getTarget)
+function Dragoon:Tick(getTarget, log)
 
 	local menu    = self.menu["ACTIONS"]["MELEE_DPS"]["DRG"]
 	local actions = self.actions
 
-	if menu["SKYHIGH"].bool and self:Execute(actions, menu) then return end
+	if menu["SKYHIGH"].bool and self:Execute(actions, menu, log) then return end
 
 	local target    = getTarget(6)
 	local farTarget = getTarget(15)
@@ -76,9 +77,12 @@ function Dragoon:Tick(getTarget)
 		
 		if menu["GEIRS"].bool and actions.geirs:canUse(farTarget.id) then
 			actions.geirs:use(farTarget.id)		
+			log:print("Using Geirs on " .. farTarget.name)
 		elseif menu["ELUSIVEJUMP"].bool and actions.elusivejump:canUse(farTarget.id) then
 			actions.elusivejump:use(farTarget.id)
+			log:print("Using Elusive Jump on " .. farTarget.name)
 		elseif menu["HIGHJUMP"].bool and actions.highjump:canUse(farTarget.id) then
+			log:print("Using High Jump on " .. farTarget.name)
 		    actions.highjump:use(farTarget.id)
 		end
 
@@ -88,16 +92,22 @@ function Dragoon:Tick(getTarget)
 
 		if menu["ROAR"].bool and ObjectManager.EnemiesAroundObject(player, 10) >= menu["ROARNUM"].int and actions.roar:canUse() then
 			actions.roar:use()
+			log:print("Using Roar ")
 		elseif menu["GEIRS"].bool and actions.geirs:canUse(target.id) then
 			actions.geirs:use(target.id)
+			log:print("Using Geirs on " .. target.name)
 		elseif menu["CHAOTIC"].bool and actions.chaotic:canUse(target.id) and (player.maxHealth - player.health) > 8000 then
 			actions.chaotic:use(target.id)
+			log:print("Using Chaotic on " .. target.name)
 		elseif menu["WHEELING"].bool and actions.wheeling:canUse(target.id) then
 			actions.wheeling:use(target.id)
+			log:print("Using Wheeling on " .. target.name)
 		elseif actions.fang:canUse(target.id) then
 			actions.fang:use(target.id)
+			log:print("Using Fang on " .. target.name)
 		elseif actions.raiden:canUse(target.id) then
 			actions.raiden:use(target.id)
+			log:print("Using Raiden on " .. target.name)
 		end
 	end
 end

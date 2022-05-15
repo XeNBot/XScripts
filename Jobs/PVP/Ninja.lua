@@ -44,11 +44,15 @@ function Ninja:Load(mainMenu)
 		self.menu["ACTIONS"]["MELEE_DPS"]["NIN"]:checkbox("Use Seiton",                "SEITON", true)
 end
 
-function Ninja:Execute()
-	for i, object in ipairs(ObjectManager.GetEnemyPlayers()) do
+function Ninja:Execute(log)
+
+	local list = AgentModule.currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
+
+	for i, object in ipairs(list) do
 		if object.pos:dist(player.pos) < 19.5 and (object.health <= (object.maxHealth / 2)) and
 		 object.health > 0 and not object:hasStatus(3054) and self.actions.seiton:canUse(object.id) then
 		 	self.actions.seiton:use(object.id)
+		 	log:print("Using Seiton on " .. object.name)
 		 	return true
 		end
 	end
@@ -56,12 +60,12 @@ function Ninja:Execute()
 end
 
 
-function Ninja:Tick(getTarget)
+function Ninja:Tick(getTarget, log)
 
 	local menu    = self.menu["ACTIONS"]["MELEE_DPS"]["NIN"]
 	local actions = self.actions
 
-	if self:Execute() then return end
+	if self:Execute(log) then return end
 
 	local farTarget = getTarget(20)
 
@@ -73,6 +77,7 @@ function Ninja:Tick(getTarget)
 			return
 		elseif menu["SHUKUCHI"].bool and actions.shukuchi:canUse() then
 			actions.shukuchi:use(farTarget.pos)
+			log:print("Using Shukuchi on " .. farTarget.name)
 			return
 		end
 	end
@@ -84,18 +89,25 @@ function Ninja:Tick(getTarget)
 			self:ThreeMudra(target)
 		elseif menu["BUNSHIN"].bool and actions.bunshin:canUse(target.id) then
 			actions.bunshin:use(target.id)
+			log:print("Using Bunshin on " .. target.name)
 		elseif menu["FUMA"].bool and not self.lastShuriken and actions.fuma:canUse(farTarget.id) then
 			actions.fuma:use(target.id)
+			log:print("Using Fuma on " .. target.name)
 		elseif menu["MUG"].bool and actions.mug:canUse(target.id) then
 			actions.mug:use(target.id)
+			log:print("Using Mug on " .. target.name)
 		elseif menu["MUDRA"].bool and actions.mudra:canUse() then
 			actions.mudra:use()
+			log:print("Using Mudra")
 		elseif menu["AEOLIAN"].bool and actions.aeolian:canUse(target.id) then
 			actions.aeolian:use(target.id)
+			log:print("Using Aeolian Slah on " .. target.name)
 		elseif menu["AEOLIAN"].bool and actions.gust:canUse(target.id) then
+			log:print("Using Gust on " .. target.name)
 			actions.gust:use(target.id)
 		elseif menu["AEOLIAN"].bool and actions.spinning:canUse(target.id) then
 			actions.spinning:use(target.id)
+			log:print("Using Spinning on " .. target.name)
 		end
 
 	end
@@ -119,6 +131,7 @@ function Ninja:ThreeMudra(target)
 			self.actions.bunshin:use()
 		elseif self.actions.fuma:canUse(target.id) then
 			self.actions.fuma:use(target.id)
+			log:print("Using Fuma on " .. target.name)
 		end
 	end
 

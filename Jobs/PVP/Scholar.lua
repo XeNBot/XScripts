@@ -45,10 +45,11 @@ function Scholar:Load(mainMenu)
 
 end
 
-function Scholar:AutoHeal()
+function Scholar:AutoHeal(log)
 	
 	for i, ally in ipairs(ObjectManager.GetAllyPlayers(function (ally) return ally.missingHealth > 500 and ally.health > 0 end)) do
 		if ally.pos:dist(player.pos) < 29 and self.actions.adloq:canUse(ally.id) then
+			log:print("Using Adloq on : " .. ally.name)
 			self.actions.adloq:use(ally.id)
 			return true
 		end
@@ -57,16 +58,17 @@ function Scholar:AutoHeal()
 	return false
 end
 
-function Scholar:Tick(getTarget)
+function Scholar:Tick(getTarget, log)
 
 	local menu    = self.menu["ACTIONS"]["HEALER"]["SCH"]
 
-	if self:AutoHeal() then return end
+	if self:AutoHeal(log) then return end
 
 	if menu["SERAPH"].bool and self.actions.seraph:canUse() then
 		for i, ally in ipairs(ObjectManager.GetAllyPlayers()) do
 			if ObjectManager.EnemiesAroundObject(ally, 10) > 2 then
 				self.actions.seraph:use(ally.pos)
+				log:print("Using Seraph")
 				return
 			end
 		end
@@ -76,6 +78,7 @@ function Scholar:Tick(getTarget)
 	if menu["TACTICS"].bool and self.useTactics and self.actions.tactics:canUse() then		
 		if self.lastBioTarget ~= nil and ObjectManager.EnemiesAroundObject(self.lastBioTarget, 15) > 0 then
 			self.actions.tactics:use(self.lastBioTarget.id)
+			log:print("Using Deployment Tactics")
 			return
 		end
 	end
@@ -85,13 +88,17 @@ function Scholar:Tick(getTarget)
 	if target.valid then
 		if menu["MUMMY"].bool and target.pos:dist(player.pos) <= 7.5 and self.actions.mummy:canUse(target.id) then
 			self.actions.mummy:use(target.id)
+			log:print("Using Mummification")
 		elseif menu["EXPEDIENT"].bool and self.actions.expedient:canUse() then
 			self.actions.expedient:use()
+			log:print("Using Expedient")
 		elseif menu["BIO"].bool and self.actions.bio:canUse(target.id) then
 			self.actions.bio:use(target.id)
 			self.lastBioTarget = target
+			log:print("Using Biolysis")
 		elseif menu["BROIL"].bool and self.actions.broil:canUse(target.id) then
 			self.actions.broil:use(target.id)
+			log:print("Using Broil")
 		end
 
 	end

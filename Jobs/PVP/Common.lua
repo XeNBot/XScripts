@@ -24,11 +24,11 @@ function Common:initialize()
 		-- Bind
 		1345,
 		-- Sleep
-		1348, 1363,
+		1348,
 		-- Half-Sleep
 		3022,
 		-- Deep Freeze
-		487, 1150, 1254, 1731, 1758, 2252, 2658, 3219
+		1150
 	}
 
 	self.menu = nil
@@ -38,8 +38,14 @@ end
 function Common:Load(mainMenu)
 	
 	self.menu = mainMenu
-
-	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Purify",     "PURIFY", true)
+	self.menu["ACTIONS"]["COMMON"]:subMenu("Purify Settings", "PURIFY")
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Use Purify",         "USE", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Stuns",       "1343", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Heavy",       "1344", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Bind",        "1345", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Sleep",       "1348", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Half-Sleep",  "3022", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Deep Freeze", "1150", true)
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Recuperate", "RECUPERATE", true)
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Guard",      "GUARD", true)
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Sprint",     "SPRINT", true)
@@ -49,7 +55,7 @@ end
 
 function Common:ShouldPurify()
 	for i, statusId in ipairs(self.purify_statusIds) do
-		if player:hasStatus(statusId) then
+		if player:hasStatus(statusId) and self.menu["ACTIONS"]["COMMON"]["PURIFY"][tostring(statusId)].bool then
 			if player.classJob == 34 and self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]["MEI"].bool and self.actions.mei:canUse() then
 				self.actions.mei:use()
 				return false
@@ -60,7 +66,7 @@ function Common:ShouldPurify()
 
 end
 
-function Common:Tick()
+function Common:Tick(log)
 	
 	local actions = self.actions
 	local menu    = self.menu["ACTIONS"]["COMMON"]
@@ -68,7 +74,7 @@ function Common:Tick()
 	if menu["SPRINT"].bool and ObjectManager.EnemiesAroundObject(player, 30) == 0 and not player:hasStatus(1342) and actions.sprint:canUse() then
 		actions.sprint:use()
 		return true
-	elseif menu["PURIFY"].bool and self:ShouldPurify() and actions.purify:canUse() then
+	elseif menu["PURIFY"]["USE"].bool and self:ShouldPurify() and actions.purify:canUse() then
 		actions.purify:use()
 		return true
 	elseif player.classJob == 39 and self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]["ARCANE"].bool and (player.maxHealth - player.health) > 18000 and 

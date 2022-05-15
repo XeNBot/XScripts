@@ -43,25 +43,29 @@ function Reaper:Load(mainMenu)
 
 end
 
-function Reaper:Enshrouded(target, status, actions)
+function Reaper:Enshrouded(target, status, actions, log)
 	-- Communio
 	if (status.remainingTime <= 2 or status.count == 1) and actions.tenebrae:canUse(target.id) then
 		actions.tenebrae:use(target.id)
 	-- Lemure's Slice
 	elseif actions.grim:canUse(target.id) then
 		actions.grim:use(target.id)
+		log:print("Using Lemure's Slice on " .. target.name)
 	-- Void Reaping
 	elseif actions.void:canUse(target.id) then
 		actions.void:use(target.id)
+		log:print("Using Void Reaping on " .. target.name)
 	-- Cross Reaping
 	elseif actions.cross:canUse(target.id) then
 		actions.cross:use(target.id)
+		log:print("Using Cross Reaping on " .. target.name)
 	elseif actions.death:canUse(target.id) then
 		actions.death:use(target.id)
+		log:print("Using Death on " .. target.name)
 	end
 end
 
-function Reaper:Tick(getTarget)
+function Reaper:Tick(getTarget, log)
 
 	local menu    = self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]
 	local actions = self.actions
@@ -82,27 +86,36 @@ function Reaper:Tick(getTarget)
 		local soul_sacrifice = player:getStatus(3204)
 
 		if enshrouded.valid then 
-			self:Enshrouded(target, enshrouded, actions)
+			self:Enshrouded(target, enshrouded, actions, log)
 		elseif menu["TENEBRAE"].bool and actions.tenebrae:canUse() then
 			actions.tenebrae:use()
+			log:print("Using Tenebrae")
 		elseif menu["DEATH"].bool and actions.death:canUse(target.id) then
 			actions.death:use(target.id)
+			log:print("Using Death on " .. target.name)
 		elseif menu["HARVEST"].bool and actions.harvest:canUse(target.id) and soul_sacrifice.valid and soul_sacrifice.count >= menu["HARVEST_MIN"].int then
 			actions.harvest:use(target.id)
+			log:print("Using Harvest on " .. target.name)
 		elseif menu["SOUL"].bool and actions.soul:canUse(target.id) and (not soul_sacrifice.valid or (soul_sacrifice.count < 8)) then
+			log:print("Using Soul Sacrifice on " .. target.name)
 			actions.soul:use(target.id)
 		elseif menu["GRIM"].bool and actions.grim:canUse(target.id) then
+			log:print("Using Grim on " .. target.name)
 			actions.grim:use(target.id)
 		elseif menu["INFERNAL"].bool and actions.gibbet:canUse(target.id) then
 			actions.gibbet:use(target.id)
+			log:print("Using Gibbet on " .. target.name)
 		elseif menu["INFERNAL"].bool and actions.gallows:canUse(target.id) then
 			actions.gallows:use(target.id)
+			log:print("Using Gallow on " .. target.name)
 		elseif menu["INFERNAL"].bool and actions.infernal:canUse(target.id) then
 			actions.infernal:use(target.id)
+			log:print("Using Infernal on " .. target.name)
 		elseif menu["INFERNAL"].bool and actions.waxing:canUse(target.id) then
 			actions.waxing:use(target.id)
 		elseif menu["INFERNAL"].bool and actions.slice:canUse(target.id) then
 			actions.slice:use(target.id)
+			log:print("Using Slice on " .. target.name)
 		end
 	end
 end
