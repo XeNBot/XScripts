@@ -38,18 +38,21 @@ end
 
 
 
-function Dancer:Tick(getTarget)
+function Dancer:Tick(getTarget, log)
 
 	local menu = self.menu["ACTIONS"]["RANGE_DPS_P"]["DNC"]
 
 	if menu["CONTRA"].bool and self.actions.contra:canUse() and ObjectManager.EnemiesAroundObject(player, 15) >= menu["CONTRAMIN"].int then
 		self.actions.contra:use()
+		log:print("Using Contradance")
 		return
 	elseif menu["WALTZ"].bool and self.actions.waltz:canUse() and player.missingHealth > 8000 and ObjectManager.AlliesAroundObject(player, 5) > 0 then
 		self.actions.waltz:use()
+		log:print("Using Curing Waltz")
 		return
 	elseif menu["HONING"].bool and self.actions.honing:canUse() and ObjectManager.EnemiesAroundObject(player, 5) >= menu["HONINGMIN"].int then
 		self.actions.honing:use()
+		log:print("Using Honing Dance")
 		return
 	end
 
@@ -58,10 +61,12 @@ function Dancer:Tick(getTarget)
 	if farTarget.valid then
 		if  menu["STARFALL"].bool and self.actions.starfall:canUse(farTarget.id) then
 			self.actions.starfall:use(farTarget.id)
+			log:print("Using Starfall Dance on " .. farTarget.name)
 			return
 		elseif menu["AVANT"].bool and farTarget.pos:dist(player.pos) > 15 and self.actions.avant:canUse() then
 			player:rotateTo(farTarget.pos)
 			self.actions.avant:use()
+			log:print("Using En Avant on " .. farTarget.name)
 			return
 		end
 	end
@@ -71,10 +76,13 @@ function Dancer:Tick(getTarget)
 	if target.valid then
 		if menu["FAN"].bool and self.actions.fan:canUse(target.id) then
 			self.actions.fan:use(target.id)
+			log:print("Using Fan Dance on " .. target.name)
 		elseif menu["FOUNTAIN"].bool and self.actions.fountain:canUse(target.id) then
 			self.actions.fountain:use(target.id)
+			log:print("Using Fountain on " .. target.name)
 		elseif menu["FOUNTAIN"].bool and self.actions.cascade:canUse(target.id) then
 			self.actions.cascade:use(target.id)
+			log:print("Using Cascade on " .. target.name)
 		end
 	end
 

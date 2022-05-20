@@ -68,7 +68,7 @@ function XGatherer:tick()
 		if self.menu["ACTION_SETTINGS"]["USE_SPRINT"].bool and ActionManager.CanUseAction(5, 4, player.id) then
 			ActionManager.UseAction(5, 4, player.id)
 		end
-		TaskManager:WalkToWaypoint(self.status.currentWaypoint, player, function (waypoint)
+		TaskManager:WalkToWaypoint(self.status.currentWaypoint, function (waypoint)
 			print("Finished Walking to waypoint [".. os.date( "!%a %b %d, %H:%M", os.time() - 7 * 60 * 60 ) .. "]", waypoint)
 			self.status.currentWaypoint = nil
 		end)
@@ -168,14 +168,8 @@ function XGatherer:useNodeSkills(nodeObj)
 end
 
 function XGatherer:checkSneak()
-	local hasSneak = false
-
-	for i, status in ipairs(player.status) do
-		if status.id == 16 then
-			hasSneak = true
-			break
-		end
-	end
+	local hasSneak = player:hasStatus(47)
+	
 	local actionId = player.classJob == 17 and 304 or 303
 	if not hasSneak and ActionManager.CanUseAction(1, actionId, TARGET_INVALID_ID) then
 		ActionManager.UseAction(1, actionId, player.id)

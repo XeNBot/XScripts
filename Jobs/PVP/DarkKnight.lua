@@ -63,7 +63,7 @@ function Knight:Tick(getTarget, log)
 
 	if farTarget.valid and menu["PLUNGE"].bool and self.actions.plunge:canUse(farTarget.id) then
 		self.actions.plunge:use(farTarget.id)
-		log:print("Using Plunge On " .. farTarget.name)
+		log:print("Using Plunge on " .. farTarget.name)
 		return
 	end
 
@@ -72,15 +72,19 @@ function Knight:Tick(getTarget, log)
 	if target ~= nil and target.valid then
 		if menu["SOUL"].bool and self.actions.night:canUse() then
 			self.actions.night:use()
-			log:print("Using Blackest Night On " .. target.name)
+			log:print("Using Blackest Night on " .. target.name)
 		elseif menu["SOUL"].bool and self.actions.shadow:canUse(target.id) and player.health > 30000 and player.mana > 5000 then
 			self.actions.shadow:use(target.id)
+			log:print("Using Shadowbringer on " .. target.name)
 		elseif menu["SOUL"].bool and self.actions.soul:canUse(target.id) then
 			self.actions.soul:use(target.id)
+			log:print("Using Soul Eater on " .. target.name)
 		elseif menu["SOUL"].bool and self.actions.syphon:canUse(target.id) then
 			self.actions.syphon:use(target.id)
+			log:print("Using Shadowbringer on " .. target.name)
 		elseif menu["SOUL"].bool and self.actions.slash:canUse(target.id) then
 			self.actions.slash:use(target.id)
+			log:print("Using Slash on " .. target.name)
 		end
 	end
 	

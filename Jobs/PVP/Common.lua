@@ -48,18 +48,20 @@ function Common:Load(mainMenu)
 		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Deep Freeze", "1150", true)
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Recuperate", "RECUPERATE", true)
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Guard",      "GUARD", true)
+	self.menu["ACTIONS"]["COMMON"]:slider("Min Health for Guard", "GUARDMIN", 1, 1, 100, 30)
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Sprint",     "SPRINT", true)
 
 
 end
 
-function Common:ShouldPurify()
+function Common:ShouldPurify(log)
 	for i, statusId in ipairs(self.purify_statusIds) do
 		if player:hasStatus(statusId) and self.menu["ACTIONS"]["COMMON"]["PURIFY"][tostring(statusId)].bool then
 			if player.classJob == 34 and self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]["MEI"].bool and self.actions.mei:canUse() then
 				self.actions.mei:use()
 				return false
 			end
+			log:print("Purifying Status " .. statusId)
 			return true
 		end
 	end
@@ -73,8 +75,9 @@ function Common:Tick(log)
 
 	if menu["SPRINT"].bool and ObjectManager.EnemiesAroundObject(player, 30) == 0 and not player:hasStatus(1342) and actions.sprint:canUse() then
 		actions.sprint:use()
+		log:print("Using Sprint")
 		return true
-	elseif menu["PURIFY"]["USE"].bool and self:ShouldPurify() and actions.purify:canUse() then
+	elseif menu["PURIFY"]["USE"].bool and self:ShouldPurify(log) and actions.purify:canUse() then
 		actions.purify:use()
 		return true
 	elseif player.classJob == 39 and self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]["ARCANE"].bool and (player.maxHealth - player.health) > 18000 and 
@@ -83,9 +86,11 @@ function Common:Tick(log)
 		return true
 	elseif menu["RECUPERATE"].bool and (player.maxHealth - player.health) > 15000 and actions.recuperate:canUse() then
 		actions.recuperate:use()
+		log:print("Using Recuperate")
 		return true
 	elseif not player:hasStatus(3039) and menu["GUARD"].bool and player.health < 20000 and ObjectManager.EnemiesAroundObject(player, 10) > 1 and actions.guard:canUse() then
 		actions.guard:use()
+		log:print("Using Guard")
 		return true
 	end
 

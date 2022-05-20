@@ -67,14 +67,13 @@ function Summoner:Tick(getTarget, log)
 	
 	local bahamut = player:getStatus(3228)
 
-	if menu["BAHAMUT"].bool and  self:Execute(bahamut, log) then return end
+	if menu["BAHAMUT"].bool and self.actions.bahamut:canUse() and  self:Execute(bahamut, log) then return end
 	
 	if menu["AEGIS"].bool and self.actions.aegis:canUse() and player.missingHealth > 8000 and ObjectManager.EnemiesAroundObject(player, 10) > 0 then
 		log:print("Using Aegis")
 		self.actions.aegis:use()
 		return
 	end
-
 	local target = getTarget(25)
 
 	if target.valid then
