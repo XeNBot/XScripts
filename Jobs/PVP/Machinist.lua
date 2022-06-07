@@ -14,10 +14,11 @@ function Machinist:initialize()
 	}
 
 	self.menu = nil
+	self.seq  = nil
 
 end
 
-function Machinist:Load(mainMenu)
+function Machinist:Load(mainMenu, seq)
 	
 	self.menu = mainMenu
 
@@ -37,57 +38,48 @@ function Machinist:Execute(log)
 
 	local list = AgentModule.currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
 
-	for i, object in ipairs(list) do
+	if #list == 0 then return false end
 
-		if object.health > 15000 and object.health < 35000 and not object:hasStatus(3054) and spite:canUse(object.id) then
-			spite:use(object.id)
+	for i, object in ipairs(list) do
+		if object.valid and object.health > 15000 and object.health < 35000 and not object:hasStatus(3054) and spite:canUse(object) then
 			log:print("Using Spite on " .. object.name)
+			spite:use(object)
 			return true
 		end
 	end
 	return false
 end
 
-function Machinist:Tick(getTarget, log)
+function Machinist:Tick(log)
 
 	local menu        = self.menu["ACTIONS"]["RANGE_DPS_P"]["MCH"]
 	local actions     = self.actions
 
 	if menu["SPITE"].bool and self:Execute(log) then return end
 
-	local target       = getTarget(24)
-	local closerTarget = getTarget(12)
-
-
-	if not target.valid then return end
-
-	TargetManager.SetTarget(target)
-
-	local targetDistance = target.pos:dist(player.pos)
-
-	if menu["SCATTER"].bool and targetDistance < 12 and actions.scatter:canUse(target.id) then
-		actions.scatter:use(target.id)
-		log:print("Using Scattergun on " .. target.name)
-	elseif menu["BISHOP"].bool and actions.bishop:canUse() and ObjectManager.EnemiesAroundObject(target, 5) > 0 then
-		actions.bishop:use(target.pos)
-		log:print("Using Bishop Autoturret")
-	elseif menu["WILDFIRE"].bool and actions.wildfire:canUse(target.id) then
-		actions.wildfire:use(target.id)
-		log:print("Using Wildfire on " .. target.name)
-	elseif menu["CHAINSAW"].bool and actions.chainsaw:canUse(target.id) then
+	if menu["SCATTER"].bool and actions.scatter.ready then
+		log:print("Using Scattergun on " .. actions.scatter.target.name)
+		actions.scatter:use()
+	elseif menu["BISHOP"].bool and actions.bishop.ready and ObjectManager.EnemiesAroundObject(actions.bishop.target, 5) > 0 then
+		log:print("Using Bishop Autoturret on " .. actions.bishop.target.name)
+		actions.bishop:use(actions.bishop.target.pos)
+	elseif menu["WILDFIRE"].bool and actions.wildfire.ready then
+		log:print("Using Wildfire on " .. actions.wildfire.target.name)
+		actions.wildfire:use()
+	elseif menu["CHAINSAW"].bool and actions.chainsaw.ready then
 		if not player:hasStatus(3158) and actions.analysis:canUse() then
 			log:print("Using Analysis")
 			actions.analysis:use()
-		elseif player:hasStatus(3151) and closerTarget.valid then
-			actions.chainsaw:use(closerTarget.id)
-			log:print("Using Bioblast on " .. closerTarget.name)
-		elseif not player:hasStatus(3151) then
-			actions.chainsaw:use(target.id)
-			log:print("Using Chainsaw on " .. target.name)
+		elseif player:hasStatus(3151) then
+			log:print("Using Bioblast on " .. actions.chainsaw.target.name)
+			actions.chainsaw:use()
+		else
+			log:print("Using Chainsaw on " .. actions.chainsaw.target.name)
+			actions.chainsaw:use()
 		end
-	elseif menu["BLAST"].bool and actions.blast:canUse(target.id) then
-		actions.blast:use(target.id)
-		log:print("Using Blast on " .. target.name)
+	elseif menu["BLAST"].bool and actions.blast.ready then
+		log:print("Using Blast on " .. actions.blast.target.name)
+		actions.blast:use()
 	end
 end
 

@@ -2,34 +2,34 @@ local XPVP = Class("XPVP")
 
 function XPVP:initialize()
 	-- Loads Menu Module
-	self.menu        = LoadModule("XScripts", "/Menus/XPVPMenu")
+	self.menu        = LoadModule("XScripts", "\\Menus\\XPVPMenu")
 	-- Log Module
-	self.log         = LoadModule("XScripts", "/Utilities/Log")
+	self.log         = LoadModule("XScripts", "\\Utilities\\Log")
 	-- Loads Class Job Modules
 	-- Healers
-	self.scholar     = LoadModule("XScripts", "/Jobs/PVP/Scholar")
-	self.astrologian = LoadModule("XScripts", "/Jobs/PVP/Astrologian")
-	self.sage        = LoadModule("XScripts", "/Jobs/PVP/Sage")
+	self.scholar     = LoadModule("XScripts", "\\Jobs\\PVP\\Scholar")
+	self.astrologian = LoadModule("XScripts", "\\Jobs\\PVP\\Astrologian")
+	self.sage        = LoadModule("XScripts", "\\Jobs\\PVP\\Sage")
 	-- Tanks
-	self.warrior     = LoadModule("XScripts", "/Jobs/PVP/Warrior")
-	self.paladin     = LoadModule("XScripts", "/Jobs/PVP/Paladin")
-	self.darkknight  = LoadModule("XScripts", "/Jobs/PVP/DarkKnight")
-	self.gunbreaker  = LoadModule("XScripts", "/Jobs/PVP/Gunbreaker")
+	self.warrior     = LoadModule("XScripts", "\\Jobs\\PVP\\Warrior")
+	self.paladin     = LoadModule("XScripts", "\\Jobs\\PVP\\Paladin")
+	self.darkknight  = LoadModule("XScripts", "\\Jobs\\PVP\\DarkKnight")
+	self.gunbreaker  = LoadModule("XScripts", "\\Jobs\\PVP\\Gunbreaker")
 	-- Melee DPS
-	self.monk        = LoadModule("XScripts", "/Jobs/PVP/Monk")
-	self.dragoon     = LoadModule("XScripts", "/Jobs/PVP/Dragoon")
-	self.ninja       = LoadModule("XScripts", "/Jobs/PVP/Ninja")
-	self.samurai     = LoadModule("XScripts", "/Jobs/PVP/Samurai")
-	self.reaper      = LoadModule("XScripts", "/Jobs/PVP/Reaper")
+	self.monk        = LoadModule("XScripts", "\\Jobs\\PVP\\Monk")
+	self.dragoon     = LoadModule("XScripts", "\\Jobs\\PVP\\Dragoon")
+	self.ninja       = LoadModule("XScripts", "\\Jobs\\PVP\\Ninja")
+	self.samurai     = LoadModule("XScripts", "\\Jobs\\PVP\\Samurai")
+	self.reaper      = LoadModule("XScripts", "\\Jobs\\PVP\\Reaper")
 	-- Ranged Physical DPS
-	self.machinist   = LoadModule("XScripts", "/Jobs/PVP/Machinist")
-	self.dancer      = LoadModule("XScripts", "/Jobs/PVP/Dancer")
+	self.machinist   = LoadModule("XScripts", "\\Jobs\\PVP\\Machinist")
+	self.dancer      = LoadModule("XScripts", "\\Jobs\\PVP\\Dancer")
 	-- Ranged Magic DPS
-	self.blackmage   = LoadModule("XScripts", "/Jobs/PVP/BlackMage")
-	self.summoner    = LoadModule("XScripts", "/Jobs/PVP/Summoner")
-	self.redmage     = LoadModule("XScripts", "/Jobs/PVP/RedMage")
+	self.blackmage   = LoadModule("XScripts", "\\Jobs\\PVP\\BlackMage")
+	self.summoner    = LoadModule("XScripts", "\\Jobs\\PVP\\Summoner")
+	self.redmage     = LoadModule("XScripts", "\\Jobs\\PVP\\RedMage")
 	-- Common Actions
-	self.common      = LoadModule("XScripts", "/Jobs/PVP/Common") 
+	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common") 
 
 	-- Loads the menus of each Job
 	-- Healers
@@ -49,7 +49,7 @@ function XPVP:initialize()
 	self.reaper:Load(self.menu)
 	-- Ranged Physical DPS
 	self.dancer:Load(self.menu)
-	self.machinist:Load(self.menu)
+	self.machinist:Load(self.menu, self.sequences)
 	-- Ranged Magic DPS
 	self.blackmage:Load(self.menu)
 	self.summoner:Load(self.menu)
@@ -60,7 +60,7 @@ function XPVP:initialize()
 	self.getTarget    = function (dist) return self:GetTarget(dist) end
 	self.targetFilter = function (target) return self:TargetFilter(target) end
 
-	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)	
+	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
 
 	self.log:print("XPVP Loaded!")
 
@@ -73,6 +73,8 @@ function XPVP:Tick()
 	if player:hasStatus(3054) then return end
 
 	if self.common:Tick(self.log) then return end
+
+	if player:hasStatus(895) then return end
 
 	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or (self.menu["COMBO_MODE"].int ~= 0 and self.menu["COMBO_KEY"].keyDown) then
 		if player.classJob == 20 then
@@ -88,7 +90,7 @@ function XPVP:Tick()
 		elseif player.classJob == 30 then
 			self.ninja:Tick(self.getTarget, self.log)
 		elseif player.classJob == 31 then
-			self.machinist:Tick(self.getTarget, self.log)
+			self.machinist:Tick(self.log)
 		elseif player.classJob == 32 then
 			self.darkknight:Tick(self.getTarget, self.log)
 		elseif player.classJob == 33 then
