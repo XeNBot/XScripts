@@ -44,6 +44,8 @@ function XGatherer:initialize()
 	
 	self.log:print("XGatherer Loaded!")
 
+	self:setJob("BTN")
+
 end
 
 function XGatherer:OnWalkToWayPoint(waypoint)
@@ -53,20 +55,14 @@ function XGatherer:OnWalkToWayPoint(waypoint)
 	local mapId    = tostring(AgentModule.currentMapId)
 	local regionId = self:getMapRegion(mapId)
 
-	local closestNode = self:getClosestNodeWaypoint(mapId, regionId, self.activeQueue.nodeId)
+	local closestNode = self:getClosestNodeWaypoint(mapId, regionId, self.activeQueue.dataIds)
 
 	if closestNode ~= nil and self.status.goalWaypoint ~= nil and closestNode.pos ~= self.status.goalWaypoint.pos then
 		self.log:print("Found a better goal node! changing routes")
 		self.status.goalWaypoint = closestNode
 		self.route = Route()
 	else
-		self.route.index = self.route.index + 1
-
-
-		if self.route.index > #self.route.waypoints then
-			self.route = Route()
-		end
-
+		self.route.index = self.route.index + 1		
 	end
 
 end
@@ -74,11 +70,6 @@ end
 
 function XGatherer:tick()
 	if TaskManager:IsBusy() or not self.status.running then return end
-
-	if self.status.gathering and AddonManager:getGatheringAddon() == nil then
-		self:updateQueue()
-		self.status.gathering = false
-	end
 
 	local mapId    = tostring(AgentModule.currentMapId)
 	local regionId = self:getMapRegion(mapId)
@@ -99,13 +90,13 @@ function XGatherer:tick()
 	end
 	if self.activeQueue == nil or (self.activeQueue.mapId ~= mapId) then return end
 
-	local closestNode         = self:getClosestGatheringNode(self.activeQueue.nodeId)
-	local closestWaypointNode = self:getClosestNodeWaypoint(mapId, regionId, self.activeQueue.nodeId)
+	local closestNode         = self:getClosestGatheringNode(self.activeQueue.dataIds)
+	local closestWaypointNode = self:getClosestNodeWaypoint(mapId, regionId, self.activeQueue.dataIds)
 
 	if closestWaypointNode == nil then
 		if not self.route.finished then
 			if self.status.goalWaypoint	== nil then
-				print("Node might be too far setting startPos as goal!")
+				self.log:print("Node might be too far setting startPos as goal!")
 				self.status.goalWaypoint = self.activeQueue.startPos
 			else
 				local mapWaypoints = self.grid[regionId].maps[mapId].mapWaypoints
@@ -115,7 +106,7 @@ function XGatherer:tick()
 			self:GoToRoute()
 		end
 		return
-	elseif closestNode.pos:dist(player.pos) >  4 then
+	elseif closestNode ~= nil and closestNode.pos:dist(player.pos) >  4 then
 		if not self.route.finished then
 			if self.status.goalWaypoint == nil and closestWaypointNode ~= nil then
 					self.status.goalWaypoint = closestWaypointNode
@@ -132,6 +123,9 @@ function XGatherer:tick()
 
 		local gatheringAddon = AddonManager:getGatheringAddon()
 		if gatheringAddon ~= nil then
+
+			if self.route.finished then self.route = Route() end
+
 			self.status.goalWaypoint = nil
 
 			if not gatheringAddon:isGathering() then				
@@ -157,10 +151,6 @@ function XGatherer:tick()
 
 end
 
-function XGatherer:CalculateGoal()
-	
-end
-
 function XGatherer:GoToRoute()
 
 	local currentWaypoint = self.route.waypoints[self.route.index]
@@ -177,39 +167,24 @@ function XGatherer:GoToRoute()
 	
 end
 
-function XGatherer:getClosestNodeWithId(nodeId)
-
-	local closestNode = nil
-	local distance    = 10000
-
-	for i, obj in pairs(ObjectManager.Gathering) do
-		if obj.isTargetable then
-			if obj.pos:dist(player.pos) < distance and obj.npcId == nodeId then
-				closestNode = obj
-				distance = obj.pos:dist(player.pos)
-			end
-		end
-	end
-
-	return closestNode
-	
-end
-
-function XGatherer:getClosestNodeWaypoint(mapId, regionId, nodeId)
+function XGatherer:getClosestNodeWaypoint(mapId, regionId, dataIds)
 
 	local node         = nil
 	local nodeDistance = 10000
 
+
+
 	for i, obj in ipairs(ObjectManager.Gathering) do
 
-		if obj.isTargetable and obj.npcId == tonumber(nodeId) then
+
+		if obj.isTargetable and dataIds[obj.dataId] ~= nil then
 			for i , waypoint in ipairs(self.grid[regionId].maps[mapId].mapWaypoints.waypoints) do
 
 				local distanceToPlayer = waypoint.pos:dist(player.pos)
 
 				if waypoint.pos:dist(obj.pos) < 4 and distanceToPlayer < nodeDistance then
-						node         = waypoint
-						nodeDistance = distanceToPlayer
+					node         = waypoint
+					nodeDistance = distanceToPlayer
 				end
 
 			end
@@ -217,11 +192,26 @@ function XGatherer:getClosestNodeWaypoint(mapId, regionId, nodeId)
 		end
 	end
 	return node
-
 end
 
+function XGatherer:getClosestGatheringNode(dataIds)
+	local closestNode = nil
+	local distance    = 10000
+
+	for i, obj in pairs(ObjectManager.Gathering) do
+		if obj.isTargetable and dataIds[obj.dataId] ~= nil then
+			if obj.pos:dist(player.pos) < distance then
+				closestNode = obj
+				distance = obj.pos:dist(player.pos)
+			end
+		end
+	end
+
+	return closestNode
+end
+
+
 function XGatherer:draw()
-	
 	local maxDrawDistance = self.menu["DRAW_SETTINGS"]["MAX_DRAW_DISTANCE"].int
 
 	local last_waypoint = nil
@@ -229,7 +219,7 @@ function XGatherer:draw()
 	if #self.route.waypoints > 1 then
 
 		for i, waypoint in ipairs(self.route.waypoints) do
-			if last_waypoint ~= nil then
+			if last_waypoint ~= nil and waypoint ~= nil then
 				Graphics.DrawLine3D(last_waypoint.pos, waypoint.pos, Colors.Green)
 			end
 			last_waypoint = waypoint
@@ -257,6 +247,14 @@ function XGatherer:draw()
 				for i, waypoint in ipairs(self.grid[currentRegionId].maps[currentMapId].mapWaypoints.waypoints) do
 					if waypoint.pos:dist(player.pos) < maxDrawDistance then
 						Graphics.DrawCircle3D(waypoint.pos, 20, 1, Colors.Green)
+						Graphics.DrawText3D(waypoint.pos, "[" ..tostring(player.pos:dist(waypoint.pos)).."]("..tostring(i)..")", 10)
+
+						if waypoint.pos:dist(player.pos) < 5 and #waypoint.links > 0 then
+							for i, link in ipairs(waypoint.links) do
+								Graphics.DrawLine3D(waypoint.pos, link.pos, Colors.Blue)
+							end
+						end
+
 					end
 				end
 			end
@@ -266,7 +264,7 @@ function XGatherer:draw()
 
 			for i, waypoint in ipairs(self.route.waypoints) do
 
-				if last_waypoint ~= nil and i >= self.route.index then
+				if last_waypoint ~= nil and waypoint ~= nil and i >= self.route.index then
 					Graphics.DrawLine3D(last_waypoint.pos, waypoint.pos, Colors.Blue)
 				end
 				last_waypoint = waypoint
@@ -280,10 +278,10 @@ function XGatherer:draw()
 	end
 end
 
-function XGatherer:buildGatherQueue(regionId, mapId, npcId)
+function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 	
 
-	self.log:print("Building new Item Gather Queue [" .. npcId .. "]")
+	self.log:print("Building new Item Gather Queue [" .. nodeId .. "]")
 	
 	local queue = {
 
@@ -291,15 +289,16 @@ function XGatherer:buildGatherQueue(regionId, mapId, npcId)
 		mapId    = mapId,
 		teleId   = self.grid[regionId].maps[mapId].telePoint,
 		regionId = regionId,
-		nodeId   = npcId,
+		nodeId   = nodeId,
 		index    = #self.queues + 1,
-		startPos = Waypoint(self.grid[regionId].maps[mapId].nodes[tostring(npcId)].startPos),
+		startPos = Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos),
+		dataIds  = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds
 
 	}	
 
-	for i, itemInfo in ipairs(self.grid[regionId].maps[mapId].nodes[tostring(npcId)].nodeItems) do
+	for i, itemInfo in ipairs(self.grid[regionId].maps[mapId].nodes[nodeId].nodeItems) do
 
-		local menuValue = self.menu[regionId][mapId][npcId][itemInfo.name].int
+		local menuValue = self.menu[regionId][mapId][nodeId][itemInfo.name].int
 
 		if menuValue > 0 then
 
@@ -330,23 +329,6 @@ function XGatherer:buildGatherQueue(regionId, mapId, npcId)
 
 end
 
-function XGatherer:updateQueue()
-	
-	if #self.activeQueue.items == 0 then
-		table.remove(self.queues, self.activeQueue.index)
-		self.activeQueue = nil
-	end
-	
-	if #self.queues == 0 then
-		self.log:print("Finished All Gathering Queues, Stopping Bot!")
-		self.menu["BTN_START"].str = "Start"
-		self.status.running   = false
-		self.status.last_item = nil
-		self.activeQueue = nil
-	end
-
-end
-
 
 function XGatherer:getNextQueueItem()
 	
@@ -361,10 +343,48 @@ function XGatherer:getNextQueueItem()
 		end
 	end
 
+	if #self.activeQueue.items == 0 then
+		table.remove(self.queues, self.activeQueue.index)
+		self.activeQueue = nil
+	end
+
 	if self.status.last_item ~= nil then
 		return self.status.last_item
 	end
 
+	if #self.queues == 0 then
+		self.log:print("Finished All Gathering Queues, Stopping Bot after node!")
+		self.menu["BTN_START"].str = "Start"
+		self.status.running   = false
+		self.activeQueue = nil
+	end
+
+end
+
+function XGatherer:setJob(job)
+	local jobStr = type(job) == "string" and job or CLASS_JOBS[job] or nil
+	local jobInt = type(job) == "number" and job or CLASS_JOBS[job] or nil
+	
+	if jobStr == nil or jobInt == nil then
+		print("Error Setting Job", job)
+		return
+	end
+
+	if player.classJob == jobInt then return end
+
+	-- Loops through all 18 HotBars
+	for hotbar = 0, 17 do
+		-- Loops through all 16 slots in hotbar
+		for slot = 0, 15 do
+			local slot = HotBarManager[hotbar].slot[slot]
+			if slot ~= nil and not slot.empty then
+				if string.find(slot.name, jobStr) then
+					print("Using Hotkey: ", slot.name)
+					Keyboard:SendKeys(slot.getKeys)
+				end
+			end
+		end
+	end
 end
 
 function XGatherer:drawGatherableNodes(maxDistance)
@@ -373,6 +393,7 @@ function XGatherer:drawGatherableNodes(maxDistance)
 	for i, node in ipairs(nodes) do
 		if node.isTargetable and node.pos:dist(player.pos) < maxDistance then
 			Graphics.DrawCircle3D(node.pos, 20, 1, Colors.Yellow)
+			Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
 		end
 	end
 
@@ -384,28 +405,11 @@ function XGatherer:drawPossibleNodes(maxDistance)
 	for i, node in ipairs(nodes) do
 		if not node.isTargetable and node.pos:dist(player.pos) < maxDistance then
 			Graphics.DrawCircle3D(node.pos, 20, 1, Colors.Red)
-
+			Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
 		end
 	end
 
 end
-
-function XGatherer:getClosestGatheringNode(nodeId)
-	local closestNode = nil
-	local distance    = 10000
-
-	for i, obj in pairs(ObjectManager.Gathering) do
-		if obj.isTargetable and obj.npcId == tonumber(nodeId) then
-			if obj.pos:dist(player.pos) < distance then
-				closestNode = obj
-				distance = obj.pos:dist(player.pos)
-			end
-		end
-	end
-
-	return closestNode
-end
-
 
 
 -- This function builds our menu
@@ -423,7 +427,7 @@ function XGatherer:initializeMenu()
 			for mapId, mapInfo in pairs(self.grid[regionId].maps) do
 				-- Adds submenu with map name
 				self.menu[regionId]:subMenu(mapInfo.mapName, mapId)
-				for nodeId, nodeInfo in pairs(self.grid[regionId].maps[mapId].nodes) do
+				for nodeId, nodeInfo in ipairs(self.grid[regionId].maps[mapId].nodes) do
 
 					self.menu[regionId][mapId]:subMenu(nodeInfo.nodeName, nodeId)
 
@@ -456,11 +460,7 @@ function XGatherer:initializeMenu()
 			self.menu["ACTION_SETTINGS"]:checkbox("Use Sprint", "USE_SPRINT", true)
 			self.menu["ACTION_SETTINGS"]:checkbox("Use Mount", "USE_MOUNT", true)
 			self.menu["ACTION_SETTINGS"]:separator()
-			self.menu["ACTION_SETTINGS"]:label("Gathering Actions")
-			self.menu["ACTION_SETTINGS"]:separator()
-			self.menu["ACTION_SETTINGS"]:checkbox("Use Sharp Vision", "USE_SHARP_VISION", false)
-			self.menu["ACTION_SETTINGS"]:checkbox("Use Sharp Vision II", "USE_SHARP_VISION2", false)
-
+			
 
 	self.menu:space() self.menu:space() self.menu:space()
 	self.menu:checkbox("Auto Start Queues", "AUTO_START", true)
