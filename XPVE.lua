@@ -10,10 +10,10 @@ local XPVE = Class("XPVE")
 function XPVE:initialize()
 
 	-- Loads Menu Module
-	self.menu        = LoadModule("XScriptsT", "\\Menus\\XPVEMenu")
+	self.menu        = LoadModule("XScripts", "\\Menus\\XPVEMenu")
 
 	-- classes
-	self.machinist   = LoadModule("XScriptsT", "\\Jobs\\PVE\\Machinist")
+	self.machinist   = LoadModule("XScripts", "\\Jobs\\PVE\\Machinist")
 
 	-- class menus
 	self.machinist:Load(self.menu)
