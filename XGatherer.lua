@@ -16,10 +16,10 @@ function XGatherer:initialize()
 
 		running         = false,
 		goalWaypoint    = nil,
-		last_teleport   = os.clock(),
+		last_teleport   = 0,
 		gathering       = false,
 		last_item       = nil,
-		last_mount      = os.clock()
+		last_mount      = 0
 	}
 
 	-- walking route
@@ -36,16 +36,12 @@ function XGatherer:initialize()
 	-- Initializes menu
 	self:initializeMenu()
 
-	
 	-- Adds our tick function into the game's tick
 	Callbacks:Add(CALLBACK_PLAYER_DRAW, function () self:draw() end)
 	-- Adds our draw function into the game's draw
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function () self:tick() end)
 	
 	self.log:print("XGatherer Loaded!")
-
-	self:setJob("BTN")
-
 end
 
 function XGatherer:OnWalkToWayPoint(waypoint)
@@ -69,7 +65,15 @@ end
 
 
 function XGatherer:tick()
-	if TaskManager:IsBusy() or not self.status.running then return end
+	if TaskManager:IsBusy() or not self.status.running or (os.clock() - self.status.last_mount < 2) then return end
+
+	local gatheringAddon = AddonManager:getGatheringAddon()
+
+	self:updateQueue(gatheringAddon)
+
+	if gatheringAddon ~= nil then
+		return self:gatherNextItem(gatheringAddon)
+	end
 
 	local mapId    = tostring(AgentModule.currentMapId)
 	local regionId = self:getMapRegion(mapId)
@@ -78,7 +82,7 @@ function XGatherer:tick()
 		self.activeQueue = self.queues[1]
 		return
 	elseif self.activeQueue	 ~= nil then
-		if self.activeQueue.mapId ~= mapId and os.clock() - self.status.last_teleport > 8 then
+		if self.activeQueue.mapId ~= mapId and os.clock() - self.status.last_teleport > 10 then
 
 			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.mapId))
 			if self.actions.teleport:canUse() then
@@ -90,10 +94,25 @@ function XGatherer:tick()
 	end
 	if self.activeQueue == nil or (self.activeQueue.mapId ~= mapId) then return end
 
+	-- Job Check
+	if (string.find(self.activeQueue.nodeName, "Tree") or string.find(self.activeQueue.nodeName, "Lush")) and player.classJob ~= 17 then
+		self:setJob(17)
+		return
+	elseif (string.find(self.activeQueue.nodeName, "Mineral") or string.find(self.activeQueue.nodeName, "Rocky")) and player.classJob ~= 16 then
+		self:setJob(16)
+		return
+	end
+
 	local closestNode         = self:getClosestGatheringNode(self.activeQueue.dataIds)
 	local closestWaypointNode = self:getClosestNodeWaypoint(mapId, regionId, self.activeQueue.dataIds)
 
-	if closestWaypointNode == nil then
+	if closestNode ~= nil and closestNode.pos:dist(player.pos) < 4 then
+		
+		player:rotateTo(closestNode.pos)
+		player:rotateCameraTo(closestNode.pos)
+		TaskManager:Interact(closestNode)
+	
+	elseif closestWaypointNode == nil then
 		if not self.route.finished then
 			if self.status.goalWaypoint	== nil then
 				self.log:print("Node might be too far setting startPos as goal!")
@@ -105,7 +124,6 @@ function XGatherer:tick()
 		else
 			self:GoToRoute()
 		end
-		return
 	elseif closestNode ~= nil and closestNode.pos:dist(player.pos) >  4 then
 		if not self.route.finished then
 			if self.status.goalWaypoint == nil and closestWaypointNode ~= nil then
@@ -116,49 +134,20 @@ function XGatherer:tick()
 			end		
 		else
 			self:GoToRoute()
-		end
-	elseif closestNode ~= nil and closestNode.pos:dist(player.pos) < 4 then
-
-		player:rotateTo(closestNode.pos)
-
-		local gatheringAddon = AddonManager:getGatheringAddon()
-		if gatheringAddon ~= nil then
-
-			if self.route.finished then self.route = Route() end
-
-			self.status.goalWaypoint = nil
-
-			if not gatheringAddon:isGathering() then				
-				local selectedName = gatheringAddon:getSelectedItemName()
-				local itemToGather = self:getNextQueueItem()
-
-				if itemToGather == nil then return end
-
-				if not string.find(selectedName, itemToGather.name) then
-					TaskManager:SelectGatherItem(itemToGather.name)
-					return
-				end			
-				self.log:print("Gathering : " .. selectedName)
-				TaskManager:GatherItem()
-			end
-		else
-			self.status.gathering = true
-			player:rotateCameraTo(closestNode.pos)
-			TaskManager:Interact(closestNode)
-		end
-
+		end	
 	end
 
 end
 
 function XGatherer:GoToRoute()
-
 	local currentWaypoint = self.route.waypoints[self.route.index]
 
-	if currentWaypoint == nil then return end
+	if currentWaypoint == nil then self.route = Route()  return end
 	
-	if currentWaypoint.flying and not player.isMounted and self.actions.mount:canUse() then
+	if self.menu["ACTION_SETTINGS"]["USE_MOUNT"].bool and self.status.goalWaypoint.pos:dist(player.pos) >= self.menu["ACTION_SETTINGS"]["MOUNT_DISTANCE"].int
+	and not player.isMounted and self.actions.mount:canUse() then
 		self.actions.mount:use()
+		self.status.last_mount = os.clock()
 	elseif self.menu["ACTION_SETTINGS"]["USE_SPRINT"].bool and self.actions.sprint:canUse() then
 		self.actions.sprint:use()
 	elseif (currentWaypoint.flying and player.isMounted) or not currentWaypoint.flying then
@@ -281,7 +270,7 @@ end
 function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 	
 
-	self.log:print("Building new Item Gather Queue [" .. nodeId .. "]")
+	self.log:print("Building new Item Gather Queue for " .. self.menu[regionId][mapId][nodeId].str .. "")
 	
 	local queue = {
 
@@ -291,6 +280,7 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 		regionId = regionId,
 		nodeId   = nodeId,
 		index    = #self.queues + 1,
+		nodeName = self.menu[regionId][mapId][nodeId].str,
 		startPos = Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos),
 		dataIds  = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds
 
@@ -316,9 +306,8 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 
 	if #queue.items > 0 then
 		table.insert(self.queues, queue)
-		self.log:print("New Queue Size " ..  tostring(#self.queues))
 		if self.menu["AUTO_START"].bool and not self.status.running then
-			self.log:print("Auto Starting Queue")
+			self.log:print("Auto Starting Queue!")
 			self.menu["BTN_START"].str = "Stop"
 			self.status.running = true
 			self.route = Route()
@@ -330,58 +319,83 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 end
 
 
-function XGatherer:getNextQueueItem()
-	
-	for i, item in ipairs(self.activeQueue.items) do
+function XGatherer:updateQueue(gatheringAddon)
 
-		if InventoryManager.GetItemCount(item.id) > item.finishValue then
-			table.remove(self.activeQueue.items, i)
-			self.log:print("Finished Gathering " .. item.amountToGather .. "(s) " .. item.name)			
-		else
-			self.status.last_item = item
-			return item
+	if self.activeQueue ~= nil then
+
+		if #self.activeQueue.items == 0 then
+			self.log:print("Finished Current Gatheringg Queue")
+			for i, q in ipairs(self.queues) do
+				if q.index == self.activeQueue.index then
+					table.remove(self.queues, i)
+					self.activeQueue = nil
+					break
+				end
+			end
 		end
 	end
 
-	if #self.activeQueue.items == 0 then
-		table.remove(self.queues, self.activeQueue.index)
+	if #self.queues == 0 then
 		self.activeQueue = nil
+		if gatheringAddon == nil then
+			self.log:print("Finished All Gathering Queues, Stopping Bot after node!")
+			self.menu["BTN_START"].str = "Start"
+			self.status.running   = false
+		end
 	end
 
-	if self.status.last_item ~= nil then
+end
+
+
+function XGatherer:getNextQueueItem()
+	
+	if self.activeQueue ~= nil then
+
+		for i, item in ipairs(self.activeQueue.items) do
+
+			if InventoryManager.GetItemCount(item.id) > item.finishValue then
+				table.remove(self.activeQueue.items, i)
+				self.log:print("Finished Gathering " .. item.amountToGather .. "(s) " .. item.name)			
+			else
+				self.status.last_item = item
+				return item
+			end
+		end	
+	elseif self.status.last_item ~= nil then
 		return self.status.last_item
 	end
+end
 
-	if #self.queues == 0 then
-		self.log:print("Finished All Gathering Queues, Stopping Bot after node!")
-		self.menu["BTN_START"].str = "Start"
-		self.status.running   = false
-		self.activeQueue = nil
+function XGatherer:gatherNextItem(gatheringAddon)
+	
+	if self.route.finished then self.route = Route() end
+
+	self.status.goalWaypoint = nil
+
+	if not gatheringAddon:isGathering() then				
+		local itemToGather = self:getNextQueueItem()
+
+		if itemToGather == nil then return end
+
+		self.log:print("Gathering Item: " .. itemToGather.name .. ", " .. tostring((itemToGather.finishValue - InventoryManager.GetItemCount(itemToGather.id))) .. " more to gather")
+		TaskManager:GatherItem(itemToGather.id)
 	end
 
 end
 
 function XGatherer:setJob(job)
-	local jobStr = type(job) == "string" and job or CLASS_JOBS[job] or nil
-	local jobInt = type(job) == "number" and job or CLASS_JOBS[job] or nil
-	
-	if jobStr == nil or jobInt == nil then
-		print("Error Setting Job", job)
-		return
-	end
 
-	if player.classJob == jobInt then return end
+	if player.classJob == job then return end
+
+	local iconId = job + 62800
 
 	-- Loops through all 18 HotBars
 	for hotbar = 0, 17 do
 		-- Loops through all 16 slots in hotbar
-		for slot = 0, 15 do
-			local slot = HotBarManager[hotbar].slot[slot]
-			if slot ~= nil and not slot.empty then
-				if string.find(slot.name, jobStr) then
-					print("Using Hotkey: ", slot.name)
-					Keyboard:SendKeys(slot.getKeys)
-				end
+		for slotId = 0, 15 do
+			local slot = HotBarManager[hotbar].slot[slotId]
+			if slot.icon == iconId then
+				slot:execute()
 			end
 		end
 	end
@@ -459,6 +473,7 @@ function XGatherer:initializeMenu()
 		self.menu:subMenu("Action Settings", "ACTION_SETTINGS")
 			self.menu["ACTION_SETTINGS"]:checkbox("Use Sprint", "USE_SPRINT", true)
 			self.menu["ACTION_SETTINGS"]:checkbox("Use Mount", "USE_MOUNT", true)
+			self.menu["ACTION_SETTINGS"]:number("Min Distance for Mount", "MOUNT_DISTANCE", 20)
 			self.menu["ACTION_SETTINGS"]:separator()
 			
 
@@ -491,6 +506,8 @@ function XGatherer:getMapRegion(mapId)
 		return 3
 	elseif mapId == "15" or mapId == "17" then 
 		return 4
+	elseif mapId == "493" then 
+		return 5
 	else
 		return 0
 	end
