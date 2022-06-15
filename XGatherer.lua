@@ -60,7 +60,6 @@ function XGatherer:OnWalkToWayPoint(waypoint)
 	else
 		self.route.index = self.route.index + 1		
 	end
-
 end
 
 
@@ -116,7 +115,12 @@ function XGatherer:tick()
 		if not self.route.finished then
 			if self.status.goalWaypoint	== nil then
 				self.log:print("Node might be too far setting startPos as goal!")
-				self.status.goalWaypoint = self.activeQueue.startPos
+
+				if self.activeQueue.startPos2 ~= nil and self.activeQueue.startPos.pos:dist(player.pos) < 5 then
+					self.status.goalWaypoint = self.activeQueue.startPos2
+				else		
+					self.status.goalWaypoint = self.activeQueue.startPos
+				end
 			else
 				local mapWaypoints = self.grid[regionId].maps[mapId].mapWaypoints
 				self.route:builda(mapWaypoints, self.status.goalWaypoint.pos)
@@ -274,15 +278,16 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 	
 	local queue = {
 
-		items    = {},
-		mapId    = mapId,
-		teleId   = self.grid[regionId].maps[mapId].telePoint,
-		regionId = regionId,
-		nodeId   = nodeId,
-		index    = #self.queues + 1,
-		nodeName = self.menu[regionId][mapId][nodeId].str,
-		startPos = Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos),
-		dataIds  = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds
+		items     = {},
+		mapId     = mapId,
+		teleId    = self.grid[regionId].maps[mapId].telePoint,
+		regionId  = regionId,
+		nodeId    = nodeId,
+		index     = #self.queues + 1,
+		nodeName  = self.menu[regionId][mapId][nodeId].str,
+		startPos  = Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos),
+		startPos2 = self.grid[regionId].maps[mapId].nodes[nodeId].startPos2 ~= nil and Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos2),
+		dataIds   = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds
 
 	}	
 
@@ -377,7 +382,7 @@ function XGatherer:gatherNextItem(gatheringAddon)
 
 		if itemToGather == nil then return end
 
-		self.log:print("Gathering Item: " .. itemToGather.name .. ", " .. tostring((itemToGather.finishValue - InventoryManager.GetItemCount(itemToGather.id))) .. " more to gather")
+		self.log:print("Gathering Item: " .. itemToGather.name .. ", Need to gather " .. tostring((itemToGather.finishValue - InventoryManager.GetItemCount(itemToGather.id))) .. " more")
 		TaskManager:GatherItem(itemToGather.id)
 	end
 
@@ -506,8 +511,10 @@ function XGatherer:getMapRegion(mapId)
 		return 3
 	elseif mapId == "15" or mapId == "17" then 
 		return 4
-	elseif mapId == "493" then 
+	elseif mapId == "493" or mapId == "491" then 
 		return 5
+	elseif mapId == "215" then
+		return 6
 	else
 		return 0
 	end

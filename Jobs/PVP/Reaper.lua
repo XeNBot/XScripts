@@ -85,7 +85,7 @@ function Reaper:Tick(getTarget, log)
 		local enshrouded     = player:getStatus(2863)
 		local soul_sacrifice = player:getStatus(3204)
 
-		if enshrouded.valid then 
+		--[[if enshrouded.valid then 
 			self:Enshrouded(target, enshrouded, actions, log)
 		elseif menu["TENEBRAE"].bool and actions.tenebrae:canUse() then
 			actions.tenebrae:use()
@@ -113,7 +113,7 @@ function Reaper:Tick(getTarget, log)
 			log:print("Using Infernal on " .. target.name)
 		elseif menu["INFERNAL"].bool and actions.waxing:canUse(target.id) then
 			actions.waxing:use(target.id)
-		elseif menu["INFERNAL"].bool and actions.slice:canUse(target.id) then
+		else]]if menu["INFERNAL"].bool and actions.slice:canUse(target.id) then
 			actions.slice:use(target.id)
 			log:print("Using Slice on " .. target.name)
 		end

@@ -287,10 +287,10 @@ local grid = {
 					{
 						-- Flying Waypoints
 								-- To Lvl 50 Mature Tree
-						Waypoint(Vector3(-192.99,2.54,287.37), true),
-						Waypoint(Vector3(-202.11,51.93,283.62), true),
-						Waypoint(Vector3(-13.8,51.93,0.24), true),
-						Waypoint(Vector3(-225.34,51.93,44.73), true),
+						Vector3(-192.99,2.54,287.37),
+						Vector3(-183.24,-7.87,235.36),
+						Waypoint(Vector3(-183.24,28.03,235.36), true),
+						Waypoint(Vector3(-225.34,28.03,44.73), true),
 						Waypoint(Vector3(-225.34,10.41,44.73), true),
 						-- Lvl 50 Mature Trees
 						Vector3(-209.08,10.45,56.92),
@@ -1334,6 +1334,91 @@ local grid = {
 
 		maps = {
 
+			["491"] = {
+
+				mapName  = "Lakeland",
+				
+				telePoint = 132,
+
+				nodes = {
+					{
+
+						startPos = Vector3(702,10.1,199.88),
+
+						dataIds  = {
+							[32691] = true,	
+							[32692] = true,	
+							[32693] = true,														
+							[32694] = true,		
+							[32695] = true,		
+							[32696] = true,		
+						},
+						
+						nodeName = "Lv75 Mature Tree",
+
+						nodeItems = {
+							{ name = "Frantoio", defaultQuantity = 100, id = 27820 },
+							{ name = "Earth Crystal", defaultQuantity = 100, id = 11 },							
+						}
+					},
+				},
+
+				mapWaypoints = LinkedList(
+					{
+						-- Walk to Lvl 75 Mature Tree
+						Vector3(740.98,22.59,-27.41),
+						Vector3(749,20.85,17.82),
+						Vector3(735.39,17.47,58.65),
+						Vector3(714.78,12.54,100.89),
+						-- Lvl 75 Mature Tree
+						Vector3(739.97,15.62,112.54),
+						Vector3(749.79,16.59,110.2),
+						Vector3(751.16,17.92,92.74),
+						Vector3(727.81,14.45,131.5),
+						Vector3(691.38,13.1,109.98),
+						Waypoint(Vector3(691.38,20,109.98), true),
+						Vector3(679.48,17.16,110.45),
+						Vector3(675.81,17.09,104.83),
+						Vector3(671.91,16.87,118.27),
+						Vector3(662.95,15.95,124.53),
+						Vector3(655.07,15.68,111.97),
+						Waypoint(Vector3(679.48,20,109.98), true),
+						Vector3(702,10.1,199.88),
+						Vector3(673.65,14.17,292.1),
+						Vector3(663.98,14.06,279.09),
+						Vector3(675.97,14.34,304.87),
+						Vector3(695.26,13.77,280.27),
+						Vector3(644.88,12.52,283.5),
+						Vector3(657.26,13.13,288.2),
+						Vector3(648.63,14.58,209.94),
+						Vector3(674.74,17.43,159.52),
+					},
+					{
+						{1, 2},
+						{2, 3},
+						{3, 4},
+						{4, 5, 6, 7, 8, 9, 17},
+						{5, 6, 7, 8},
+						{6, 7},
+						{9, 10},
+						{10, 16},
+						{11, 12, 13, 14, 15, 16},
+						{12, 13, 14, 15},
+						{13, 14, 15, 25},
+						{14, 15, 25},
+						{17, 18, 24},
+						{18, 19, 20, 21, 22, 23},
+						{19, 20, 21, 23},
+						{20, 21, 22, 23},
+						{21, 23},
+						{22, 23},
+						{24, 25},
+
+					}
+				)
+
+			},
+
 			["493"] = {
 
 				mapName  = "Amh Araeng",
@@ -1429,7 +1514,85 @@ local grid = {
 
 			}
 		}
-	}
+	},
+	{
+		regionName = "Abalathia's Spine",
+
+		maps = {
+
+			["215"] = {
+
+				mapName  = "The Sea of Clouds",
+				
+				telePoint = 72,
+
+				nodes = {
+					{
+
+						startPos  = Vector3(111.49,-146.53,581.25),
+						startPos2 = Vector3(355.25,-125.29,594),
+
+						dataIds  = {
+							[31400] = true,
+							[31401] = true,
+							[31402] = true,
+							[31403] = true,
+							[31404] = true,
+							[31405] = true,
+						},
+						
+						nodeName = "Lv60 Mature Tree",
+
+						nodeItems = {
+							{ name = "Wind Widow", defaultQuantity = 100, id = 13764 },
+							{ name = "Birch Branch", defaultQuantity = 100, id = 12586 },
+							{ name = "Birch Sap", defaultQuantity = 100, id = 12891 },							
+							{ name = "Water Crystal", defaultQuantity = 100, id = 13 },							
+							{ name = "Cloud Mushroom", defaultQuantity = 100, id = 13763 },							
+						}
+					},
+				},
+
+				mapWaypoints = LinkedList(
+					{	
+						Vector3(-606.34,-122.5,541.78),
+						Waypoint(Vector3(-606.34,-80.86,541.78), true),
+						Waypoint(Vector3(111.49,-80.86,581.25), true),
+						Vector3(111.49,-146.53,581.25),
+						Vector3(74.39,-146.53,639.72),
+						Vector3(79.32,-146.53,581.06),
+						Vector3(134.33,-147.84,575.91),
+						Vector3(100.92,-147.88,502.96),
+						Vector3(159.31,-147.84,456.5),
+						Vector3(200.69,-147.84,469.28),
+						Vector3(148.31,-146.53,602.91),
+						Waypoint(Vector3(148.31,-108.9,602.91), true),
+						Waypoint(Vector3(355.25,-108.9,594), true),
+						Vector3(355.25,-125.29,594),				
+						Vector3(354.81,-125.29,547.99),		
+
+					},
+					{
+					
+						{1, 2},
+						{2, 3},
+						{3, 4},
+						{4, 5, 6, 7, 8, 9, 10, 11},
+						{5, 6, 7},
+						{6, 7, 8},
+						{7, 8, 9, 10},
+						{8, 9, 10},
+						{9, 10},
+						{11, 12},
+						{12, 13},
+						{13, 14},
+						{14, 15},
+					}
+				)
+
+			}
+		}
+	}	
 }
 
 
