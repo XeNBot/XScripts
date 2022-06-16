@@ -66,7 +66,7 @@ function Summoner:Tick(log)
 
 	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) >= 25 then return end
 
-	if self.actions.aegis:canUse() and player.healthPercent < 80 then
+	if self.actions.aegis:canUse() and not player:hasStatus(2702) and player.healthPercent < 80 then
 		self.actions.aegis:use()
 	end
 
