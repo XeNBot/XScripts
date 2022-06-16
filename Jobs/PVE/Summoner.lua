@@ -6,6 +6,9 @@ function Summoner:initialize()
 
 		summon      = Action(1, 25798),
 		ruiniv      = Action(1, 7426),
+		ruinii      = Action(1, 172),
+		outburst    = Action(1, 16511),
+		gemshine    = Action(1, 25883),
 		energydrain = Action(1, 16508),
 		painflare   = Action(1, 3578),
 		fester      = Action(1, 181),
@@ -29,6 +32,8 @@ function Summoner:initialize()
 		cyclone     = Action(1, 25835),
 		mbuster     = Action(1, 25836),
 		slipstream  = Action(1, 25837),
+
+		aegis       = Action(1, 25799),
 
 	}
 
@@ -61,6 +66,10 @@ function Summoner:Tick(log)
 
 	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) >= 25 then return end
 
+	if self.actions.aegis:canUse() and player.healthPercent < 80 then
+		self.actions.aegis:use()
+	end
+
 	self:Combo(target, menu, log)
 end
 
@@ -70,7 +79,7 @@ function Summoner:Combo(target, menu, log)
 		self.actions.ruiniv:use(target)
 	end
 
-	local aoe       = ObjectManager.EnemiesAroundObject(target, 5) > 0 and menu["AOE"].bool
+	local aoe       = ObjectManager.EnemiesAroundObject(target, 5) > 0
 	local attuned   = player.gauge.attunementTime > 0
 
 	self:CheckPrimals(attuned, target, log)
@@ -98,6 +107,9 @@ function Summoner:Combo(target, menu, log)
 		log:print("Using Energy Drain on " .. target.name)
 		self.actions.energydrain:use(target)
 	end
+
+	-- Lower Level Spells
+	self:LowLevel(aoe, target, log)
 end
 
 function Summoner:ManageSummon(aoe, target, log)
@@ -187,6 +199,26 @@ function Summoner:UseAetherStacks(aoe, target, log)
 	end
 	
 end
+
+
+function Summoner:LowLevel(aoe, target, log)
+
+	if self.actions.gemshine:canUse(target) then
+		log:print("Using Gemshine on" .. target.name)
+		self.actions.gemshine:use(target)
+	end
+	if aoe then
+		if self.actions.outburst:canUse(target) then
+			log:print("Using Outburst on" .. target.name)
+			self.actions.outburst:use(target)
+		end
+	else
+		if self.actions.ruinii:canUse(target) then
+			log:print("Using Ruin II on" .. target.name)
+			self.actions.ruinii:use(target)
+		end		
+	end
 	
+end
 	
 return Summoner:new()

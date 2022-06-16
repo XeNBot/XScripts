@@ -1,6 +1,6 @@
 local menu = Menu("XPVE")
 	
-	menu:label("XPVE Version 1.0") menu:separator() menu:space()
+	menu:label("XPVE Version 1.0.1") menu:separator() menu:space()
 	
 	menu:subMenu("Action Settings", "ACTIONS")
 		menu["ACTIONS"]:subMenu("Tanks", "TANK")
