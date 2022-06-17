@@ -6,9 +6,25 @@ function XGatherer:initialize()
 
 	self.actions = {
 
-		teleport = Action(1,  5),
-		sprint   = Action(5,  4),
-		mount    = Action(13, 1),
+		teleport     = Action(1,  5),
+		sprint       = Action(5,  4),
+		mount        = Action(13, 1),
+
+		-- BTN
+		harvestii    = Action(1, 224),
+		twelvebounty = Action(1, 282),
+		bountifulii  = Action(1, 273),
+
+		-- MIN
+		yieldii      = Action(1, 4073),
+		kingyieldii  = Action(1, 241),
+
+
+		-- Items
+		cordial      = Action(2, 6141),
+		hicordial    = Action(2, 12669),
+		wcordial     = Action(2, 16911),
+
 
 	}
 
@@ -27,9 +43,9 @@ function XGatherer:initialize()
 	-- gathering queues
 	self.queues = {}
 	-- Our grid is our map with waypoints
-	self.grid   = LoadModule("XScripts", "/Waypoints/Grid")
+	self.grid   = LoadModule("XScriptsT", "/Waypoints/Grid")
 	-- Log Module
-	self.log    = LoadModule("XScripts", "/Utilities/Log")
+	self.log    = LoadModule("XScriptsT", "/Utilities/Log")
 	self.log.delay = false
 	-- active queue
 	self.activeQueue = nil
@@ -85,7 +101,11 @@ function XGatherer:tick()
 
 			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.mapId))
 			if self.actions.teleport:canUse() then
-				player:teleportTo(self.activeQueue.teleId)
+				if self.activeQueue.customTele ~= nil then
+					player:teleportTo(self.activeQueue.customTele)
+				else
+					player:teleportTo(self.activeQueue.teleId)
+				end
 				self.status.last_teleport = os.clock()
 			end
 			return
@@ -109,6 +129,7 @@ function XGatherer:tick()
 		
 		player:rotateTo(closestNode.pos)
 		player:rotateCameraTo(closestNode.pos)
+		self:useCordials()
 		TaskManager:Interact(closestNode)
 	
 	elseif closestWaypointNode == nil then
@@ -240,29 +261,36 @@ function XGatherer:draw()
 				for i, waypoint in ipairs(self.grid[currentRegionId].maps[currentMapId].mapWaypoints.waypoints) do
 					if waypoint.pos:dist(player.pos) < maxDrawDistance then
 						Graphics.DrawCircle3D(waypoint.pos, 20, 1, Colors.Green)
-						Graphics.DrawText3D(waypoint.pos, "[" ..tostring(player.pos:dist(waypoint.pos)).."]("..tostring(i)..")", 10)
 
-						if waypoint.pos:dist(player.pos) < 5 and #waypoint.links > 0 then
-							for i, link in ipairs(waypoint.links) do
-								Graphics.DrawLine3D(waypoint.pos, link.pos, Colors.Blue)
+						if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
+
+							Graphics.DrawText3D(waypoint.pos, "[" ..tostring(player.pos:dist(waypoint.pos)).."]("..tostring(i)..")", 10)
+
+							if waypoint.pos:dist(player.pos) < 5 and #waypoint.links > 0 then
+								for i, link in ipairs(waypoint.links) do
+									Graphics.DrawLine3D(waypoint.pos, link.pos, Colors.Blue)
+								end
 							end
 						end
-
 					end
 				end
 			end
 		end
-		local last_waypoint = nil
-		if #self.route.waypoints > 1 then
 
-			for i, waypoint in ipairs(self.route.waypoints) do
+		if self.menu["DRAW_SETTINGS"]["DRAW_ROUTE"].bool then
 
-				if last_waypoint ~= nil and waypoint ~= nil and i >= self.route.index then
-					Graphics.DrawLine3D(last_waypoint.pos, waypoint.pos, Colors.Blue)
+			local last_waypoint = nil
+			if #self.route.waypoints > 1 then
+
+				for i, waypoint in ipairs(self.route.waypoints) do
+
+					if last_waypoint ~= nil and waypoint ~= nil and i >= self.route.index then
+						Graphics.DrawLine3D(last_waypoint.pos, waypoint.pos, Colors.Blue)
+					end
+					last_waypoint = waypoint
 				end
-				last_waypoint = waypoint
-			end
 
+			end
 		end
 	end
 
@@ -278,16 +306,17 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 	
 	local queue = {
 
-		items     = {},
-		mapId     = mapId,
-		teleId    = self.grid[regionId].maps[mapId].telePoint,
-		regionId  = regionId,
-		nodeId    = nodeId,
-		index     = #self.queues + 1,
-		nodeName  = self.menu[regionId][mapId][nodeId].str,
-		startPos  = Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos),
-		startPos2 = self.grid[regionId].maps[mapId].nodes[nodeId].startPos2 ~= nil and Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos2),
-		dataIds   = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds
+		items      = {},
+		mapId      = mapId,
+		teleId     = self.grid[regionId].maps[mapId].telePoint,
+		customTele = self.grid[regionId].maps[mapId].nodes[nodeId].customTele,
+		regionId   = regionId,
+		nodeId     = nodeId,
+		index      = #self.queues + 1,
+		nodeName   = self.menu[regionId][mapId][nodeId].str,
+		startPos   = Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos),
+		startPos2  = self.grid[regionId].maps[mapId].nodes[nodeId].startPos2 ~= nil and Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos2),
+		dataIds    = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds
 
 	}	
 
@@ -377,6 +406,8 @@ function XGatherer:gatherNextItem(gatheringAddon)
 
 	self.status.goalWaypoint = nil
 
+	self:useNodeActions()
+
 	if not gatheringAddon:isGathering() then				
 		local itemToGather = self:getNextQueueItem()
 
@@ -385,7 +416,71 @@ function XGatherer:gatherNextItem(gatheringAddon)
 		self.log:print("Gathering Item: " .. itemToGather.name .. ", Need to gather " .. tostring((itemToGather.finishValue - InventoryManager.GetItemCount(itemToGather.id))) .. " more")
 		TaskManager:GatherItem(itemToGather.id)
 	end
+end
 
+function XGatherer:useNodeActions()
+
+	if self.activeQueue ~= nil then
+
+		local itemMenu = self.menu[self.activeQueue.regionId][self.activeQueue.mapId][self.activeQueue.nodeId]
+
+		if itemMenu["ACTIONS"].bool then
+			if itemMenu["GATHER_MODE"].int == 0 then
+				if player.classJob == 17 then
+					if self.actions.harvestii:canUse() and not player:hasStatus(219) then
+						self.log:print("Using Blessed Harvest II")
+						self.actions.harvestii:use()
+					end
+				else
+					if self.actions.kingyieldii:canUse() and not player:hasStatus(219) then
+						self.log:print("Using Kings Yield II")
+						self.actions.kingyieldii:use()
+					end
+				end			
+			else
+
+				if player.classJob == 17 then
+					if self.actions.twelvebounty:canUse() and not player:hasStatus(825) then
+						self.log:print("Using The Twelve Bounty")
+						self.actions.twelvebounty:use()
+					end
+					if self.actions.bountifulii:canUse() and not player:hasStatus(1286) then
+						self.log:print("Using Bountiful Harvest II")
+						self.actions.bountifulii:use()
+					end
+				else
+
+					if self.actions.twelvebounty:canUse() and not player:hasStatus(825) then
+						self.log:print("Using The Twelve Bounty")
+						self.actions.twelvebounty:use()
+					end
+					if self.actions.yieldii:canUse() and not player:hasStatus(1286) then
+						self.log:print("Using Bountiful Yield II")
+						self.actions.yieldii:use()
+					end
+
+				end			
+			end
+		end
+
+	end
+	
+end
+
+
+function XGatherer:useCordials()
+	if self.menu["CORDIAL"].bool then
+		if self.actions.wcordial:canUse() and player.missingGP >= 150 then
+			self.log:print("Using Watered Cordial")
+			self.actions.wcordial:use()
+		elseif  self.actions.cordial:canUse() and player.missingGP >= 300 then
+			self.log:print("Using Cordial")
+		    self.actions.cordial:use()
+		elseif self.actions.hicordial:canUse() and player.missingGP >= 400 then
+			self.log:print("Using Hi Cordial")
+			self.actions.hicordial:use()
+		end
+	end
 end
 
 function XGatherer:setJob(job)
@@ -412,7 +507,10 @@ function XGatherer:drawGatherableNodes(maxDistance)
 	for i, node in ipairs(nodes) do
 		if node.isTargetable and node.pos:dist(player.pos) < maxDistance then
 			Graphics.DrawCircle3D(node.pos, 20, 1, Colors.Yellow)
-			Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
+
+			if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
+				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
+			end
 		end
 	end
 
@@ -424,7 +522,9 @@ function XGatherer:drawPossibleNodes(maxDistance)
 	for i, node in ipairs(nodes) do
 		if not node.isTargetable and node.pos:dist(player.pos) < maxDistance then
 			Graphics.DrawCircle3D(node.pos, 20, 1, Colors.Red)
-			Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
+			if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
+				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
+			end
 		end
 	end
 
@@ -454,6 +554,10 @@ function XGatherer:initializeMenu()
 						self.menu[regionId][mapId][nodeId]:number(itemInfo.name, itemInfo.name, 100)
 					end
 					
+					self.menu[regionId][mapId][nodeId]:checkbox("Use Actions", "ACTIONS", true)
+
+					self.menu[regionId][mapId][nodeId]:combobox("Gather Mode", "GATHER_MODE", {"Normal", "Shards / Crystals"}, 0)
+
 					self.menu[regionId][mapId][nodeId]:button("Add to Queue", "QUEUE", function()
 						self:buildGatherQueue(regionId, mapId, nodeId)
 					end)
@@ -469,9 +573,11 @@ function XGatherer:initializeMenu()
 	self.menu:separator() self.menu:space()
 	self.menu:label("~=[ Other Settings ]=~") self.menu:space() self.menu:separator()
 		self.menu:subMenu("Draw Settings", "DRAW_SETTINGS")
+			self.menu["DRAW_SETTINGS"]:checkbox("Draw Routes", "DRAW_ROUTE", true) 
 			self.menu["DRAW_SETTINGS"]:checkbox("Draw Waypoints", "DRAW_WAYPOINTS", false) 
 			self.menu["DRAW_SETTINGS"]:checkbox("Draw Gatherable Nodes", "DRAW_GATHERABLE_NODES", false)
 			self.menu["DRAW_SETTINGS"]:checkbox("Draw Possible Nodes", "DRAW_POSSIBLE_NODES", false)
+			self.menu["DRAW_SETTINGS"]:checkbox("Draw Debug Info", "DEBUG_INFO", false)
 			self.menu["DRAW_SETTINGS"]:number("Max Draw Distance", "MAX_DRAW_DISTANCE", 50)
 
 	self.menu:space()
@@ -483,6 +589,7 @@ function XGatherer:initializeMenu()
 			
 
 	self.menu:space() self.menu:space() self.menu:space()
+	self.menu:checkbox("Use Cordials", "CORDIAL", true)
 	self.menu:checkbox("Auto Start Queues", "AUTO_START", true)
 	self.menu:button("Start", "BTN_START", function()
 		if self.status.running then
