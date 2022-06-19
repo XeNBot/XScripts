@@ -4,7 +4,15 @@ function Warrior:initialize()
 
 	self.actions = {
 
-		
+		heavyswing = Action(1, 29074),
+		maim       = Action(1, 29075),
+		stormpath  = Action(1, 29076),
+		onslaught  = Action(1, 29079),
+		orogeny    = Action(1, 29080),
+		blota      = Action(1, 29081),
+		whetting   = Action(1, 29082),
+		primal     = Action(1, 29084),
+
 		
 	}
 
@@ -31,11 +39,30 @@ function Warrior:Load(mainMenu)
 
 end
 
-function Warrior:Tick(getTarget, log)
+function Warrior:Tick(log)
 	
 	local menu    = self.menu["ACTIONS"]["TANK"]["WAR"]
 	local actions = self.actions
 
+	if menu["BLOOD"].bool and actions.whetting.ready then
+		log:print("Using Blood Whetting on " .. actions.whetting.target.name)
+		actions.whetting:use()
+	elseif menu["REND"].bool and actions.primal.ready and ObjectManager.EnemiesAroundObject(actions.primal.target, 5) >= menu["RENDMIN"].int then
+		log:print("Using Primal Rend on " .. actions.primal.target.name)
+		actions.primal:use()
+	elseif menu["BLOTA"].bool and actions.blota.ready then
+		log:print("Using Blota on " .. actions.blota.target.name)
+		actions.blota:use()
+	elseif menu["SLAUGHT"].bool and actions.onslaught.ready then
+		log:print("Using Onslaught on " .. actions.onslaught.target.name)
+		actions.onslaught:use()		
+	elseif menu["OROGENY"].bool and actions.orogeny.ready then
+		log:print("Using Orogeny on " .. actions.orogeny.target.name)
+		actions.orogeny:use()
+	elseif menu["STORM"].bool and actions.stormpath.ready then
+		log:print("Using Storm Path Combo on " .. actions.stormpath.target.name)
+		actions.stormpath:use()
+	end
 
 end
 

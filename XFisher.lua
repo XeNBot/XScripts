@@ -8,6 +8,9 @@ function XFisher:initialize()
 	-- counter for fishes caught
 	self.fishesCaught = 0
 
+	-- attempts to start fishing
+	self.attempts = 0
+
 	-- new way of using actions
 	self.actions = {
 
@@ -87,12 +90,14 @@ function XFisher:initialize()
 
 	Callbacks:Add(CALLBACK_FISH_FAIL, function()
 		self.log:print("Oh noes, the fish got away! trying again")
+		self.attempts = 0
 		self.actions.cast:use()
 	end)
 
 	Callbacks:Add(CALLBACK_ACTION_USED, function(type, id, targetId)
 		-- Chum id
 		if id == self.actions.chum.id then
+			self.attempts = 0
 			self.log:print("Used Chum, time to fish!")
 			self.actions.cast:use()
 		end
@@ -100,7 +105,7 @@ function XFisher:initialize()
 
 	Callbacks:Add(CALLBACK_FISH_CATCH_COLLECTABLE, function(fishId, collectability)
 		-- prints fish id & collectability
-		
+		self.attempts = 0
 		self.fishesCaught = self.fishesCaught + 1
 		self.log:print("Caught new collectable: " .. tostring(fishId) .. ", it has " .. tostring(collectability) .. " collectability")
 		self.log:print("So far we caught : " ..  tostring(self.fishesCaught) .. " fishes")
@@ -126,16 +131,27 @@ function XFisher:Tick()
 		return
 	end
 
+
+	if self.attempts > 3 then
+		self.log:print("Can't fish in this area anymore stopping bot")
+		self.running  = false
+		self.attempts = 0
+		return
+	end
+
 	-- Checks if we're fishing
 	if not player.isFishing then
 		-- Checks if we have Chum on
 		if self.menu["USE_PATIENCE"].bool and not player:hasStatus(850) and self.actions.patience:canUse() then
 			self.actions.patience:use()
+			self.attempts = self.attempts + 1
 		elseif self.menu["USE_CHUM"].bool and self.actions.chum:canUse() then
 			self.actions.chum:use()
+			self.attempts = self.attempts + 1
 		-- Check if we can use the fish action (if we're in a fishing area) and if we're not already casting
 		elseif self.actions.cast:canUse() then
 			self.actions.cast:use()
+			self.attempts = self.attempts + 1
 		end	
 	end
 end

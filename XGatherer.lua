@@ -80,7 +80,11 @@ end
 
 
 function XGatherer:tick()
-	if TaskManager:IsBusy() or not self.status.running or (os.clock() - self.status.last_mount < 2) then return end
+	if TaskManager:IsBusy() or 
+		not self.status.running or
+		 (os.clock() - self.status.last_mount < 2) or
+		 (os.clock() - self.status.last_teleport < 10)
+	then return end
 
 	local gatheringAddon = AddonManager:getGatheringAddon()
 

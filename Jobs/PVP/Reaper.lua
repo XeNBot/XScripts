@@ -85,13 +85,13 @@ function Reaper:Tick(getTarget, log)
 		local enshrouded     = player:getStatus(2863)
 		local soul_sacrifice = player:getStatus(3204)
 
-		--[[if enshrouded.valid then 
+		if enshrouded.valid then 
 			self:Enshrouded(target, enshrouded, actions, log)
 		elseif menu["TENEBRAE"].bool and actions.tenebrae:canUse() then
 			actions.tenebrae:use()
 			log:print("Using Tenebrae")
 		elseif menu["DEATH"].bool and actions.death:canUse(target.id) then
-			actions.death:use(target.id)
+			actions.death:use(target)
 			log:print("Using Death on " .. target.name)
 		elseif menu["HARVEST"].bool and actions.harvest:canUse(target.id) and soul_sacrifice.valid and soul_sacrifice.count >= menu["HARVEST_MIN"].int then
 			actions.harvest:use(target.id)
@@ -113,7 +113,7 @@ function Reaper:Tick(getTarget, log)
 			log:print("Using Infernal on " .. target.name)
 		elseif menu["INFERNAL"].bool and actions.waxing:canUse(target.id) then
 			actions.waxing:use(target.id)
-		else]]if menu["INFERNAL"].bool and actions.slice:canUse(target.id) then
+		elseif menu["INFERNAL"].bool and actions.slice:canUse(target.id) then
 			actions.slice:use(target.id)
 			log:print("Using Slice on " .. target.name)
 		end

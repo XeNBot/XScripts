@@ -79,6 +79,8 @@ function XPVP:Tick()
 	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or (self.menu["COMBO_MODE"].int ~= 0 and self.menu["COMBO_KEY"].keyDown) then
 		if player.classJob == 20 then
 			self.monk:Tick(self.getTarget, self.log)
+		elseif player.classJob == 21 then
+			self.warrior:Tick(self.log)
 		elseif player.classJob == 22 then
 			self.dragoon:Tick(self.getTarget, self.log)
 		elseif player.classJob == 25 then
