@@ -71,7 +71,7 @@ function Ninja:Tick(getTarget, log)
 
 	if farTarget.valid and farTarget.pos:dist(player.pos) > 6 then
 		if player:hasStatus(1317) then
-			self:ThreeMudra(farTarget)
+			self:ThreeMudra(farTarget, log)
 		elseif menu["FUMA"] and actions.fuma:canUse(farTarget.id) then
 			actions.fuma:use(farTarget.id)
 			return
@@ -86,7 +86,7 @@ function Ninja:Tick(getTarget, log)
 
 	if target.valid then
 		if player:hasStatus(1317) then
-			self:ThreeMudra(target)
+			self:ThreeMudra(target, log)
 		elseif menu["BUNSHIN"].bool and actions.bunshin:canUse(target.id) then
 			actions.bunshin:use(target.id)
 			log:print("Using Bunshin on " .. target.name)
@@ -114,7 +114,7 @@ function Ninja:Tick(getTarget, log)
 
 end
 
-function Ninja:ThreeMudra(target)
+function Ninja:ThreeMudra(target, log)
 	
 	if (player.maxHealth - player.health) > 14000 and self.actions.mudra:canUse() then
 		self.actions.mudra:use()
