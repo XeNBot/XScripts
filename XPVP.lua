@@ -70,7 +70,7 @@ end
 
 function XPVP:Tick()
 	-- PVP Maps
-	if AgentModule.currentMapId ~= 759 and AgentModule.currentMapId ~= 51 and AgentModule.currentMapId ~= 760 and AgentModule.currentMapId ~= 761 then return end
+	if not Game.InPvPArea and not Game.InPvPInstance and AgentModule.currentMapId ~= 51 then return end
 	-- Guard
 	if player:hasStatus(3054) then return end
 
