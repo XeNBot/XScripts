@@ -5,6 +5,8 @@ function XPVP:initialize()
 	self.menu        = LoadModule("XScripts", "\\Menus\\XPVPMenu")
 	-- Log Module
 	self.log         = LoadModule("XScripts", "\\Utilities\\Log")
+	-- Action Sequences
+	self.sequences   = LoadModule("XScripts", "\\Utilities\\ActionSeq")
 	-- Loads Class Job Modules
 	-- Healers
 	self.scholar     = LoadModule("XScripts", "\\Jobs\\PVP\\Scholar")
@@ -77,7 +79,9 @@ function XPVP:Tick()
 	if player:hasStatus(895) then return end
 
 	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or (self.menu["COMBO_MODE"].int ~= 0 and self.menu["COMBO_KEY"].keyDown) then
-		if player.classJob == 20 then
+		if player.classJob == 19 then
+			self.paladin:Tick(self.log)
+		elseif player.classJob == 20 then
 			self.monk:Tick(self.getTarget, self.log)
 		elseif player.classJob == 21 then
 			self.warrior:Tick(self.log)

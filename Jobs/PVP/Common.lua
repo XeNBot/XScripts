@@ -40,12 +40,12 @@ function Common:Load(mainMenu)
 	self.menu = mainMenu
 	self.menu["ACTIONS"]["COMMON"]:subMenu("Purify Settings", "PURIFY")
 		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Use Purify",         "USE", true)
-		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Stuns",       "1343", true)
-		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Heavy",       "1344", true)
-		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Bind",        "1345", true)
-		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Sleep",       "1348", true)
-		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Half-Sleep",  "3022", true)
-		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Purify Deep Freeze", "1150", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Stuns",       "1343", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Heavy",       "1344", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Bind",        "1345", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Sleep",       "1348", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Half-Sleep",  "3022", true)
+		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Deep Freeze", "1150", true)
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Recuperate", "RECUPERATE", true)
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Guard",      "GUARD", true)
 	self.menu["ACTIONS"]["COMMON"]:slider("Min Health for Guard", "GUARDMIN", 1, 1, 100, 30)
@@ -61,7 +61,7 @@ function Common:ShouldPurify(log)
 				self.actions.mei:use()
 				return false
 			end
-			log:print("Purifying Status " .. statusId)
+			log:print("Purifying Status: " .. self.menu["ACTIONS"]["COMMON"]["PURIFY"][tostring(statusId)].str)
 			return true
 		end
 	end
@@ -73,7 +73,7 @@ function Common:Tick(log)
 	local actions = self.actions
 	local menu    = self.menu["ACTIONS"]["COMMON"]
 
-	if menu["SPRINT"].bool and ObjectManager.EnemiesAroundObject(player, 30) == 0 and not player:hasStatus(1342) and actions.sprint:canUse() then
+	if AgentModule.currentMapId ~= 51 and  menu["SPRINT"].bool and ObjectManager.EnemiesAroundObject(player, 30) == 0 and not player:hasStatus(1342) and actions.sprint:canUse() then
 		actions.sprint:use()
 		log:print("Using Sprint")
 		return true
