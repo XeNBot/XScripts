@@ -174,10 +174,12 @@ function XGatherer:GoToRoute()
 	if currentWaypoint == nil then self.route = Route()  return end
 	
 	if self.menu["ACTION_SETTINGS"]["USE_MOUNT"].bool and self.status.goalWaypoint.pos:dist(player.pos) >= self.menu["ACTION_SETTINGS"]["MOUNT_DISTANCE"].int
-	and not player.isMounted and self.actions.mount:canUse() then
+	and not player.isMounted and self.actions.mount.recastTime == 0 then
 		self.actions.mount:use()
 		self.status.last_mount = os.clock()
-	elseif self.menu["ACTION_SETTINGS"]["USE_SPRINT"].bool and self.actions.sprint:canUse() then
+		self.log:print("Using Mount!")
+	elseif self.menu["ACTION_SETTINGS"]["USE_SPRINT"].bool and not player.isMounted and self.actions.sprint.recastTime == 0 then
+		self.log:print("Using Sprint!")
 		self.actions.sprint:use()
 	elseif (currentWaypoint.flying and player.isMounted) or not currentWaypoint.flying then
 		TaskManager:WalkToWaypoint(self.route.waypoints[self.route.index], function(waypoint) self:OnWalkToWayPoint(waypoint) end)
@@ -232,20 +234,6 @@ end
 function XGatherer:draw()
 	local maxDrawDistance = self.menu["DRAW_SETTINGS"]["MAX_DRAW_DISTANCE"].int
 
-	local last_waypoint = nil
-
-	if #self.route.waypoints > 1 then
-
-		for i, waypoint in ipairs(self.route.waypoints) do
-			if last_waypoint ~= nil and waypoint ~= nil then
-				Graphics.DrawLine3D(last_waypoint.pos, waypoint.pos, Colors.Green)
-			end
-			last_waypoint = waypoint
-		end
-
-	end
-
-
 	if self.menu["DRAW_SETTINGS"]["DRAW_GATHERABLE_NODES"].bool then
 		self:drawGatherableNodes(maxDrawDistance)
 	end
@@ -282,7 +270,7 @@ function XGatherer:draw()
 		end
 
 		if self.menu["DRAW_SETTINGS"]["DRAW_ROUTE"].bool then
-
+			print("hi")
 			local last_waypoint = nil
 			if #self.route.waypoints > 1 then
 
@@ -296,11 +284,7 @@ function XGatherer:draw()
 
 			end
 		end
-	end
-
-	if self.status.goalWaypoint ~= nil then
-		Graphics.DrawCircle3D(self.status.goalWaypoint.pos, 100, 1, Colors.Red)
-	end
+	end	
 end
 
 function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
