@@ -25,7 +25,6 @@ function XGatherer:initialize()
 		hicordial    = Action(2, 12669),
 		wcordial     = Action(2, 16911),
 
-
 	}
 
 	self.status = {
@@ -57,7 +56,7 @@ function XGatherer:initialize()
 	-- Adds our draw function into the game's draw
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function () self:tick() end)
 	
-	self.log:print("XGatherer Loaded!")
+	self.log:print("XGatherer Loaded!")	
 end
 
 function XGatherer:OnWalkToWayPoint(waypoint)
@@ -172,9 +171,10 @@ function XGatherer:GoToRoute()
 	local currentWaypoint = self.route.waypoints[self.route.index]
 
 	if currentWaypoint == nil then self.route = Route()  return end
-	
+
 	if self.menu["ACTION_SETTINGS"]["USE_MOUNT"].bool and self.status.goalWaypoint.pos:dist(player.pos) >= self.menu["ACTION_SETTINGS"]["MOUNT_DISTANCE"].int
-	and not player.isMounted and self.actions.mount.recastTime == 0 then
+	and not player.isMounted and self.actions.mount:canUse() then
+		self.log:print("Using Mount!")
 		self.actions.mount:use()
 		self.status.last_mount = os.clock()
 		self.log:print("Using Mount!")

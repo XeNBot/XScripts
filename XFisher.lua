@@ -14,7 +14,7 @@ function XFisher:initialize()
 	-- new way of using actions
 	self.actions = {
 
-		cast     = Action(1, 289),
+		cast     = Action(1, 289, "Cast"),
 		hook     = Action(1, 296),
 		mooch    = Action(1, 297),
 		mooch2   = Action(1, 268),
@@ -71,6 +71,7 @@ function XFisher:initialize()
 	Callbacks:Add(CALLBACK_FISH_CATCH, function(fishId)
 		-- Prints the fish id of any fishes we catch
 		self.fishesCaught = self.fishesCaught + 1
+
 		self.log:print("Caught a fish! id : " ..  tostring(fishId) ..", So far we caught : " ..  tostring(self.fishesCaught) .. " fishes")
 		-- Can Mooch?
 		if self.menu["USE_MOOCH2"].bool and self.actions.mooch2:canUse() then
@@ -84,7 +85,7 @@ function XFisher:initialize()
 		elseif self.menu["USE_CHUM"].bool and self.actions.chum:canUse() then
 			self.actions.chum:use()
 		else
-			self.actions.cast:use()
+			self:ManualExecute(self.actions.cast)
 		end
 	end)
 
@@ -99,7 +100,7 @@ function XFisher:initialize()
 		if id == self.actions.chum.id then
 			self.attempts = 0
 			self.log:print("Used Chum, time to fish!")
-			self.actions.cast:use()
+			self:ManualExecute(self.actions.cast)
 		end
 	end)
 
@@ -116,6 +117,7 @@ function XFisher:initialize()
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
 
 	print("Loaded XFisher")
+
 end
 
 function XFisher:Tick()
@@ -150,10 +152,25 @@ function XFisher:Tick()
 			self.attempts = self.attempts + 1
 		-- Check if we can use the fish action (if we're in a fishing area) and if we're not already casting
 		elseif self.actions.cast:canUse() then
-			self.actions.cast:use()
+			self:ManualExecute(self.actions.cast)
 			self.attempts = self.attempts + 1
 		end	
 	end
+end
+
+function XFisher:ManualExecute(action)
+	
+	-- Loops through all 18 HotBars
+	for hotbar = 0, 17 do
+		-- Loops through all 16 slots in hotbar
+		for slotId = 0, 15 do
+			local slot = HotBarManager[hotbar].slot[slotId]
+			if string.find(slot.name, action.name) then
+				Keyboard.SendKeys(slot.keys)
+			end
+		end
+	end
+
 end
 
 XFisher:new()
