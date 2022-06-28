@@ -12,6 +12,7 @@ function Summoner:initialize()
 		energydrain = Action(1, 16508),
 		painflare   = Action(1, 3578),
 		fester      = Action(1, 181),
+		searing     = Action(1, 25801),
 
 		deathflare  = Action(1, 3582),
 		rekinkle    = Action(1, 25830),
@@ -66,7 +67,9 @@ function Summoner:Tick(log)
 
 	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) >= 25 then return end
 
-	if self.actions.aegis:canUse() and not player:hasStatus(2702) and player.healthPercent < 80 then
+	if self.actions.searing:canUse() then
+		self.actions.searing:use()
+	elseif self.actions.aegis:canUse() and not player:hasStatus(2702) and player.healthPercent < 80 then
 		self.actions.aegis:use()
 	end
 
@@ -168,16 +171,15 @@ function Summoner:CheckPrimals(attuned, target, log)
 		end
 
 	else
-
 		if player.gauge.ifritReady and self.actions.ifrit:canUse(target) then
 			log:print("Summoning Ifrit on " .. target.name)
 			self.actions.ifrit:use(target)
-		elseif player.gauge.titanReady and self.actions.titan:canUse(target) then
-			log:print("Summoning Titan on " .. target.name)
-			self.actions.titan:use(target)
 		elseif player.gauge.garudaReady and self.actions.garuda:canUse(target) then
 			log:print("Summoning Garuda on " .. target.name)
 			self.actions.garuda:use(target)
+		elseif player.gauge.titanReady and self.actions.titan:canUse(target) then
+			log:print("Summoning Titan on " .. target.name)
+			self.actions.titan:use(target)
 		end
 
 	end
