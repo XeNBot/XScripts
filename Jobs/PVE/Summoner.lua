@@ -82,7 +82,7 @@ function Summoner:Combo(target, menu, log)
 		self.actions.ruiniv:use(target)
 	end
 
-	local aoe       = ObjectManager.EnemiesAroundObject(target, 5) > 0
+	local aoe       = ObjectManager.BattleEnemiesAroundObject(target, 5) > 0
 	local attuned   = player.gauge.attunementTime > 0
 
 	self:CheckPrimals(attuned, target, log)

@@ -73,10 +73,12 @@ function XPVP:Tick()
 	if not Game.InPvPArea and not Game.InPvPInstance and AgentModule.currentMapId ~= 51 then return end
 	-- Guard
 	if player:hasStatus(3054) then return end
-
-	if self.common:Tick(self.log) then return end
-
+	-- Invisible
 	if player:hasStatus(895) then return end
+	-- Common Actions
+	if self.common:Tick(self.log) then return end
+	-- Target Mode
+	TargetManager.TargetMode = self.menu["TARGET"]["MODE"].int
 
 	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or (self.menu["COMBO_MODE"].int ~= 0 and self.menu["COMBO_KEY"].keyDown) then
 		if player.classJob == 19 then

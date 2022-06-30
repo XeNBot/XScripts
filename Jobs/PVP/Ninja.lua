@@ -49,14 +49,11 @@ function Ninja:Execute(log)
 	local list = AgentModule.currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
 
 	for i, object in ipairs(list) do
-		if object.pos:dist(player.pos) < 19.5 and (object.health <= (object.maxHealth / 2)) and
-		 object.health > 0 and not object:hasStatus(3054) and self.actions.seiton:canUse(object.id) then
-		 	self.actions.seiton:use(object.id)
-		 	log:print("Using Seiton on " .. object.name)
-		 	return true
-		end
+		if object.pos:dist(player.pos) < 20 and object.healthPercent < 50 and not object:hasStatus(3054) and self.actions.seiton:canUse(object) then
+			log:print("Using Seiton on " .. object.name)
+		 	self.actions.seiton:use(object)		 	
+		 end
 	end
-	return false
 end
 
 
@@ -65,20 +62,20 @@ function Ninja:Tick(getTarget, log)
 	local menu    = self.menu["ACTIONS"]["MELEE_DPS"]["NIN"]
 	local actions = self.actions
 
-	if self:Execute(log) then return end
+	self:Execute(log)
 
 	local farTarget = getTarget(20)
+
 
 	if farTarget.valid and farTarget.pos:dist(player.pos) > 6 then
 		if player:hasStatus(1317) then
 			self:ThreeMudra(farTarget, log)
-		elseif menu["FUMA"] and actions.fuma:canUse(farTarget.id) then
-			actions.fuma:use(farTarget.id)
+		elseif menu["FUMA"] and actions.fuma:canUse(farTarget) then
+			actions.fuma:use(farTarget)
 			return
 		elseif menu["SHUKUCHI"].bool and actions.shukuchi:canUse() then
 			actions.shukuchi:use(farTarget.pos)
 			log:print("Using Shukuchi on " .. farTarget.name)
-			return
 		end
 	end
 
@@ -87,26 +84,26 @@ function Ninja:Tick(getTarget, log)
 	if target.valid then
 		if player:hasStatus(1317) then
 			self:ThreeMudra(target, log)
-		elseif menu["BUNSHIN"].bool and actions.bunshin:canUse(target.id) then
-			actions.bunshin:use(target.id)
+		elseif menu["BUNSHIN"].bool and actions.bunshin:canUse(target) then
+			actions.bunshin:use(target)
 			log:print("Using Bunshin on " .. target.name)
-		elseif menu["FUMA"].bool and not self.lastShuriken and actions.fuma:canUse(farTarget.id) then
-			actions.fuma:use(target.id)
+		elseif menu["FUMA"].bool and not self.lastShuriken and actions.fuma:canUse(target) then
+			actions.fuma:use(target)
 			log:print("Using Fuma on " .. target.name)
-		elseif menu["MUG"].bool and actions.mug:canUse(target.id) then
-			actions.mug:use(target.id)
+		elseif menu["MUG"].bool and actions.mug:canUse(target) then
+			actions.mug:use(target)
 			log:print("Using Mug on " .. target.name)
 		elseif menu["MUDRA"].bool and actions.mudra:canUse() then
 			actions.mudra:use()
 			log:print("Using Mudra")
-		elseif menu["AEOLIAN"].bool and actions.aeolian:canUse(target.id) then
-			actions.aeolian:use(target.id)
+		elseif menu["AEOLIAN"].bool and actions.aeolian:canUse(target) then
+			actions.aeolian:use(target)
 			log:print("Using Aeolian Slah on " .. target.name)
-		elseif menu["AEOLIAN"].bool and actions.gust:canUse(target.id) then
+		elseif menu["AEOLIAN"].bool and actions.gust:canUse(target) then
 			log:print("Using Gust on " .. target.name)
-			actions.gust:use(target.id)
-		elseif menu["AEOLIAN"].bool and actions.spinning:canUse(target.id) then
-			actions.spinning:use(target.id)
+			actions.gust:use(target)
+		elseif menu["AEOLIAN"].bool and actions.spinning:canUse(target) then
+			actions.spinning:use(target)
 			log:print("Using Spinning on " .. target.name)
 		end
 
@@ -116,21 +113,23 @@ end
 
 function Ninja:ThreeMudra(target, log)
 	
-	if (player.maxHealth - player.health) > 14000 and self.actions.mudra:canUse() then
+	if player.missingHealth > 14000 and self.actions.mudra:canUse() then
 		self.actions.mudra:use()
-	elseif ObjectManager.EnemiesAroundObject(target, 5) > 0 and self.actions.mug:canUse(target.id) then
-		self.actions.mug:use(target.id)
+	elseif ObjectManager.EnemiesAroundObject(target, 5) > 0 and self.actions.mug:canUse(target) then
+		self.actions.mug:use(target)
 	elseif target.pos:dist(player.pos) > 5 then	
-		if self.actions.fuma:canUse(target.id) then
-			self.actions.fuma:use(target.id)
+		if self.actions.fuma:canUse(target) then
+			self.actions.fuma:use(target)
 		end
 	elseif target.pos:dist(player.pos) < 5 then
 		if self.actions.shukuchi:canUse() then
+			log:print("Using Shukuchi")
 			self.actions.shukuchi:use()
 		elseif self.actions.bunshin:canUse() then
+			log:print("Using Bushing")
 			self.actions.bunshin:use()
-		elseif self.actions.fuma:canUse(target.id) then
-			self.actions.fuma:use(target.id)
+		elseif self.actions.fuma:canUse(target) then
+			self.actions.fuma:use(target)
 			log:print("Using Fuma on " .. target.name)
 		end
 	end
