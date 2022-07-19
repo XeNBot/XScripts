@@ -25,6 +25,7 @@ function Machinist:initialize()
 
 		
 		-- Role
+		secondwind = Action(1, 7541),
 		headgrace  = Action(1, 7551),
 		footgrace  = Action(1, 7553),
 		leggrace   = Action(1, 7554),
@@ -63,8 +64,11 @@ function Machinist:Tick()
 
 	local target = TargetManager.Target
 
+	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) >= 25 then return end
 
-	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) >= 25 then return end
+	if player.healthPercent < 20 and self.actions.secondwind:canUse() then
+		self.actions.secondwind:use()
+	end
 
 	if menu["AUTO_ROTATION"].bool then
 		if player.classLevel < 90 then
