@@ -270,7 +270,6 @@ function XGatherer:draw()
 		end
 
 		if self.menu["DRAW_SETTINGS"]["DRAW_ROUTE"].bool then
-			print("hi")
 			local last_waypoint = nil
 			if #self.route.waypoints > 1 then
 
