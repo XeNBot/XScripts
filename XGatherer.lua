@@ -42,7 +42,7 @@ function XGatherer:initialize()
 	-- gathering queues
 	self.queues = {}
 	-- Our grid is our map with waypoints
-	self.grid   = LoadModule("XScripts", "/Waypoints/Grid")
+	self.grid   = LoadModule("XScripts", "/Waypoints/GatheringGrid")
 	-- Log Module
 	self.log    = LoadModule("XScripts", "/Utilities/Log")
 	self.log.delay = false
