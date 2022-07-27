@@ -57,6 +57,8 @@ function XFisher:initialize()
 
 	
 	Callbacks:Add(CALLBACK_FISH_BITE, function(marks)
+		if not self.running then return end
+
 		-- Uses Hook whenever a fish bites
 		self.log:print("Got a bite with " .. marks .. " mark(s)")
 
@@ -69,6 +71,8 @@ function XFisher:initialize()
 	end)
 
 	Callbacks:Add(CALLBACK_FISH_CATCH, function(fishId)
+		if not self.running then return end
+
 		-- Prints the fish id of any fishes we catch
 		self.fishesCaught = self.fishesCaught + 1
 
@@ -90,12 +94,14 @@ function XFisher:initialize()
 	end)
 
 	Callbacks:Add(CALLBACK_FISH_FAIL, function()
+		if not self.running then return end
 		self.log:print("Oh noes, the fish got away! trying again")
 		self.attempts = 0
 		self.actions.cast:use()
 	end)
 
 	Callbacks:Add(CALLBACK_ACTION_USED, function(type, id, targetId)
+		if not self.running then return end
 		-- Chum id
 		if id == self.actions.chum.id then
 			self.attempts = 0
@@ -105,6 +111,7 @@ function XFisher:initialize()
 	end)
 
 	Callbacks:Add(CALLBACK_FISH_CATCH_COLLECTABLE, function(fishId, collectability)
+		if not self.running then return end
 		-- prints fish id & collectability
 		self.attempts = 0
 		self.fishesCaught = self.fishesCaught + 1
