@@ -42,7 +42,7 @@ function XPVE:Tick()
 		self.warrior:Tick(self.log)
 	elseif player.classJob == 7 or player.classJob == 25 then
 		self.blackmage:Tick(self.log)
-	elseif player.classJob == 27 then
+	elseif player.classJob == 26 or player.classJob == 27 then
 		self.summoner:Tick(self.log)
 	elseif player.classJob == 30 then
 		self.ninja:Tick(self.log)
