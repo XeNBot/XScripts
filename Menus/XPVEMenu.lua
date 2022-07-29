@@ -7,6 +7,10 @@ local menu = Menu("XPVE")
 		menu["ACTIONS"]:subMenu("Healers", "HEALER")
 		menu["ACTIONS"]:subMenu("Melee DPS", "MELEE_DPS")
 		menu["ACTIONS"]:subMenu("Physical Ranged DPS", "RANGE_DPS_P")			
-		menu["ACTIONS"]:subMenu("Magic Ranged DPS", "RANGE_DPS_M")	
+		menu["ACTIONS"]:subMenu("Magic Ranged DPS", "RANGE_DPS_M")
+
+	menu:space() menu:space()
+
+	menu:hotkey("Prepull Key", "PREPULL_KEY", 90)
 
 return menu

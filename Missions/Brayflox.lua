@@ -17,7 +17,7 @@ function Brayflox:Tick(main)
 
 	local range = player.isMelee and 20 or 25
 	
-	if ObjectManager.BattleEnemiesAroundObject(player, 15, function(obj) return main.b_filter[target.name] ~= true end) > 0 then
+	if ObjectManager.BattleEnemiesAroundObject(player, 15, function(obj) return main.b_filter[obj.name] ~= true end) > 0 then
 
 		if TaskManager:IsBusy() then TaskManager:Stop() end
 

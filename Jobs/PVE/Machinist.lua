@@ -70,46 +70,8 @@ function Machinist:Tick()
 		self.actions.secondwind:use()
 	end
 
-	if menu["AUTO_ROTATION"].bool then
-		if player.classLevel < 90 then
-			self:LowCombo(target)
-		else
-			self:MaxCombo(target)
-		end	
-	else
-		if menu["ROTATIONS"].int == 0 then
-			self:LowCombo(target)
-		else
-			self:MaxCombo(target)
-		end
-	end
+	self:MaxCombo(target)	
 
-end
-
-function Machinist:LowCombo(target)
-	if player.gauge.overHeatTime == 0 and self.actions.hypercharge:canUse() then
-		self.actions.hypercharge:use()
-	elseif self.actions.heatblast:canUse(target) then
-		self.actions.heatblast:use(target)	
-	elseif self.actions.gauss:canUse(target) and self.lastAction ~= self.actions.gauss.id then
-		self.actions.gauss:use(target)
-	elseif self.actions.headgrace:canUse(target) then
-		self.actions.headgrace:use(target)
-	elseif self.actions.footgrace:canUse(target) then
-		self.actions.footgrace:use(target)
-	elseif self.actions.leggrace:canUse(target) then
-		self.actions.leggrace:use(target)
-	elseif self.actions.reassemble:canUse() then
-		self.actions.reassemble:use()
-	elseif self.actions.hotshot:canUse(target) then
-		self.actions.hotshot:use(target)
-	elseif self.lastAction == self.actions.slugshot.id and self.actions.cleanshot:canUse(target) then
-		self.actions.cleanshot:use(target)
-	elseif self.lastAction == self.actions.splitshot.id and self.actions.slugshot:canUse(target) then
-		self.actions.slugshot:use(target)
-	elseif self.actions.splitshot:canUse(target) and not self.comboReady then
-		self.actions.splitshot:use(target)
-	end
 end
 
 function Machinist:MaxCombo(target)
@@ -146,6 +108,31 @@ function Machinist:MaxCombo(target)
 	end
 
 
+	-- Low Level Combo
+
+	if player.gauge.overHeatTime == 0 and self.actions.hypercharge:canUse() then
+		self.actions.hypercharge:use()
+	elseif self.actions.heatblast:canUse(target) then
+		self.actions.heatblast:use(target)	
+	elseif self.actions.gauss:canUse(target) and self.lastAction ~= self.actions.gauss.id then
+		self.actions.gauss:use(target)
+	elseif self.actions.headgrace:canUse(target) then
+		self.actions.headgrace:use(target)
+	elseif self.actions.footgrace:canUse(target) then
+		self.actions.footgrace:use(target)
+	elseif self.actions.leggrace:canUse(target) then
+		self.actions.leggrace:use(target)
+	elseif self.actions.reassemble:canUse() then
+		self.actions.reassemble:use()
+	elseif self.actions.hotshot:canUse(target) then
+		self.actions.hotshot:use(target)
+	elseif self.lastAction == self.actions.slugshot.id and self.actions.cleanshot:canUse(target) then
+		self.actions.cleanshot:use(target)
+	elseif self.lastAction == self.actions.splitshot.id and self.actions.slugshot:canUse(target) then
+		self.actions.slugshot:use(target)
+	elseif self.actions.splitshot:canUse(target) and not self.comboReady then
+		self.actions.splitshot:use(target)
+	end
 
 
 end
