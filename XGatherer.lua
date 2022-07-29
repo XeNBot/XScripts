@@ -20,7 +20,7 @@ function XGatherer:initialize()
 		kingyieldii  = Action(1, 241),
 
 
-		-- Items
+		-- Items 
 		cordial      = Action(2, 6141),
 		hicordial    = Action(2, 12669),
 		wcordial     = Action(2, 16911),
@@ -85,7 +85,7 @@ function XGatherer:tick()
 		 (os.clock() - self.status.last_teleport < 10)
 	then return end
 
-	local gatheringAddon = AddonManager:getGatheringAddon()
+	local gatheringAddon = AddonManager.GetAddon("Gathering")
 
 	self:updateQueue(gatheringAddon)
 
