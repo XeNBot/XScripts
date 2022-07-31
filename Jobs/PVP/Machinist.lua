@@ -14,11 +14,10 @@ function Machinist:initialize()
 	}
 
 	self.menu = nil
-	self.seq  = nil
 
 end
 
-function Machinist:Load(mainMenu, seq)
+function Machinist:Load(mainMenu)
 	
 	self.menu = mainMenu
 

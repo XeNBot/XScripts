@@ -3,6 +3,7 @@ local XPVE = Class("XPVE")
 function XPVE:initialize()
 	--------------------------------------------------------------------
 	-- Classes
+	self.bard        = LoadModule("XScripts", "\\Jobs\\PVE\\Bard")
 	self.machinist   = LoadModule("XScripts", "\\Jobs\\PVE\\Machinist")
 	
 	self.summoner    = LoadModule("XScripts", "\\Jobs\\PVE\\Summoner")
@@ -12,6 +13,8 @@ function XPVE:initialize()
 	self.warrior     = LoadModule("XScripts", "\\Jobs\\PVE\\Warrior")
 
 	self.ninja       = LoadModule("XScripts", "\\Jobs\\PVE\\Ninja")
+	self.reaper      = LoadModule("XScripts", "\\Jobs\\PVE\\Reaper")
+	self.samurai     = LoadModule("XScripts", "\\Jobs\\PVE\\Samurai")
 
 	--------------------------------------------------------------------
 	-- Utilities
@@ -20,6 +23,7 @@ function XPVE:initialize()
 	-- Menus
 	self.menu        = LoadModule("XScripts", "\\Menus\\XPVEMenu")	
 	
+	self.bard:Load(self.menu)
 	self.machinist:Load(self.menu)
 	
 	self.summoner:Load(self.menu)
@@ -29,6 +33,8 @@ function XPVE:initialize()
 	self.warrior:Load(self.menu)
 
 	self.ninja:Load(self.menu)
+	self.reaper:Load(self.menu)
+	self.samurai:Load(self.menu)
 	--------------------------------------------------------------------
 	-- Callbacks
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
@@ -36,10 +42,12 @@ function XPVE:initialize()
 end
 
 function XPVE:Tick()
-	if player.classJob == 19 or  player.classJob == 1 then
+	if player.classJob == 1 or  player.classJob == 19 then
 		self.paladin:Tick(self.log)
 	elseif player.classJob == 3 or player.classJob == 21 then
 		self.warrior:Tick(self.log)
+	elseif player.classJob == 5 or player.classJob == 23 then
+		self.bard:Tick(self.log)
 	elseif player.classJob == 7 or player.classJob == 25 then
 		self.blackmage:Tick(self.log)
 	elseif player.classJob == 26 or player.classJob == 27 then
@@ -48,6 +56,10 @@ function XPVE:Tick()
 		self.ninja:Tick(self.log)
 	elseif player.classJob == 31 then
 		self.machinist:Tick(self.log)
+	elseif player.classJob == 34 then
+		self.samurai:Tick(self.log)
+	elseif player.classJob == 39 then
+	    self.reaper:Tick(self.log)
 	end
 end
 

@@ -5,8 +5,6 @@ function XPVP:initialize()
 	self.menu        = LoadModule("XScripts", "\\Menus\\XPVPMenu")
 	-- Log Module
 	self.log         = LoadModule("XScripts", "\\Utilities\\Log")
-	-- Action Sequences
-	self.sequences   = LoadModule("XScripts", "\\Utilities\\ActionSeq")
 	-- Loads Class Job Modules
 	-- Healers
 	self.scholar     = LoadModule("XScripts", "\\Jobs\\PVP\\Scholar")
@@ -26,6 +24,7 @@ function XPVP:initialize()
 	-- Ranged Physical DPS
 	self.machinist   = LoadModule("XScripts", "\\Jobs\\PVP\\Machinist")
 	self.dancer      = LoadModule("XScripts", "\\Jobs\\PVP\\Dancer")
+	self.bard        = LoadModule("XScripts", "\\Jobs\\PVP\\Bard")
 	-- Ranged Magic DPS
 	self.blackmage   = LoadModule("XScripts", "\\Jobs\\PVP\\BlackMage")
 	self.summoner    = LoadModule("XScripts", "\\Jobs\\PVP\\Summoner")
@@ -51,13 +50,16 @@ function XPVP:initialize()
 	self.reaper:Load(self.menu)
 	-- Ranged Physical DPS
 	self.dancer:Load(self.menu)
-	self.machinist:Load(self.menu, self.sequences)
+	self.machinist:Load(self.menu)
+	self.bard:Load(self.menu)
 	-- Ranged Magic DPS
 	self.blackmage:Load(self.menu)
 	self.summoner:Load(self.menu)
 	self.redmage:Load(self.menu)
 	-- Common Actions
 	self.common:Load(self.menu)
+
+	self.lockTarget   = nil
 
 	self.getTarget    = function (dist) return self:GetTarget(dist) end
 	self.targetFilter = function (target) return self:TargetFilter(target) end
@@ -77,6 +79,17 @@ function XPVP:Tick()
 	if player:hasStatus(895) then return end
 	-- Common Actions
 	if self.common:Tick(self.log) then return end
+
+	if Keyboard.IsKeyDown(9) and self.menu["TARGET"]["LOCK"].bool then
+		self:SetTabTarget()
+	end
+
+	if self.lockTarget ~= nil and not TargetManager.Target.valid or (TargetManager.Target.valid and TargetManager.Target.isDead) then
+		self.log:print("Releasing Target: " .. self.lockTarget.name)
+		self.lockTarget = nil
+
+	end
+
 	-- Target Mode
 	TargetManager.TargetMode = self.menu["TARGET"]["MODE"].int
 
@@ -89,6 +102,8 @@ function XPVP:Tick()
 			self.warrior:Tick(self.log)
 		elseif player.classJob == 22 then
 			self.dragoon:Tick(self.getTarget, self.log)
+		elseif player.classJob == 23 then
+			self.bard:Tick(self.getTarget, self.log)
 		elseif player.classJob == 25 then
 			self.blackmage:Tick(self.getTarget, self.log)
 		elseif player.classJob == 27 then
@@ -119,6 +134,15 @@ function XPVP:Tick()
 	end
 end
 
+function XPVP:SetTabTarget()
+	
+	if TargetManager.Target.valid and self.lockTarget ~= TargetManager.Target then
+		self.log:print("Locking to Target: " .. TargetManager.Target.name)
+		self.lockTarget = TargetManager.Target
+	end
+end
+
+
 function XPVP:TargetFilter(target)
 	if self.menu["TARGET"]["GUARD_CHECK"].bool then
 		return not target:hasStatus(3054)
@@ -133,6 +157,10 @@ function XPVP:GetTarget(range)
 	end
 
 	local target = nil
+
+	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil then
+		return self.lockTarget
+	end
 
 	if self.menu["TARGET"]["MODE"].int == 0 then
 		return ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)

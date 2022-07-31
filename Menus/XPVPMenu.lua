@@ -5,6 +5,7 @@ local menu = Menu("XPVP")
 	menu:subMenu("Target Settings", "TARGET")
 		menu["TARGET"]:checkbox("Get Target Auto", "AUTO", true)
 		menu["TARGET"]:checkbox("Don't Attack Guard", "GUARD_CHECK", true)
+		menu["TARGET"]:checkbox("Lock on to Tab Targets", "LOCK", false)
 		menu["TARGET"]:combobox("Mode", "MODE", {"Lowest Health", "Closest"})
 	
 	menu:subMenu("Action Settings", "ACTIONS")

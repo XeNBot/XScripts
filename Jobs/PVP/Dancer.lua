@@ -59,8 +59,8 @@ function Dancer:Tick(getTarget, log)
 	local farTarget = getTarget(25)
 
 	if farTarget.valid then
-		if  menu["STARFALL"].bool and self.actions.starfall:canUse(farTarget.id) then
-			self.actions.starfall:use(farTarget.id)
+		if  menu["STARFALL"].bool and self.actions.starfall:canUse(farTarget) then
+			self.actions.starfall:use(farTarget)
 			log:print("Using Starfall Dance on " .. farTarget.name)
 			return
 		elseif menu["AVANT"].bool and farTarget.pos:dist(player.pos) > 15 and self.actions.avant:canUse() then
@@ -74,14 +74,14 @@ function Dancer:Tick(getTarget, log)
 	local target = getTarget(15)
 
 	if target.valid then
-		if menu["FAN"].bool and self.actions.fan:canUse(target.id) then
-			self.actions.fan:use(target.id)
+		if menu["FAN"].bool and self.actions.fan:canUse(target) then
+			self.actions.fan:use(target)
 			log:print("Using Fan Dance on " .. target.name)
-		elseif menu["FOUNTAIN"].bool and self.actions.fountain:canUse(target.id) then
-			self.actions.fountain:use(target.id)
+		elseif menu["FOUNTAIN"].bool and self.actions.fountain:canUse(target) then
+			self.actions.fountain:use(target)
 			log:print("Using Fountain on " .. target.name)
-		elseif menu["FOUNTAIN"].bool and self.actions.cascade:canUse(target.id) then
-			self.actions.cascade:use(target.id)
+		elseif menu["FOUNTAIN"].bool and self.actions.cascade:canUse(target) then
+			self.actions.cascade:use(target)
 			log:print("Using Cascade on " .. target.name)
 		end
 	end

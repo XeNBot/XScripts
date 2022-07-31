@@ -12,6 +12,7 @@ function XUtilities:initialize()
 	self.menu:separator()
 	-- Adds checkbox with default value of true
 	self.menu:checkbox("Auto Accept Quests", "AUTO_ACCEPT", true)
+	self.menu:checkbox("Auto Accept Duty Finder", "DUTY_FINDER", true)
 	self.menu:checkbox("Auto Skip Talk", "AUTO_TALK", false)
 
 	-- Adds the function Utilities:Tick() to the player tick callback table
@@ -31,6 +32,13 @@ function XUtilities:Tick()
 		local talkAddon = AddonManager.GetAddon("Talk")
 		if talkAddon ~= nil then
 			talkAddon:Continue()
+		end
+	end
+
+	if self.menu["DUTY_FINDER"].bool then
+		local dutyFinder = AddonManager.GetAddon("ContentsFinder")
+		if dutyFinder ~= nil then
+			dutyFinder:Commence()
 		end
 	end
 	

@@ -98,11 +98,29 @@ function XAPI:initialize()
 	
 	-- Adds our update function into the game's tick
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function () self:Update() end)
+	Callbacks:Add(CALLBACK_PLAYER_DRAW, function () self:Draw() end)
 end
 
 function XAPI:Update()
 	self:UpdateMenu(self.menu["PLAYER_INFO"], player)
 	self:UpdateMenu(self.menu["TARGET_INFO"], TargetManager.Target)
+end
+
+function XAPI:Draw()
+	
+	local target = TargetManager.Target
+
+	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 then return end
+	Graphics.DrawText3D(Vector3(target.pos.x + 1, target.pos.y + 2, target.pos.z), "Cast Information:", 15)
+	Graphics.DrawText3D(Vector3(target.pos.x + 1, target.pos.y + 1.60, target.pos.z), "IsCasting: " .. tostring(target.castInfo.isCasting), 15)
+	Graphics.DrawText3D(Vector3(target.pos.x + 1, target.pos.y + 1.20, target.pos.z), "IsInterruptible: " .. tostring(target.castInfo.isInterruptible), 15)
+	Graphics.DrawText3D(Vector3(target.pos.x + 1, target.pos.y + 0.80, target.pos.z), "ActionId: " .. tostring(target.castInfo.actionId), 15)
+	Graphics.DrawText3D(Vector3(target.pos.x + 1, target.pos.y + 0.40, target.pos.z), "CastTargetId: " .. tostring(target.castInfo.castTargetId), 15)
+	Graphics.DrawText3D(Vector3(target.pos.x + 1, target.pos.y, target.pos.z), "CurrentCastTime: " .. tostring(target.castInfo.currentCastTime), 15)
+	
+	if (target.castInfo.castLocation ~= Vector3(0, 0, 0)) then
+		Graphics.DrawCircle3D(target.castInfo.castLocation, 20, 1, Colors.Red)
+	end
 end
 
 function XAPI:UpdateMenu(menu, obj)

@@ -4,6 +4,7 @@ function Brayflox:initialize()
 	
 	-- Runstop Headgate Key
 	self.headgate_key = 2000521
+	self.opened_gate  = false
 
 end
 
@@ -32,14 +33,19 @@ function Brayflox:Tick(main)
 			end
 		else
 			main:Exit()
+			self.opened_gate = false
 		end
 	end
+end
+
+function Brayflox:OnOpenHeadGate()
+	self.opened_gate = true
 end
 
 function Brayflox:Interactables(main)
 
 	local pathfinder = ObjectManager.EventNpcObject(function(obj) return obj.name == "Goblin Pathfinder" and main:InteractFilter(obj) end)
-	if pathfinder.valid and InventoryManager.GetItemCount(self.headgate_key) < 1 then
+	if pathfinder.valid and not self.opened_gate and InventoryManager.GetItemCount(self.headgate_key) < 1 then
 		player:rotateTo(pathfinder.pos)
 		TaskManager:Interact(pathfinder)
 		return true
@@ -48,7 +54,7 @@ function Brayflox:Interactables(main)
 	local headgate = ObjectManager.EventObject(function(obj) return obj.name == "Runstop Headgate" and main:InteractFilter(obj) end)
 	if headgate.valid then
 		player:rotateTo(headgate.pos)
-		TaskManager:Interact(headgate)
+		TaskManager:Interact(headgate, function() self:OnOpenHeadGate() end)
 		return true
 	end
 
