@@ -42,6 +42,7 @@ function Reaper:Load(mainMenu)
 	self.menu = mainMenu
 
 	self.menu["ACTIONS"]["MELEE_DPS"]:subMenu("Reaper", "RPR")
+		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Harpe", "HARPE", true)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use AoE Rotations", "AOE", true)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:slider("Min Enemies for AoE", "AOE_MIN", 1, 1, 3, 2)
 	
@@ -61,19 +62,10 @@ function Reaper:Tick(log)
 	local menu   = self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]
 
 	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 then return end
-	local dist = target.pos:dist(player.pos)
 
-	if dist > 4 and dist < 25 then
-		if not player:hasStatus(2594) and self.actions.soulsow:canUse() then
-			log:print("Using Soulsow")
-			self.actions.soulsow:use()
-		elseif self.actions.harpe:canUse(target) then
-			log:print("Using Harpe on " .. target.name)
-			self.actions.harpe:use(target)
-		end
+	if self.menu["PREPULL_KEY"].keyDown then
+		return self:Prepull(log, target)
 	end
-
-	if dist > 3 then return end
 
 	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= (menu["AOE_MIN"].int - 1)
 
@@ -121,6 +113,15 @@ function Reaper:Tick(log)
 	elseif aoe and self.actions.spinscythe:canUse() then
 		log:print("Using Spinning Scythe")
 		self.actions.spinscythe:use()
+	end
+
+end
+
+function Reaper:Prepull(log, target)
+	
+	if self.actions.harpe:canUse(target) then
+		log:print("Using Harpe on " .. target.name)
+		self.actions.harpe:use(target)
 	end
 
 end
