@@ -85,7 +85,6 @@ function XPVP:Tick()
 	end
 
 	if self.lockTarget ~= nil and not TargetManager.Target.valid or (TargetManager.Target.valid and TargetManager.Target.isDead) then
-		self.log:print("Releasing Target: " .. self.lockTarget.name)
 		self.lockTarget = nil
 
 	end
@@ -93,7 +92,7 @@ function XPVP:Tick()
 	-- Target Mode
 	TargetManager.TargetMode = self.menu["TARGET"]["MODE"].int
 
-	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or (self.menu["COMBO_MODE"].int ~= 0 and self.menu["COMBO_KEY"].keyDown) then
+	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or (self.menu["COMBO_MODE"].int ~= 0 and self.menu["COMBO_KEY"].keyDown) or self.menu["JUMP_KEY"].keyDown then
 		if player.classJob == 19 then
 			self.paladin:Tick(self.log)
 		elseif player.classJob == 20 then
@@ -137,8 +136,8 @@ end
 function XPVP:SetTabTarget()
 	
 	if TargetManager.Target.valid and self.lockTarget ~= TargetManager.Target then
-		self.log:print("Locking to Target: " .. TargetManager.Target.name)
 		self.lockTarget = TargetManager.Target
+		self.log:print("Locking to Target: " .. TargetManager.Target.name)		
 	end
 end
 

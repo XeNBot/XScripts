@@ -27,5 +27,6 @@ local menu = Menu("XPVP")
 	menu:space() menu:space()
 
 	menu:hotkey("ComboKey", "COMBO_KEY", 88)
+	menu:hotkey("Toggle Jump Key: ", "JUMP_KEY", 84)
 
 return menu

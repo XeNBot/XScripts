@@ -15,6 +15,7 @@ function XPVE:initialize()
 	self.ninja       = LoadModule("XScripts", "\\Jobs\\PVE\\Ninja")
 	self.reaper      = LoadModule("XScripts", "\\Jobs\\PVE\\Reaper")
 	self.samurai     = LoadModule("XScripts", "\\Jobs\\PVE\\Samurai")
+	self.dragoon     = LoadModule("XScripts", "\\Jobs\\PVE\\Dragoon")
 
 	--------------------------------------------------------------------
 	-- Utilities
@@ -35,6 +36,7 @@ function XPVE:initialize()
 	self.ninja:Load(self.menu)
 	self.reaper:Load(self.menu)
 	self.samurai:Load(self.menu)
+	self.dragoon:Load(self.menu)
 	--------------------------------------------------------------------
 	-- Callbacks
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
@@ -50,6 +52,8 @@ function XPVE:Tick()
 		self.bard:Tick(self.log)
 	elseif player.classJob == 7 or player.classJob == 25 then
 		self.blackmage:Tick(self.log)
+	elseif player.classJob == 22 then
+		self.dragoon:Tick(self.log)
 	elseif player.classJob == 26 or player.classJob == 27 then
 		self.summoner:Tick(self.log)
 	elseif player.classJob == 30 then

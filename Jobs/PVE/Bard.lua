@@ -12,6 +12,8 @@ function Bard:initialize()
 		bloodletter   = Action(1, 110),
 		ballad        = Action(1, 114),
 
+		minuet        = Action(1, 3559),
+
 		secondwind    = Action(1, 7541),
 		headgrace     = Action(1, 7551),
 		footgrace     = Action(1, 7553),
@@ -64,7 +66,16 @@ function Bard:Combo(target, menu, log, aoe)
 	
 	if self:Weave(target, menu, log) then return end
 
-	if self.actions.ballad:canUse(target) then
+	if self.actions.minuet:canUse(target) then
+		log:print("Using The Wanderer's Minuet on " .. target.name)
+		self.actions.minuet:use(target)
+	elseif player:hasStatus(865) and player.gauge.repertoire == 3 and self.actions.minuet:canUse(target) then
+		log:print("Using Perfect Pitch on " .. target.name)
+		self.actions.minuet:use(target)
+	elseif self.actions.ragingstrikes:canUse() then
+		log:print("Using Raging Strikes")
+		self.actions.ragingstrikes:use()
+	elseif self.actions.ballad:canUse(target) then
 		log:print("Using Mage's Ballad on " .. target.name)
 		self.actions.ballad:use(target)
 	elseif not target:hasStatus(124) and self.actions.venomousbite:canUse(target) then
@@ -79,9 +90,6 @@ function Bard:Combo(target, menu, log, aoe)
 	elseif self.actions.footgrace:canUse(target) then
 		log:print("Using Foot Grace on " .. target.name)
 		self.actions.footgrace:use(target)
-	elseif self.actions.ragingstrikes:canUse() then
-		log:print("Using Raging Strikes")
-		self.actions.ragingstrikes:use()
 	elseif self.actions.straightshot:canUse(target) then
 		log:print("Using Straight Shot on " .. target.name)
 		self.actions.straightshot:use(target)

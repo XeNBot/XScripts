@@ -73,7 +73,7 @@ function XSquadron:Tick()
 	local currentMapId = AgentModule.currentMapId
 
 	if currentMapId == 308 then
-		if Game.CompanySeals >= self.seal_cost[self.menu["MISSION_ID"].int + 1] then
+		if Game.CompanySeals >= self.seal_cost[self.menu["MISSION_ID"].int + 1] and not self.delivering then
 			self:HandleLobby(currentMapId)
 		else
 			if self.delivered then
@@ -111,6 +111,7 @@ function XSquadron:OnExitSquadron()
 	self.menu["MISSIONS_FINISHED"].str = "Missions Finished: " .. tostring(self.stats.missions_finished)
 	self.log:print("Finished Mission: " .. self.missions[self.menu["MISSION_ID"].int + 1])
 	self.route = Route()
+	self.delivering = true	
 end
 
 function XSquadron:OnShortCut()
