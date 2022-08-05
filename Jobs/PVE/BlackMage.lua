@@ -32,12 +32,17 @@ function BlackMage:initialize()
 	}
 
 	self.menu = nil
-	self.lastAction = 0
+	self.lastAction  = 0
+	self.lastThunder = 0
 
 	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
 
 		if result == 1 and actionType == 1 then
 			self.lastAction = actionId
+
+			if self:LastActionIs("thunder") then
+				self.lastThunder = os.clock()
+			end
 		end
 
 	end)
@@ -95,9 +100,11 @@ function BlackMage:Combo(target, menu, log, aoe)
 	end
 
 	-- Rotation
-	if not self:HasThunder(target) and self:CanUseThunder(target) then
+	if not self:HasThunder(target) and self:CanUseThunder(target) and (os.clock() - self.lastThunder) > 2 then
+		print(os.clock() - self.lastThunder)
 		self:UseThunder(target, log)
 	elseif self.actions.triplecast:canUse() then
+		log:print("Using Triple Cast")
 		self.actions.triplecast:use()
 	elseif self:CanUseFire(target, aoe) and player.gauge.astralStacks < 253 then
 		self:UseFire(target, log, aoe)
@@ -192,10 +199,10 @@ function BlackMage:UseFire(target, log, aoe)
 		if self.actions.fireiv:canUse(target) then
 			log:print("Using Fire IV on " .. target.name)
 			self.actions.fireiv:use(target)
-		elseif self.actions.fireiii:canUse(target) then
+		elseif player.classJob < 60 and self.actions.fireiii:canUse(target) then
 			log:print("Using Fire III on " .. target.name)
 			self.actions.fireiii:use(target)
-		elseif self.actions.fire:canUse(target) then
+		elseif player.classJob < 35 and self.actions.fire:canUse(target) then
 			log:print("Using Fire on " .. target.name)
 			self.actions.fire:use(target)
 		end
@@ -244,23 +251,21 @@ end
 function BlackMage:CanUseThunder(target)
 	
 	return
-		player.classJob < 26 and self.actions.thunder:canUse(target) or
-		player.classJob < 45 and self.actions.thunderii:canUse(target) or
-		self.actions.thunderiii:canUse(target)
+		player.classJob < 26  and self.actions.thunder:canUse(target) or
+		player.classJob < 45  and self.actions.thunderii:canUse(target) or
+		player.classJob >= 45 and self.actions.thunderiii:canUse(target)
 
 	
 end
 
 function BlackMage:UseThunder(target, log)
-	if self:LastActionIs("thunder") then return end
-
 	if player.classJob >= 45 and self.actions.thunderiii:canUse(target) then
-		log:print("Using Thunder III on " .. target.name) 
+		log:print("Using Thunder III on " .. target.name)
 		self.actions.thunderiii:use(target)
-	elseif player.classJob >= 26 and self.actions.thunderii:canUse(target) then
+	elseif player.classJob < 45 and self.actions.thunderii:canUse(target) then
 		log:print("Using Thunder II on " .. target.name)
 		self.actions.thunderii:use(target)
-	elseif player.classJob >= 6 and self.actions.thunder:canUse(target) then
+	elseif player.classJob < 26 and self.actions.thunder:canUse(target) then
 		log:print("Using Thunder on " .. target.name)
 		self.actions.thunder:use(target)
 	end
