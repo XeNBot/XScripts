@@ -100,8 +100,7 @@ function BlackMage:Combo(target, menu, log, aoe)
 	end
 
 	-- Rotation
-	if not self:HasThunder(target) and self:CanUseThunder(target) and (os.clock() - self.lastThunder) > 2 then
-		print(os.clock() - self.lastThunder)
+	if not self:HasThunder(target) and self:CanUseThunder(target) and (os.clock() - self.lastThunder) > 4 then
 		self:UseThunder(target, log)
 	elseif self.actions.triplecast:canUse() then
 		log:print("Using Triple Cast")
