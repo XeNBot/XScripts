@@ -14,7 +14,7 @@ function XSquadron:initialize()
 
 
 	-- Log Module
-	self.log    = LoadModule("XScriptsT", "/Utilities/Log")
+	self.log    = LoadModule("XScripts", "/Utilities/Log")
 	self.log.delay = false
 
 	-- Battle Name Filter
