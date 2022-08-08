@@ -35,6 +35,7 @@ function Dancer:Load(mainMenu)
 		self.menu["ACTIONS"]["RANGE_DPS_P"]["DNC"]:number("Minimum Target Range",    "AVANTRANGE", 25)
 		self.menu["ACTIONS"]["RANGE_DPS_P"]["DNC"]:checkbox("Use Contradance",       "CONTRA",     true)
 		self.menu["ACTIONS"]["RANGE_DPS_P"]["DNC"]:number("Min Enemies for Contra",  "CONTRAMIN",  3)
+		self.menu["ACTIONS"]["RANGE_DPS_P"]["DNC"]:slider("Max Enemy Range",         "CONTRARANGE", 1, 1, 15, 9)
 
 end
 
@@ -63,7 +64,7 @@ function Dancer:Tick(getTarget, log)
 
 	if self:HandleJumpToggle(log, menu) then return end
 
-	if menu["CONTRA"].bool and self.actions.contra:canUse() and ObjectManager.EnemiesAroundObject(player, 15) >= menu["CONTRAMIN"].int then
+	if menu["CONTRA"].bool and self.actions.contra:canUse() and ObjectManager.EnemiesAroundObject(player, menu["CONTRARANGE"].int) >= menu["CONTRAMIN"].int then
 		self.actions.contra:use()
 		log:print("Using Contradance")
 	elseif menu["WALTZ"].bool and self.actions.waltz:canUse() and player.missingHealth > 8000 and ObjectManager.AlliesAroundObject(player, 5) > 0 then
@@ -80,7 +81,7 @@ function Dancer:Tick(getTarget, log)
 		if  menu["STARFALL"].bool and self.actions.starfall:canUse(farTarget) then
 			self.actions.starfall:use(farTarget)
 			log:print("Using Starfall Dance on " .. farTarget.name)
-		elseif menu["AVANT"].bool and farTarget.pos:dist(player.pos) > 15 and self.actions.avant:canUse() then
+		elseif menu["AVANT"].bool and farTarget.yalmX > 15 and self.actions.avant:canUse() then
 			player:rotateTo(farTarget.pos)
 			self.actions.avant:use()
 			log:print("Using En Avant on " .. farTarget.name)

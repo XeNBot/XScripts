@@ -35,7 +35,7 @@ function XPVE:initialize()
 
 	self.ninja:Load(self.menu)
 	self.reaper:Load(self.menu)
-	self.samurai:Load(self.menu)
+	self.samurai:Load(self.menu, self.log)
 	self.dragoon:Load(self.menu)
 	--------------------------------------------------------------------
 	-- Callbacks
@@ -44,6 +44,9 @@ function XPVE:initialize()
 end
 
 function XPVE:Tick()
+
+	if player.castInfo.isCasting then return end
+
 	if player.classJob == 1 or  player.classJob == 19 then
 		self.paladin:Tick(self.log)
 	elseif player.classJob == 3 or player.classJob == 21 then
@@ -61,7 +64,7 @@ function XPVE:Tick()
 	elseif player.classJob == 31 then
 		self.machinist:Tick(self.log)
 	elseif player.classJob == 34 then
-		self.samurai:Tick(self.log)
+		self.samurai:Tick()
 	elseif player.classJob == 39 then
 	    self.reaper:Tick(self.log)
 	end

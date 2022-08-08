@@ -102,7 +102,7 @@ end
 
 function Bard:Weave(target, menu, log)
 	
-	if self.lastAction ~= self.actions.bloodletter.id and not self.actions.straightshot:canUse(trarget) and self.actions.bloodletter:canUse(target) then
+	if self.lastAction ~= self.actions.bloodletter.id and not self.actions.straightshot:canUse(target) and self.actions.bloodletter:canUse(target) then
 		log:print("Using Bloodletter on " .. target.name)
 		self.actions.bloodletter:use(target)
 		return true

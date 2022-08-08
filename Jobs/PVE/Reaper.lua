@@ -61,7 +61,7 @@ function Reaper:Tick(log)
 	local target = TargetManager.Target
 	local menu   = self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]
 
-	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 then return end
+	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.yalmX > 3 then return end
 
 	if self.menu["PREPULL_KEY"].keyDown then
 		return self:Prepull(log, target)

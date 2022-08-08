@@ -3,7 +3,7 @@ local XSquadron = Class("XSquadron")
 function XSquadron:initialize()
 
 	-- grid
-	self.grid       = LoadModule("XScripts", "/Waypoints/SquadronGrid")
+	self.grid     = LoadModule("XScripts", "/Waypoints/SquadronGrid")
 	-- missions
 	self.hatali     = LoadModule("XScripts", "/Missions/Hatali")
 	self.toto       = LoadModule("XScripts", "/Missions/TotoRak")
@@ -66,7 +66,8 @@ end
 function XSquadron:Tick()
 	self:DeathWatch()
 
-	if not self.started or ((os.clock() - self.lastShortcut) < 5) or ((os.clock() - self.lastEnter) < 6) then return end
+	if not self.started or ((os.clock() - self.lastShortcut) < 5) or ((os.clock() - self.lastEnter) < 6) or
+	((os.clock() - self.lastExit) < 5) then return end
 	
 	if self:Interactables() then return end
 
@@ -111,7 +112,9 @@ function XSquadron:OnExitSquadron()
 	self.menu["MISSIONS_FINISHED"].str = "Missions Finished: " .. tostring(self.stats.missions_finished)
 	self.log:print("Finished Mission: " .. self.missions[self.menu["MISSION_ID"].int + 1])
 	self.route = Route()
-	self.delivering = true	
+	self.delivering = true
+	local currentMapId = AgentModule.currentMapId
+	TaskManager:WalkToWaypoint(self.grid[tostring(currentMapId)].exit)
 end
 
 function XSquadron:OnShortCut()
@@ -230,8 +233,6 @@ end
 
 function XSquadron:Exit()
 	
-	if ((os.clock() - self.lastExit) < 5) then return end
-
 	local exit = ObjectManager.EventObject(function(obj) return obj.name == "Exit" end)
 
 	if exit.valid then

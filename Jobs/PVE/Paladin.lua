@@ -10,6 +10,7 @@ function Paladin:initialize()
 		fightorfly = Action(1, 20),
 		halone     = Action(1, 21),
 		scorn      = Action(1, 23),
+		shieldlob  = Action(1, 24),
 		ironwill   = Action(1, 28),
 		goring     = Action(1, 3538),
 		eclipse    = Action(1, 7381),
@@ -56,7 +57,9 @@ function Paladin:Tick(log)
 		self.actions.ironwill:use()
 	end
 
-	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) > 3 then return end
+	self:ProvokeCheck(log)
+
+	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) > 20 then return end
 
 
 	if ObjectManager.EnemiesAroundObject(player, 5) > 2 or player.healthPercent < 60 then
@@ -67,12 +70,11 @@ function Paladin:Tick(log)
 		end
 	end
 
-	--self:ProvokeCheck(log)
 
 	self:Rotate(target)
 
 	-- tries to cancel target actions
-	if target.isCasting then
+	if target.isCasting and target.pos:dist(player.pos) <= 4 then
 		if self.actions.interject:canUse(target) then
 			log:print("Using Interject on " .. target.name)
 			self.actions.interject:use(target)
@@ -87,6 +89,13 @@ end
 
 function Paladin:Combo(target, menu, log)
 	
+	if target.pos:dist(player.pos) > 3 then
+		if self.actions.shieldlob:canUse(target) then
+			self.actions.shieldlob:use(target)
+			log:print("Using Shield Lob on " .. target.name)
+		end
+		return
+	end
 
 	-- Riot Blade
 	if self.lastAction == self.actions.fastblade.id	and self.actions.riotblade:canUse(target) then
@@ -124,13 +133,13 @@ function Paladin:Combo(target, menu, log)
 end
 
 function Paladin:ProvokeCheck(log)
+	
 	if self.actions.provoke.recastTime == 0 then
-
-		local objects = ObjectManager.Battle(function(obj) return obj.subKind == 5 and obj.isTargetable and obj.pos:dist(player.pos) < 25 and obj.valid and obj.health > 0 end)
+		local objects = ObjectManager.Battle(function(obj) return obj.subKind == 5 and obj.isTargetable and obj.pos:dist(player.pos) < 20 and obj.valid and obj.health > 0 end)
 
 		if #objects > 0 then
 			for i, obj in ipairs(objects) do
-				if obj.valid and obj.targetId ~= 0 and obj.targetId ~= player.id then
+				if obj.valid and obj.targetId ~= player.id then
 					self:Rotate(obj)
 					log:print("Provoking " .. obj.name)
 					self.actions.provoke:use(obj)

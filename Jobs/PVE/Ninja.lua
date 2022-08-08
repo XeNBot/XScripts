@@ -19,7 +19,7 @@ function Ninja:initialize()
 
 		-- Ninjutsu
 		raiton        = Action(1, 2267),
-		doton         = Action(1, 2268),
+		hyoton        = Action(1, 2268),
 		huton         = Action(1, 2269),
 		doton         = Action(1, 2270),
 		suiton        = Action(1, 2271),
@@ -278,7 +278,7 @@ function Ninja:UseHyosho(log, target)
 	if self.hyoshoMode == 0 then
 		if self.actions.chi:canUse() and self.actions.jin:canUse() then
 			self.hyoshoMode = 1
-		elseif self.actions.ten:canUse() and sself.actions.jin:canUse() then
+		elseif self.actions.ten:canUse() and self.actions.jin:canUse() then
 			self.hyoshoMode = 2
 		end
 	elseif self.hyoshoMode == 1 then
@@ -309,7 +309,7 @@ function Ninja:UseRaiton(log, target)
 	if self.raitonMode == 0 then
 		if self.actions.chi:canUse() and self.actions.ten:canUse() then
 			self.raitonMode = 1
-		elseif self.actions.chi:canUse() and sself.actions.jin:canUse() then
+		elseif self.actions.chi:canUse() and self.actions.jin:canUse() then
 			self.raitonMode = 2
 		end
 	elseif self.raitonMode == 1 then

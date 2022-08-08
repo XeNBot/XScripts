@@ -24,7 +24,7 @@ function Hatali:Tick(main)
 
 	if ObjectManager.BattleEnemiesAroundObject(player, 15) > 0 then
 		if managerBusy and not self.safeWalk then TaskManager:Stop() end
-		local range = player.isMelee and 5 or 25
+		local range = player.isMelee and 20 or 25
 
 		self:HandleMobs(range, managerBusy)
 	else
@@ -59,7 +59,6 @@ function Hatali:HandleMobs(range, busy)
 			TargetManager.SetTarget(obj)
 			break
 		end
-
 	else
 		if target.name == "Thunderclap Guivre" then
 			local waypoint = Waypoint(self.main.grid["46"].dps_safe[1])
