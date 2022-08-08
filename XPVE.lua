@@ -20,6 +20,7 @@ function XPVE:initialize()
 	--------------------------------------------------------------------
 	-- Utilities
 	self.log         = LoadModule("XScripts", "\\Utilities\\Log")
+	self.lastToggle  = 0
 	--------------------------------------------------------------------
 	-- Menus
 	self.menu        = LoadModule("XScripts", "\\Menus\\XPVEMenu")	
@@ -45,7 +46,19 @@ end
 
 function XPVE:Tick()
 
-	if player.castInfo.isCasting then return end
+	if self.menu["ONOFF_KEY"].keyDown and (os.clock() - self.lastToggle) > 1 then
+		local menuName = "ONOFF"
+
+		if self.menu[menuName].bool then 
+			self.menu[menuName].bool = false
+		else
+			self.menu[menuName].bool = true
+		end
+		self.log:print("Turned PVE Rotations to " .. tostring(self.menu[menuName].bool))
+		self.lastToggle = os.clock()
+	end
+
+	if player.castInfo.isCasting or not self.menu["ONOFF"].bool then return end
 
 	if player.classJob == 1 or  player.classJob == 19 then
 		self.paladin:Tick(self.log)

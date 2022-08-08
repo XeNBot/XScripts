@@ -11,6 +11,8 @@ local menu = Menu("XPVE")
 
 	menu:space() menu:space()
 
+	menu:checkbox("Use Rotations", "ONOFF", true)
+	menu:hotkey("Toggle On / Off", "ONOFF_KEY", 84)
 	menu:hotkey("Prepull Key", "PREPULL_KEY", 90)
 
 return menu

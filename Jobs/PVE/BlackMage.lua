@@ -50,7 +50,7 @@ function BlackMage:initialize()
 
 	Callbacks:Add(CALLBACK_ACTION_EFFECT, function(source, pos, actionId, targetId)
 
-		if source == player then
+		if source == player and actionId ~= 7 then
 			self.actionBeforeLast = self.lastAction
 			self.lastAction       = actionId
 
@@ -118,9 +118,6 @@ function BlackMage:Combo(target, menu, log, aoe)
 		end
 	elseif not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
 		self:UseThunder(target, log, aoe)
-	elseif self.actions.triplecast:canUse() then
-		log:print("Using Triple Cast")
-		self.actions.triplecast:use()
 	elseif self:CanUseFire(target, aoe) then
 		self:UseFire(target, log, aoe)
 	elseif self:CanUseBlizzard(target, aoe) then
@@ -165,10 +162,15 @@ function BlackMage:Weave(target, log, aoe)
 		log:print("Using Ley Lines")
 		self.actions.leylines:use()
 		return true
-	elseif self.lastAction == self.actions.triplecast.id and self.actions.despair:canUse(target) and self.lastElement.name == "fire"  then
-		log:print("Using Despair on " .. target.name)
-		self.actions.despair:use(target)
-		return true
+	elseif self.lastAction == self.actions.triplecast.id then
+		if self.actions.despair:canUse(target) and self.lastElement.name == "fire"  then
+			log:print("Using Despair on " .. target.name)
+			self.actions.despair:use(target)
+			return true
+		elseif self:CanUseFire(target, aoe) then
+			self:UseFire(target, log, aoe)
+			return true
+		end
 	elseif self.lastAction == self.actions.despair.id then
 		if self.actionBeforeLast == self.actions.triplecast.id and self.actions.manafront:canUse()  then
 			log:print("Using Manafront")
@@ -249,8 +251,7 @@ function BlackMage:CanUseFire(target, aoe)
 	else
 		return 
 			player.classLevel <  35 and self.actions.fire:canUse(target) or
-			player.classLevel <  60 and self.actions.fireiii:canUse(target) or
-			player.classLevel >= 60 and self.actions.fireiv:canUse(target)
+			self.actions.fireiv:canUse(target) or self.actions.fireiii:canUse(target)			
 	end
 
 end
@@ -269,7 +270,7 @@ function BlackMage:UseFire(target, log, aoe)
 		if self.actions.fireiv:canUse(target) then
 			log:print("Using Fire IV on " .. target.name)
 			self.actions.fireiv:use(target)
-		elseif player.classLevel < 60 and self.actions.fireiii:canUse(target) then
+		elseif self.actions.fireiii:canUse(target) then
 			log:print("Using Fire III on " .. target.name)
 			self.actions.fireiii:use(target)
 		elseif player.classLevel < 35 and self.actions.fire:canUse(target) then
@@ -289,8 +290,7 @@ function BlackMage:CanUseBlizzard(target, aoe)
 	else
 		return 
 			player.classLevel < 35 and self.actions.blizzard:canUse(target) or
-			player.classLevel < 60 and self.actions.blizzardiii:canUse(target) or
-			self.actions.blizzardiv:canUse(target)
+			self.actions.blizzardiv:canUse(target) or self.actions.blizzardiii:canUse(target)			
 	end
 
 end
