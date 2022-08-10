@@ -83,7 +83,7 @@ function BlackMage:Tick(log)
 
 	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) > 25 then return end
 
-	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5) > 0
+	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5) > 1
 
 	if player.manaPercent < 70 and player.classLevel < 72 and self.actions.manafront:canUse() then
 		log:print("Using Manafront")
@@ -104,7 +104,7 @@ function BlackMage:Combo(target, menu, log, aoe)
 	if self.lastAction == self.actions.xenoglossy.id and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
-	elseif self.lastAction == self.actions.blizzardiii.id and player.classLevel >= 70 then
+	elseif self.lastAction == self.actions.blizzardiii.id and player.classLevel >= 70 and player.gauge.polyglotStacks > 0 then
 		if aoe or player.classLevel < 80 then
 			if self.actions.foul:canUse(target) then
 				log:print("Using Foul on " .. target.name)
@@ -127,7 +127,7 @@ function BlackMage:Combo(target, menu, log, aoe)
 end
 
 function BlackMage:Weave(target, log, aoe)
-	if self:LastActionIs("thunder") and self.actions.triplecast:canUse() then
+	if self:LastActionIs("thunder") and self.actions.triplecast.recastTime == 0 and player.classLevel >= 66 then
 		log:print("Using Triple Cast")
 		self.actions.triplecast:use()
 	elseif self:LastActionIs("fire") then
@@ -148,7 +148,7 @@ function BlackMage:Weave(target, log, aoe)
 			elseif self.actions.swiftcast:canUse() then
 				log:print("Using Swift Cast")
 				self.actions.swiftcast:use()
-			elseif self.actions.triplecast:canUse() then
+			elseif self.actions.triplecast.recastTime == 0 and player.classLevel >= 66 then
 				log:print("Using Triple Cast")
 				self.actions.triplecast:use()
 				return true
@@ -227,7 +227,7 @@ function BlackMage:LastActionIs(stringName)
 	return false
 end
 
-function BlackMage:FireCost(aoe)
+function BlackMage:FireCost(target, aoe)
 	if aoe then
 		return
 			player.classLevel < 82 and self.actions.fireii.cost or self.actions.highfireii.cost
@@ -236,13 +236,13 @@ function BlackMage:FireCost(aoe)
 		return 
 			player.classLevel <  35 and self.actions.fire.cost or
 			player.classLevel <  60 and self.actions.fireiii.cost or
-			player.classLevel >= 60 and self.actions.fireiv.cost
+			player.classLevel >= 60 and self.actions.fireiv:canUse(target) and self.actions.fireiv.cost or self.actions.fireiii.cost
 	end
 end
 
 function BlackMage:CanUseFire(target, aoe)
 	
-	if player.mana < self:FireCost(aoe) then return false end
+	if player.mana < self:FireCost(target, aoe) then return false end
 
 	if aoe then
 		return
