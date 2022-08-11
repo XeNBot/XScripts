@@ -118,7 +118,7 @@ function BlackMage:Combo(target, menu, log, aoe)
 		end
 	elseif not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
 		self:UseThunder(target, log, aoe)
-	elseif self:CanUseFire(target, aoe) then
+	elseif self:CanUseFire(target, aoe) and player.mana > (self:FireCost(target, aoe) + self:BlizzardCost(target, aoe)) then
 		self:UseFire(target, log, aoe)
 	elseif self:CanUseBlizzard(target, aoe) then
 		self:UseBlizzard(target, log, aoe)
@@ -279,6 +279,19 @@ function BlackMage:UseFire(target, log, aoe)
 		end
 	end
 
+end
+
+function BlackMage:BlizzardCost(target, aoe)
+	if aoe then
+		return
+			player.classLevel < 82 and self.actions.blizzardii.cost or self.actions.blizzardii.cost
+
+	else
+		return 
+			player.classLevel <  35 and self.actions.blizzard.cost or
+			player.classLevel <  60 and self.actions.blizzardiii.cost or
+			player.classLevel >= 60 and self.actions.blizzardiv:canUse(target) and self.actions.blizzardiv.cost or self.actions.blizzardiii.cost
+	end
 end
 
 function BlackMage:CanUseBlizzard(target, aoe)
