@@ -83,6 +83,14 @@ function BlackMage:Tick(log)
 
 	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) > 25 then return end
 
+	print("== DebugInfo ==")
+	for id, status in pairs(target.status) do
+		print("Target Has Status ID: ", status.id, status.count, status.remainingTime)
+	end
+	print("player polyglotStacks:", player.gauge.polyglotStacks)
+	print("player Can Use Despair:", self.actions.despair:canUse(target))
+
+
 	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5) > 1
 
 	if player.manaPercent < 70 and player.classLevel < 72 and self.actions.manafront:canUse() then
@@ -101,7 +109,7 @@ function BlackMage:Combo(target, menu, log, aoe)
 	if self:Weave(target, log, aoe) then return end
 
 	-- Rotation
-	if self.lastAction == self.actions.xenoglossy.id and self.actions.paradox:canUse(target) then
+	if (self.lastAction == self.actions.xenoglossy.id or self.lastAction == self.actions.foul.id) and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
 	elseif self.lastAction == self.actions.blizzardiii.id and player.classLevel >= 70 and player.gauge.polyglotStacks > 0 then
