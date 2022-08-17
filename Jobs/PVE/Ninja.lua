@@ -29,6 +29,9 @@ function Ninja:initialize()
 		bhavacakra    = Action(1, 7402),
 		tenchijin     = Action(1, 7403),
 
+		secondwind    = Action(1, 7541),
+		bloodbath     = Action(1, 7542),
+
 		meisui        = Action(1, 16489),
 		hyosho        = Action(1, 16492);
 		bunshin       = Action(1, 16493),
@@ -92,6 +95,7 @@ function Ninja:Load(mainMenu)
 	self.menu = mainMenu
 
 	self.menu["ACTIONS"]["MELEE_DPS"]:subMenu("Ninja", "NIN")
+	self.menu["ACTIONS"]["MELEE_DPS"]["NIN"]:slider("Min Health Percent for Second Wind", "SECONDWIND_HEALTH", 1, 1, 100, 30)
 end
 
 function Ninja:Tick(log)
@@ -101,6 +105,13 @@ function Ninja:Tick(log)
 	local ninki      = player.gauge.ninki
 	local hutonTimer = player.gauge.hutonTimer
 
+	if player.healthPercent <= menu["SECONDWIND_HEALTH"].int then
+		if self.actions.secondwind:canUse() then
+			self.actions.secondwind:use()
+		elseif self.actions.bloodbath:canUse() then
+			self.actions.bloodbath:use()
+		end
+	end
 
 	if self.menu["PREPULL_KEY"].keyDown then
 		if not self.prepull.performing  then
