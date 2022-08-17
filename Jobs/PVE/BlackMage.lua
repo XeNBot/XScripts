@@ -83,13 +83,6 @@ function BlackMage:Tick(log)
 
 	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) > 25 then return end
 
-	print("== DebugInfo ==")
-	for id, status in pairs(target.status) do
-		print("Target Has Status ID: ", status.id, status.count, status.remainingTime)
-	end
-	print("player polyglotStacks:", player.gauge.polyglotStacks)
-	print("player Can Use Despair:", self.actions.despair:canUse(target))
-
 
 	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5) > 1
 
@@ -109,10 +102,10 @@ function BlackMage:Combo(target, menu, log, aoe)
 	if self:Weave(target, log, aoe) then return end
 
 	-- Rotation
-	if (self.lastAction == self.actions.xenoglossy.id or self.lastAction == self.actions.foul.id) and self.actions.paradox:canUse(target) then
+	if player.classLevel >= 90 and player.gauge.paradoxActive and player.gauge.isUmbralIce and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
-	elseif self.lastAction == self.actions.blizzardiii.id and player.classLevel >= 70 and player.gauge.polyglotStacks > 0 then
+	elseif player.gauge.polyglotStacks > 0 then
 		if aoe or player.classLevel < 80 then
 			if self.actions.foul:canUse(target) then
 				log:print("Using Foul on " .. target.name)
@@ -144,6 +137,9 @@ function BlackMage:Weave(target, log, aoe)
 				log:print("Using Sharp Cast")
 				self.actions.sharpcast:use()
 			end
+		elseif self.lastElement.count > 2 and self.actions.despair:canUse(target) then
+			log:print("Using Despair on " .. target.name)
+			self.actions.despair:use(target)
 		elseif self.lastElement.count > 1 then
 			if player.classJob < 86 and self.actions.leylines:canUse() then
 				log:print("Using Ley Lines")
