@@ -46,7 +46,7 @@ end
 
 function Ninja:Execute(log)
 
-	local list = AgentModule.currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
+	local list = AgentManager.GetAgent("Map").currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
 
 	for i, object in ipairs(list) do
 		if object.pos:dist(player.pos) < 20 and object.healthPercent < 50 and not object:hasStatus(3054) and self.actions.seiton:canUse(object) then

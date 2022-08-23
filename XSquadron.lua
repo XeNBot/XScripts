@@ -2,26 +2,19 @@ local XSquadron = Class("XSquadron")
 
 function XSquadron:initialize()
 
-	-- grid
-	self.grid     = LoadModule("XScripts", "/Waypoints/SquadronGrid")
-	-- missions
-	self.hatali     = LoadModule("XScripts", "/Missions/Hatali")
-	self.toto       = LoadModule("XScripts", "/Missions/TotoRak")
-	self.brayflox   = LoadModule("XScripts", "/Missions/Brayflox")
-	self.stonevigil = LoadModule("XScripts", "/Missions/StoneVigil")
-
-	self.missions = { "Hatali", "Torok-Rak", "Brayflox's Longstop", "Stone Vigil" }
-
-
-	-- Log Module
-	self.log    = LoadModule("XScripts", "/Utilities/Log")
-	self.log.delay = false
-
-	-- Battle Name Filter
+	--[[ ==== Grid === ]]--
+	self.grid          = LoadModule("XScripts", "/Waypoints/SquadronGrid")
+	--[[ ==== Interactables === ]]--
+	self.interactables = LoadModule("XScripts", "/Enums/Interactables")
+	--[[ ==== Log === ]]--
+	self.log           = LoadModule("XScripts", "/Utilities/Log")
+	--[[ ==== BattleNPC Filter === ]]--
 	self.b_filter = {
-
-		["Brayflox Alltalks"] = true,
-		["Goblin Pathfinder"] = true,
+		[108]   = true,
+		[1298]  = true,
+		[1299]  = true,
+		[1300]  = true,
+		[10484] = true,
 	}
 	-- Actions
 	self.actions = {
@@ -41,12 +34,8 @@ function XSquadron:initialize()
 		[2] = true,
 	}
 
-	-- Company Seals Cost		
-	self.seal_cost = {1000, 1200, 1600, 2000}
-
 	self.started = false
 	self.route   = Route()
-	self.died    = false
 	
 	self.lastExit     = 0
 	self.lastEnter    = 0
@@ -57,24 +46,32 @@ function XSquadron:initialize()
 	self.delivering   = false
 	self.deliverRoute = Route()
 
-	self:InitializeMenu()
+	self:SetupMissions()
+	self:SetupCallbacks()
+	self:InitializeMenu()	
 
-	Callbacks:Add(CALLBACK_PLAYER_TICK, function () self:Tick() end)
-	Callbacks:Add(CALLBACK_PLAYER_DRAW, function () self:Draw() end)
+	Callbacks:Add(CALLBACK_PLAYER_TICK, self.callbacks.Tick)
+	Callbacks:Add(CALLBACK_PLAYER_DRAW, self.callbacks.Draw)
 end
 
 function XSquadron:Tick()
-	self:DeathWatch()
 
 	if not self.started or ((os.clock() - self.lastShortcut) < 5) or ((os.clock() - self.lastEnter) < 6) or
-	((os.clock() - self.lastExit) < 5) then return end
+	((os.clock() - self.lastExit) < 5) or _G.Evading then return end
 	
+	if self.currentMission == nil then
+		return switch(self.menu["MISSION_ID"].int, self.currentMissionMenuSwitch)
+	end
+
+
 	if self:Interactables() then return end
 
-	local currentMapId = AgentModule.currentMapId
 
+	local currentMapId = AgentManager.GetAgent("Map").currentMapId
+
+	
 	if currentMapId == 308 then
-		if Game.CompanySeals >= self.seal_cost[self.menu["MISSION_ID"].int + 1] and not self.delivering then
+		if Game.CompanySeals >= self.currentMission.cost and not self.delivering then
 			self:HandleLobby(currentMapId)
 		else
 			if self.delivered then
@@ -92,47 +89,132 @@ function XSquadron:Tick()
 		if self:InTown() then
 			self:HandleTown(currentMapId)
 		else
-			self:HandleMission(currentMapId)					
+			self.currentMission.module:Tick(self)				
 		end
 	end
 end
 
-function XSquadron:OnEnterSquadron()
-	self.stats.missions_started = self.stats.missions_started + 1
-	self.menu["MISSIONS_ENTERED"].str = "Missions Entered: " .. tostring(self.stats.missions_started)
-	self.log:print("Entered Mission: " .. self.missions[self.menu["MISSION_ID"].int + 1])
-	self.delivered  = false
-	self.delivering = false
-	self.deliverRoute = Route()
-	self.route = Route()
+function XSquadron:SetupMissions()
+
+	--[[ ==== Mission Variables === ]]--
+	self.currentMission           = nil
+	self.currentMissionMenuSwitch = nil
+	self.missions = {
+		hatali     = {
+			name      = "Hatali",
+			cost      = 1000,
+			module    = LoadModule("XScriptsT", "/Missions/Hatali"),
+			mapId     = 46,
+			menuIndex = 0,
+		},
+		torok      = {
+			name      = "Torok-Rak",
+			cost      = 1200,
+			module    = LoadModule("XScriptsT", "/Missions/TotoRak"),
+			mapId     = 9,
+			menuIndex = 1,
+		},
+		brayflox    = {
+			name      = "Brayflox's Longstop",
+			cost      = 1600,
+			module    = LoadModule("XScriptsT", "/Missions/Brayflox"),
+			mapId     = 45,
+			menuIndex = 2,
+		},
+		stonevigil = {
+			name      = "Stone Vigil",
+			cost      = 2000,
+			module    = LoadModule("XScriptsT", "/Missions/StoneVigil"),
+			mapId     = 37,
+			menuIndex = 3,
+		},
+		aurumvale = {
+			name      = "The Aurum Vale",
+			cost      = 2400,
+			module    = LoadModule("XScriptsT", "/Missions/AurumVale"),
+			mapId     = 38,
+			menuIndex = 5,
+		},
+	}
+
+	for mission, info in pairs(self.missions) do
+		info.module:SetMainModule(self)
+	end
+
+
+	self.currentMissionMenuSwitch = {
+		[0] = function ()
+			self.currentMission = self.missions.hatali
+		end,
+		[1] = function()
+			self.currentMission = self.missions.torok
+		end,
+		[2] = function()
+			self.currentMission = self.missions.brayflox
+		end,
+		[3] = function()
+			self.currentMission = self.missions.stonevigil
+		end,
+		[4] = function()
+			self.currentMission = self.missions.aurumvale
+		end,
+	}	
+
 end
 
-function XSquadron:OnExitSquadron()
-	self.stats.missions_finished = self.stats.missions_finished + 1
-	self.menu["MISSIONS_FINISHED"].str = "Missions Finished: " .. tostring(self.stats.missions_finished)
-	self.log:print("Finished Mission: " .. self.missions[self.menu["MISSION_ID"].int + 1])
-	self.route = Route()
-	self.delivering = true
-	local currentMapId = AgentModule.currentMapId
-	TaskManager:WalkToWaypoint(self.grid[tostring(currentMapId)].exit)
+function XSquadron:SetupCallbacks()
+	
+	self.callbacks = {
+
+		Tick          = function () return self:Tick() end,
+		Draw          = function () return self:Draw() end,
+		EnterSquadron = function ()
+			self.stats.missions_started        = self.stats.missions_started + 1
+			self.menu["MISSIONS_ENTERED"].str  = "Missions Entered: " .. tostring(self.stats.missions_started)			
+			self.route                         = Route()
+			self.deliverRoute                  = Route()
+			self.delivered                     = false
+			self.delivering                    = false
+			self.log:print("Entered Mission: " .. self.currentMission.name)			
+			
+		end,
+		ExitSquadron = function ()
+			self.stats.missions_finished        = self.stats.missions_finished + 1
+			self.menu["MISSIONS_FINISHED"].str  = "Missions Finished: " .. tostring(self.stats.missions_finished)
+			self.route                          = Route()
+			self.deliverRoute                   = Route()
+			self.delivering                     = true
+			self.log:print("Finished Mission: " .. self.currentMission.name)
+		end,
+		Shortcut = function ()
+			self.route        = Route()
+			self.lastShortcut = os.clock()			
+			self.log:print("Using Shortcut")
+		end,
+		ExpertDelivery = function()
+			self.delivering   = false
+			self.delivered    = true
+			self.deliverRoute = Route()
+			self.log:print("Finished Delivering all items! now we have " .. tostring(Game.CompanySeals) .. " Company Seals")
+		end,
+		WalkToWaypoint = function (waypoint)
+			if not self:InTown() then
+				if (self.route.index < #self.route.waypoints) then
+					self.route.index = self.route.index + 1
+				end
+			else
+				if (self.deliverRoute.index < #self.deliverRoute.waypoints) then
+					self.deliverRoute.index = self.deliverRoute.index + 1
+				end
+			end
+		end,
+		InteractFilter = function(obj) return obj.pos:dist(player.pos) < 5 and obj.isTargetable end
+
+	}
+
 end
 
-function XSquadron:OnShortCut()
-	self.lastShortcut = os.clock()
-	self.log:print("Using Shortcut")
-	self.route = Route()
-end
 
-function XSquadron:InteractFilter(obj)
-	return obj.pos:dist(player.pos) < 5 and obj.isTargetable
-end
-
-function XSquadron:OnExpertDelivery()
-	self.delivering   = false
-	self.delivered    = true
-	self.deliverRoute = Route()
-	self.log:print("Finished Delivering all items! now we have " .. tostring(Game.CompanySeals) .. " Company Seals")
-end
 
 function XSquadron:HandleLobby(mapId)
 	local sergeant = ObjectManager.EventNpcObject(function(obj) return string.find(obj.name, "Sergeant") end)
@@ -140,7 +222,7 @@ function XSquadron:HandleLobby(mapId)
 	if sergeant.valid and not TaskManager:IsBusy() then
 		player:rotateTo(sergeant.pos)
 		player:rotateCameraTo(sergeant.pos)
-		TaskManager:EnterSquadron(sergeant, self.menu["MISSION_ID"].int, function () self:OnEnterSquadron() end)
+		TaskManager:EnterSquadron(sergeant, self.currentMission.menuIndex, self.callbacks.EnterSquadron)
 		self.lastEnter = os.clock()
 	end
 end
@@ -148,7 +230,7 @@ end
 function XSquadron:Interactables()
 	
 	if self.delivering then
-		local exit = ObjectManager.EventObject(function(obj) return string.find(obj.name, "Exit") and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
+		local exit = ObjectManager.EventObject(function(obj) return self.interactables.exits[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
 		if exit.valid and not TaskManager:IsBusy() then
 			player:rotateTo(exit.pos)
 			player:rotateCameraTo(exit.pos)
@@ -159,15 +241,15 @@ function XSquadron:Interactables()
 
 	if self:InTown() then
 		if self.delivering then
-			local officer = ObjectManager.EventNpcObject(function(obj) return string.find(obj.name, "Personnel Officer") and obj.pos:dist(player.pos) < 4 and obj.isTargetable end)
+			local officer = ObjectManager.EventNpcObject(function(obj) return obj.dataId == 1002394 and obj.pos:dist(player.pos) < 4 and obj.isTargetable end)
 			if officer.valid and not TaskManager:IsBusy() then
 				player:rotateCameraTo(officer.pos)
 				player:rotateTo(officer.pos)
-				TaskManager:ExpertDelivery(officer, function() self:OnExpertDelivery() end)
+				TaskManager:ExpertDelivery(officer, self.callbacks.ExpertDelivery)
 				return true
 			end
 		else
-			local entrance = ObjectManager.EventObject(function(obj) return string.find(obj.name, "Entrance") and obj.pos:dist(player.pos) < 5 and obj.isTargetable end)
+			local entrance = ObjectManager.EventObject(function(obj) return self.interactables.entrances[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 5 and obj.isTargetable end)
 			if entrance.valid and not TaskManager:IsBusy() then
 				player:rotateCameraTo(entrance.pos)
 				player:rotateTo(entrance.pos)
@@ -177,17 +259,16 @@ function XSquadron:Interactables()
 		end
 	end
 
-
 	local treasure = ObjectManager.TreasureObject(function(obj) return obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
 	if treasure.valid then
 		player:rotateTo(treasure.pos)
 		TaskManager:Interact(treasure)	
 		return true
 	end
-	local shortcut = ObjectManager.EventObject(function(obj) return obj.name == "Shortcut" and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
+	local shortcut = ObjectManager.EventObject(function(obj) return self.interactables.shortcuts[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
 	if shortcut.valid then
 		player:rotateTo(shortcut.pos)
-		TaskManager:Interact(shortcut, function() self:OnShortCut() end)
+		TaskManager:Interact(shortcut, self.callbacks.Shortcut)
 	end	
 
 	return false
@@ -197,7 +278,7 @@ function XSquadron:HandleTown(mapId)
 
 	local map = self.grid[tostring(mapId)]
 
-	if Game.CompanySeals < self.seal_cost[self.menu["MISSION_ID"].int + 1] then
+	if Game.CompanySeals < self.currentMission.cost then
 		if not self.delivering and not self.delivered then
 			self.log:print("Need more seals for mission, trying Expert Delivery")
 			self.delivering = true
@@ -213,84 +294,8 @@ function XSquadron:HandleTown(mapId)
 	if not self.deliverRoute.finished then
 		self.deliverRoute:builda(map.nodes, self.delivering and map.officer or map.entrance)
 	else
-		TaskManager:WalkToWaypoint(self.deliverRoute.waypoints[self.deliverRoute.index], function(waypoint) self:OnWalkToWayPoint(waypoint) end)
+		TaskManager:WalkToWaypoint(self.deliverRoute.waypoints[self.deliverRoute.index], function(waypoint) self.callbacks.WalkToWaypoint(waypoint) end)
 	end
-end
-
-
-function XSquadron:HandleMission(mapId)
-	if mapId == 9 then
-		self.toto:Tick(self)
-	elseif mapId == 37 then
-		self.stonevigil:Tick(self)
-	elseif mapId == 45 then
-		self.brayflox:Tick(self)
-	elseif 46 then
-		self.hatali:Tick(self)
-	end
-end
-
-
-function XSquadron:Exit()
-	
-	local exit = ObjectManager.EventObject(function(obj) return obj.name == "Exit" end)
-
-	if exit.valid then
-		TaskManager:Interact(exit, function() self:OnExitSquadron() end)
-		self.lastExit = os.clock()
-	end
-
-end
-
-function XSquadron:OnWalkToWayPoint(waypoint)
-
-	if not self:InTown() then
-		if (self.route.index < #self.route.waypoints) then
-			self.route.index = self.route.index + 1
-		end
-	else
-		if (self.deliverRoute.index < #self.deliverRoute.waypoints) then
-			self.deliverRoute.index = self.deliverRoute.index + 1
-		end
-	end
-
-end
-
-function XSquadron:DeathWatch()
-	if player.isDead or player.health == 0 and not self.died then
-		self.died = true
-		TaskManager:Stop()
-	elseif self.died and player.health > 0 then
-		TaskManager:Stop()
-		self.died = false
-		self.route = Route()
-		self.stats.times_died = self.stats.times_died + 1
-		self.log:print("Oh noes we died! reviving....")
-		self.menu["TIMES_DIED"].str = "Times We've Died: " .. tostring(self.stats.times_died)
-	end
-end
-
-function XSquadron:HandleMobs(range)
-
-	local target = TargetManager.Target
-
-	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 then
-
-		local objects = ObjectManager.Battle( function(target) 
-			return self.b_filter[target.name] ~= true and target.isTargetable and not target.isDead and target.pos:dist(player.pos) < range 
-		end )
-
-		for i, obj in ipairs(objects) do
-			self.log:print("Set new Target: " .. obj.name)
-			Keyboard.SendKey(38)
-			TargetManager.SetTarget(obj)
-			break
-		end
-
-	else
-		player:rotateTo(target.pos)
-	end
-	
 end
 
 function XSquadron:Draw()
@@ -304,14 +309,14 @@ end
 
 function XSquadron:DrawNodes(maxDistance)
 
-	local currentMapId = tostring(AgentModule.currentMapId)
-
+	local currentMapId = AgentManager.GetAgent("Map").currentMapId
+	
 	if self.grid[currentMapId] ~= nil and self.grid[currentMapId].nodes ~= nil then
 		for i, waypoint in ipairs(self.grid[currentMapId].nodes.waypoints) do
 			if waypoint.pos:dist(player.pos) < maxDistance then
 				Graphics.DrawCircle3D(waypoint.pos, 20, 1, Colors.Green)
 				if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
-					Graphics.DrawText3D(waypoint.pos, "[" ..tostring(player.pos:dist(waypoint.pos)).."]("..tostring(i)..")", 10)
+					Graphics.DrawText3D(waypoint.pos, "[" ..tostring(player.pos:dist(waypoint.pos)).."]("..tostring(i)..")", 10, Colors.Green)
 					if waypoint.pos:dist(player.pos) < 5 and #waypoint.links > 0 then
 						for i, link in ipairs(waypoint.links) do
 							Graphics.DrawLine3D(waypoint.pos, link.pos, Colors.Blue)
@@ -324,7 +329,8 @@ function XSquadron:DrawNodes(maxDistance)
 end
 
 function XSquadron:InTown()
-	return self.towns[AgentModule.currentMapId] == true
+
+	return self.towns[AgentManager.GetAgent("Map").currentMapId] == true
 end
 
 function XSquadron:ToggleStartBtn()
@@ -345,7 +351,7 @@ function XSquadron:InitializeMenu()
 
 	self.menu:label("~=[ XSquadron Ver 1.0 ]=~") self.menu:separator() self.menu:space()
 
-	self.menu:combobox("Mission Selector", "MISSION_ID", self.missions, 0)
+	self.menu:combobox("Mission Selector", "MISSION_ID", { "Hatali", "Torok-Rak", "Brayflox's Longstop", "Stone Vigil", "The Aurum Vale" }, 0)
 
 	self.menu:checkbox("Deliver Collectables", "EXPERT_DELIVERY", true) 
 	self.menu:checkbox("Auto Pick Best Mission", "AUTO_PICK", true)

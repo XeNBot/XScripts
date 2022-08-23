@@ -39,6 +39,12 @@ function BlackMage:initialize()
 		paradox         = Action(1, 25797),
 	}
 
+	self.buffs = {
+		swiftcast  = 167,
+		sharpcast  = 867,
+        triplecast = 1211;
+	}
+
 	self.menu = nil
 	self.lastAction       = 0
 	self.actionBeforeLast = 0
@@ -81,7 +87,7 @@ function BlackMage:Tick(log)
 	local menu   = self.menu["ACTIONS"]["RANGE_DPS_M"]["BLM"]
 	local target = TargetManager.Target
 
-	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) > 25 then return end
+	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) > 25 then return end
 
 
 	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5) > 1
@@ -137,9 +143,14 @@ function BlackMage:Weave(target, log, aoe)
 				log:print("Using Sharp Cast")
 				self.actions.sharpcast:use()
 			end
-		elseif self.lastElement.count > 2 and self.actions.despair:canUse(target) then
-			log:print("Using Despair on " .. target.name)
-			self.actions.despair:use(target)
+		elseif self.lastElement.count > 2 then
+			if player.gauge.paradoxActive and self.actions.paradox:canUse(target) then
+				log:print("Using Paradox on " .. target.name)
+				self.actions.paradox:use(target)
+			elseif self.actions.despair:canUse(target) then
+				log:print("Using Despair on " .. target.name)
+				self.actions.despair:use(target)
+			end
 		elseif self.lastElement.count > 1 then
 			if player.classJob < 86 and self.actions.leylines:canUse() then
 				log:print("Using Ley Lines")
@@ -162,6 +173,9 @@ function BlackMage:Weave(target, log, aoe)
 				return true
 			end
 		end
+	elseif self.lastAction == self.actions.blizzardiv.id and player.gauge.paradoxActive and self.actions.paradox:canUse(target) then
+		log:print("Using Paradox on " .. target.name)
+		self.actions.paradox:use(target)
 	elseif self.lastAction == self.actions.amplifier.id and self.actions.leylines:canUse()  then
 		log:print("Using Ley Lines")
 		self.actions.leylines:use()

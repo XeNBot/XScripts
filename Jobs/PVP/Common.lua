@@ -131,7 +131,7 @@ function Common:Tick(log)
 	local menu    = self.menu["ACTIONS"]["COMMON"]
 	if self.log == nil then self.log = log end
 
-	if AgentModule.currentMapId ~= 51 and  menu["SPRINT"].bool and ObjectManager.EnemiesAroundObject(player, 30) == 0 and not player:hasStatus(1342) and actions.sprint:canUse() then
+	if AgentManager.GetAgent("Map").currentMapId ~= 51 and  menu["SPRINT"].bool and ObjectManager.EnemiesAroundObject(player, 30) == 0 and not player:hasStatus(1342) and actions.sprint:canUse() then
 		actions.sprint:use()
 		log:print("Using Sprint")
 		return true

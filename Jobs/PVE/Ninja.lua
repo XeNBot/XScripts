@@ -138,7 +138,7 @@ function Ninja:Tick(log)
 
 	if self.prepull.performing then
 		self:StandardPrePull(target, menu, log, hutonTimer)
-	elseif target.valid then
+	elseif target.valid and target.kind == 2 and target.subKind == 5 then
 		self:Combo(target, menu, log, hutonTimer, ninki)
 	end
 end

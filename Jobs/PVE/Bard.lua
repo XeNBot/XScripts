@@ -51,7 +51,7 @@ function Bard:Tick(log)
 		self.actions.secondwind:use()
 	end
 
-	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) > 25 then return end
+	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) > 25 then return end
 
 	if target.castInfo.isInterruptible and self.actions.headgrace:canUse(target) then
 		self.actions.headgrace:use(target)

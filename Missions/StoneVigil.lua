@@ -1,8 +1,10 @@
-local StoneVigil = Class("StoneVigil")
+local Mission  = LoadModule("XScripts", "/Missions/Mission")
+
+local StoneVigil = Class("StoneVigil", Mission)
 
 function StoneVigil:Tick(main)
 
-	local currentMapId = AgentModule.currentMapId	
+	local currentMapId = AgentManager.GetAgent("Map").currentMapId	
 	local nodes        = main.grid[tostring(currentMapId)].nodes
 	local waypoints    = nodes.waypoints
 	local goal         = waypoints[#waypoints].pos
@@ -32,7 +34,7 @@ end
 
 function StoneVigil:Interactables(main)
 
-	local gate = ObjectManager.EventObject(function(obj) return obj.name == "Strongroom Gate" and main:InteractFilter(obj) end)
+	local gate = ObjectManager.EventObject(function(obj) return obj.npcId == 2001880 and main:InteractFilter(obj) end)
 	if gate.valid then
 		player:rotateTo(gate.pos)
 		TaskManager:Interact(gate)

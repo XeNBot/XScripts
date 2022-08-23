@@ -72,7 +72,15 @@ end
 
 function XPVP:Tick()
 	-- PVP Maps
-	if not Game.InPvPArea and not Game.InPvPInstance and AgentModule.currentMapId ~= 51 then return end
+	local mapId = 0
+
+	local agentMap = AgentManager.GetAgent("Map")
+
+	if agentMap ~= nil then
+		mapId = agentMap.currentMapId
+	end
+
+	if not Game.InPvPArea and not Game.InPvPInstance and mapId ~= 51 then return end
 	-- Guard
 	if player:hasStatus(3054) then return end
 	-- Invisible
@@ -151,7 +159,16 @@ end
 
 function XPVP:GetTarget(range)
 	-- PVP Training Map
-	if AgentModule.currentMapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
+
+	local mapId = 0
+
+	local agentMap = AgentManager.GetAgent("Map")
+
+	if agentMap ~= nil then
+		mapId = agentMap.currentMapId
+	end
+
+	if mapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
 		return TargetManager.Target
 	end
 

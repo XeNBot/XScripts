@@ -1,70 +1,35 @@
-local Brayflox = Class("Brayflox")
+local Mission  = LoadModule("XScripts", "/Missions/Mission")
+
+local Brayflox = Class("Brayflox", Mission)
 
 function Brayflox:initialize()
-	
+
+	Mission.initialize(self)
+
 	-- Runstop Headgate Key
 	self.headgate_key = 2000521
 	self.opened_gate  = false
 
+	self:AddExitCallback(function () self.opened_gate = false end)
+
 end
 
-function Brayflox:Tick(main)
-	local currentMapId = AgentModule.currentMapId
-	local nodes        = main.grid[tostring(currentMapId)].nodes
-	local waypoints    = nodes.waypoints
-	local goal         = waypoints[#waypoints].pos
+function Brayflox:CustomInteract()
 
-	if self:Interactables(main) then return end
-
-	local range = player.isMelee and 20 or 25
-	
-	if ObjectManager.BattleEnemiesAroundObject(player, 15, function(obj) return main.b_filter[obj.name] ~= true end) > 0 then
-
-		if TaskManager:IsBusy() then TaskManager:Stop() end
-
-		main:HandleMobs(range)
-	elseif not TaskManager:IsBusy() then
-		if player.pos:dist(goal) > 3 then
-
-			if not main.route.finished then
-				main.route:builda(nodes, goal)
-			else
-				TaskManager:WalkToWaypoint(main.route.waypoints[main.route.index], function(waypoint) main:OnWalkToWayPoint(waypoint) end)
-			end
-		else
-			main:Exit()
-			self.opened_gate = false
-		end
-	end
-end
-
-function Brayflox:OnOpenHeadGate()
-	self.opened_gate = true
-end
-
-function Brayflox:Interactables(main)
-
-	local pathfinder = ObjectManager.EventNpcObject(function(obj) return obj.name == "Goblin Pathfinder" and main:InteractFilter(obj) end)
+	local pathfinder = ObjectManager.EventNpcObject(function(obj) return obj.name == "Goblin Pathfinder" and self.mainModule.callbacks.InteractFilter(obj) end)
 	if pathfinder.valid and not self.opened_gate and InventoryManager.GetItemCount(self.headgate_key) < 1 then
 		player:rotateTo(pathfinder.pos)
 		TaskManager:Interact(pathfinder)
 		return true
-	end	
-
-	local headgate = ObjectManager.EventObject(function(obj) return obj.name == "Runstop Headgate" and main:InteractFilter(obj) end)
-	if headgate.valid then
-		player:rotateTo(headgate.pos)
-		TaskManager:Interact(headgate, function() self:OnOpenHeadGate() end)
-		return true
 	end
 
-	local gutgate = ObjectManager.EventObject(function(obj) return obj.name == "Longstop Gutgate" and main:InteractFilter(obj) end)
-	if gutgate.valid then
-		player:rotateTo(gutgate.pos)
-		TaskManager:Interact(gutgate)
+	local gate = ObjectManager.EventObject(function(obj) return self.mainModule.interactables.gates[obj.npcId] ~= nil and self.mainModule.callbacks.InteractFilter(obj) end)
+	if gate.valid then
+		player:rotateTo(gate.pos)
+		TaskManager:Interact(gate, function() self.opened_gate = true end)
 		return true
 	end
-	
+		
 	return false
 end
 

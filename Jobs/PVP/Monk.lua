@@ -42,7 +42,7 @@ function Monk:Load(mainMenu)
 end
 
 function Monk:Execute(actions, log)
-	local list = AgentModule.currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
+	local list = AgentManager.GetAgent("Map").currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
 	for i, object in ipairs(list) do
 		local damage = 12000
 		-- Extra Damage if enemy doesn't have guard

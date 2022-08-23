@@ -1,10 +1,13 @@
-local Hatali = Class("Hatali")
+local Mission  = LoadModule("XScripts", "/Missions/Mission")
+local Hatali   = Class("Hatali", Mission)
 
 function Hatali:initialize()
 
 	-- main module
 	self.main = nil
 	self.safeWalk = false
+
+
 end
 
 function Hatali:Tick(main)
@@ -13,7 +16,7 @@ function Hatali:Tick(main)
 		self.main = main
 	end
 
-	local currentMapId = AgentModule.currentMapId	
+	local currentMapId = AgentManager.GetAgent("Map").currentMapId	
 	local nodes        = main.grid[tostring(currentMapId)].nodes
 	local waypoints    = nodes.waypoints
 	local goal         = self:GetGoal(waypoints)
@@ -60,7 +63,7 @@ function Hatali:HandleMobs(range, busy)
 			break
 		end
 	else
-		if target.name == "Thunderclap Guivre" then
+		if target.npcId == 1196 then
 			local waypoint = Waypoint(self.main.grid["46"].dps_safe[1])
 			if waypoint.pos:dist(player.pos) > 3 then
 				if not self.safeWalk then
@@ -76,7 +79,7 @@ end
 
 function Hatali:Sprites(range)
 	
-	local sprite = ObjectManager.BattleObject( function(obj) return string.find(obj.name, "Sprite") and obj.isTargetable and not obj.isDead and obj.pos:dist(player.pos) < range end )
+	local sprite = ObjectManager.BattleObject( function(obj) return (obj.npcId == 116 or obj.npcId == 117) and obj.isTargetable and not obj.isDead and obj.pos:dist(player.pos) < range end )
 	if sprite.valid then
 		player:rotateTo(sprite.pos)
 		TargetManager.SetTarget(sprite)
@@ -90,28 +93,28 @@ end
 
 function Hatali:Interactables()
 
-	local aetherial = ObjectManager.EventObject(function(obj) return obj.name == "Aetherial Flow" and self.main:InteractFilter(obj) end)
+	local aetherial = ObjectManager.EventObject(function(obj) return (obj.npcId == 2001647 or obj.npcId == 2001619) and self.main:InteractFilter(obj) end)
 	if aetherial.valid then
 		player:rotateTo(aetherial.pos)
 		TaskManager:Interact(aetherial, function() self:OnInteract() end)
 		return true
 	end	
 
-	local chain = ObjectManager.EventObject(function(obj) return obj.name == "Chain Winch" and self.main:InteractFilter(obj) end)
+	local chain = ObjectManager.EventObject(function(obj) return obj.npcId >= 2001624 and obj.npcId <= 2001628 and self.main:InteractFilter(obj) end)
 	if chain.valid then
 		player:rotateTo(chain.pos)
 		TaskManager:Interact(chain)
 		return true
 	end
 
-	local door  = ObjectManager.EventObject(function(obj) return obj.name == "Ludus Door" and self.main:InteractFilter(obj) end)
+	local door  = ObjectManager.EventObject(function(obj) return obj.npcId == 2001623 and self.main:InteractFilter(obj) end)
 	if door.valid then
 		player:rotateTo(door.pos)
 		TaskManager:Interact(door)
 		return true
 	end
 
-	local exit = ObjectManager.EventObject(function(obj) return obj.name == "Exit" and self.main:InteractFilter(obj) end)
+	local exit = ObjectManager.EventObject(function(obj) return obj.npcId == 2001610 and self.main:InteractFilter(obj) end)
 	if exit.valid then
 		TaskManager:Interact(exit, function() self.main:OnExitSquadron() end)
 		return true

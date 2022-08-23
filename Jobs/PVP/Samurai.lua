@@ -48,7 +48,7 @@ end
 function Samurai:Execute(actions, menu, log)
 	local zantetsuken = actions.zantetsuken
 
-	local list = AgentModule.currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
+	local list = AgentManager.GetAgent("Map").currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
 
 	for i, object in ipairs(list) do
 

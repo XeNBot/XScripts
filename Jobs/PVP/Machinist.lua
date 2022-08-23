@@ -35,7 +35,7 @@ end
 function Machinist:Execute(log)
 	local spite = self.actions.spite
 
-	local list = AgentModule.currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
+	local list = AgentManager.GetAgent("Map").currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
 
 	if #list == 0 then return false end
 

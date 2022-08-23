@@ -9,6 +9,9 @@ local menu = Menu("XPVE")
 		menu["ACTIONS"]:subMenu("Physical Ranged DPS", "RANGE_DPS_P")			
 		menu["ACTIONS"]:subMenu("Magic Ranged DPS", "RANGE_DPS_M")
 
+	menu:subMenu("Draw Settings", "DRAWS")
+		menu["DRAWS"]:checkbox("Draw On/Off Toggle", "ONOFF", true)
+
 	menu:space() menu:space()
 
 	menu:checkbox("Use Rotations", "ONOFF", true)

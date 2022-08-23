@@ -45,7 +45,6 @@ function XGatherer:initialize()
 	self.grid   = LoadModule("XScripts", "/Waypoints/GatheringGrid")
 	-- Log Module
 	self.log    = LoadModule("XScripts", "/Utilities/Log")
-	self.log.delay = false
 	-- active queue
 	self.activeQueue = nil
 	-- Initializes menu
@@ -63,17 +62,20 @@ function XGatherer:OnWalkToWayPoint(waypoint)
 
 	self.log:print("Finished Walking to waypoint " .. tostring(waypoint.pos))
 
-	local mapId    = tostring(AgentModule.currentMapId)
-	local regionId = self:getMapRegion(mapId)
+	local agentMap = AgentManager.GetAgent("Map")
+	if agentMap ~= nil then
+		local mapId    = tostring(agentMap.currentMapId)
+		local regionId = self:getMapRegion(mapId)
 
-	local closestNode = self:getClosestNodeWaypoint(mapId, regionId, self.activeQueue.dataIds)
+		local closestNode = self:getClosestNodeWaypoint(mapId, regionId, self.activeQueue.dataIds)
 
-	if closestNode ~= nil and self.status.goalWaypoint ~= nil and closestNode.pos ~= self.status.goalWaypoint.pos then
-		self.log:print("Found a better goal node! changing routes")
-		self.status.goalWaypoint = closestNode
-		self.route = Route()
-	else
-		self.route.index = self.route.index + 1		
+		if closestNode ~= nil and self.status.goalWaypoint ~= nil and closestNode.pos ~= self.status.goalWaypoint.pos then
+			self.log:print("Found a better goal node! changing routes")
+			self.status.goalWaypoint = closestNode
+			self.route = Route()
+		else
+			self.route.index = self.route.index + 1		
+		end
 	end
 end
 
@@ -86,15 +88,21 @@ function XGatherer:tick()
 	then return end
 
 	local gatheringAddon = AddonManager.GetAddon("Gathering")
+	local agentMap       = AgentManager.GetAgent("Map")
 
 	self:updateQueue(gatheringAddon)
 
 	if gatheringAddon ~= nil then
 		return self:gatherNextItem(gatheringAddon)
 	end
+	
+	local mapId    = 0
+	local regionId = 0
 
-	local mapId    = tostring(AgentModule.currentMapId)
-	local regionId = self:getMapRegion(mapId)
+	if agentMap ~= nil then
+		mapId    = tostring(agentMap.currentMapId)
+		regionId = self:getMapRegion(mapId)
+	end
 
 	if self.activeQueue == nil and #self.queues > 0 then
 		self.activeQueue = self.queues[1]
@@ -243,7 +251,12 @@ function XGatherer:draw()
 	end	
 
 	if self.menu["DRAW_SETTINGS"]["DRAW_WAYPOINTS"].bool then
-		local currentMapId = tostring(AgentModule.currentMapId)
+
+		local agentMap = AgentManager.GetAgent("Map")
+
+		if agentMap == nil then return end
+
+		local currentMapId = tostring(AgentManager.GetAgent("Map").currentMapId)
 		local currentRegionId = self:getMapRegion(currentMapId)
 
 

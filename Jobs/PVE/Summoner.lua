@@ -65,7 +65,7 @@ function Summoner:Tick(log)
 		self.actions.summon:use()
 	end
 
-	if not target.valid or target.kind ~= 2 or target.pos:dist(player.pos) >= 25 then return end
+	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) >= 25 then return end
 
 	if self.actions.searing:canUse() then
 		self.actions.searing:use()

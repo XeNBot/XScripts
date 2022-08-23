@@ -41,7 +41,7 @@ end
 
 function Summoner:Execute(bahamut, log)
 
-	local list = AgentModule.currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers(function(enemy) return enemy.missingHealth > 40000 and enemy.health > 0 end)
+	local list = AgentManager.GetAgent("Map").currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers(function(enemy) return enemy.missingHealth > 40000 and enemy.health > 0 end)
 
 	for i, enemy in ipairs(list) do		
 		if ObjectManager.EnemiesAroundObject(enemy, 10) > 0 then
