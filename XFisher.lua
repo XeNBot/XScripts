@@ -58,7 +58,6 @@ function XFisher:initialize()
 	
 	Callbacks:Add(CALLBACK_FISH_BITE, function(marks)
 		if not self.running then return end
-
 		-- Uses Hook whenever a fish bites
 		self.log:print("Got a bite with " .. marks .. " mark(s)")
 
@@ -72,7 +71,6 @@ function XFisher:initialize()
 
 	Callbacks:Add(CALLBACK_FISH_CATCH, function(fishId)
 		if not self.running then return end
-
 		-- Prints the fish id of any fishes we catch
 		self.fishesCaught = self.fishesCaught + 1
 
@@ -114,11 +112,19 @@ function XFisher:initialize()
 		if not self.running then return end
 		-- prints fish id & collectability
 		self.attempts = 0
-		self.fishesCaught = self.fishesCaught + 1
 		self.log:print("Caught new collectable: " .. tostring(fishId) .. ", it has " .. tostring(collectability) .. " collectability")
 		self.log:print("So far we caught : " ..  tostring(self.fishesCaught) .. " fishes")
 		
-		return collectability >= self.menu["COLLECT_MIN"].int		
+		local min_collectability = self.menu["COLLECT_MIN"].int
+
+		if collectability >= min_collectability then
+			self.log:print("Adding fish as a Collectable!")	
+			return true
+		else
+			self.log:print("Adding fish as a non-collectable")	
+		end
+		
+		return false		
 	end)
 
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
