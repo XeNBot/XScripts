@@ -15,12 +15,12 @@ function Log:print(str)
 
 	if self.delay then
 		if (currentTime - self.lastPrint > 2) or self.lastmsg ~= str then
-			print("[".. os.date( "!%a %b %d, %H:%M", os.time() - 7 * 60 * 60 ) .. "] : " .. str)
+			print(str)
 			self.lastPrint = os.clock()
 			self.lastmsg = str
 		end
 	else
-		print("[".. os.date( "!%a %b %d, %H:%M", os.time() - 7 * 60 * 60 ) .. "] : " .. str)
+		print(str)
 	end
 
 end
