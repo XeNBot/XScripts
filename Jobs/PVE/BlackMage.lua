@@ -86,6 +86,7 @@ function BlackMage:Load(mainMenu)
 end
 
 function BlackMage:Tick(log)
+	
 	local menu   = self.menu["ACTIONS"]["RANGE_DPS_M"]["BLM"]
 	local target = TargetManager.Target
 
@@ -109,11 +110,10 @@ function BlackMage:Combo(target, menu, log, aoe)
 
 	if self:Weave(target, log, aoe) then return end
 
-	if player.isAstralFire and player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and
-		player.gauge.isAstralFire and self.actions.paradox:canUse(target) then
+	if player.isAstralFire and player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
-	elseif player.gauge.elementTimer > 0 and self.actions.paradox:canUse(target) then
+	elseif player.isUmbralIce and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
 	elseif player.gauge.polyglotStacks > 0 then
@@ -194,12 +194,7 @@ function BlackMage:Weave(target, log, aoe)
 		self.actions.blizzardiv:use(target)
 		return true
 	elseif self.lastElement.name == "fire" then
-		if player.isAstralFire and 	player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 6000 and
-			player.gauge.isAstralFire and self.actions.paradox:canUse(target) then
-			log:print("Using Paradox on " .. target.name)
-			self.actions.paradox:use(target)
-		--log:print("Element Count: " .. self.lastElement.count)
-		elseif self.lastElement.count == 1 then
+		if self.lastElement.count == 1 then
 			if self:CanUseFire(target, aoe) then
 				self:UseFire(target, log, aoe)
 				--log:print("3-0")
