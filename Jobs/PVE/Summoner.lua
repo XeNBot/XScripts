@@ -60,7 +60,7 @@ function Summoner:Tick(log)
 	local actions     = self.actions
 
 	local target = TargetManager.Target
-
+	print(player.hasSummon)
 	if not player.hasSummon and self.actions.summon:canUse() then
 		self.actions.summon:use()
 	end

@@ -54,9 +54,9 @@ function BlackMage:initialize()
 
 	}
 
-	Callbacks:Add(CALLBACK_ACTION_EFFECT, function(source, pos, actionId, targetId)
+	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
 
-		if source == player and actionId ~= 7 then
+		if result == 1 and actionType == 1 then
 			self.actionBeforeLast = self.lastAction
 			self.lastAction       = actionId
 
@@ -80,6 +80,9 @@ function BlackMage:Load(mainMenu)
 	self.menu = mainMenu
 
 	self.menu["ACTIONS"]["RANGE_DPS_M"]:subMenu("BlackMage", "BLM")
+		self.menu["ACTIONS"]["RANGE_DPS_M"]["BLM"]:checkbox("Use AoE Skills on multiple targets", "AOE", true)		
+		self.menu["ACTIONS"]["RANGE_DPS_M"]["BLM"]:slider("Min Enemies for AoE", "AOE_MIN", 1, 1, 5, 2)
+
 end
 
 function BlackMage:Tick(log)
@@ -90,7 +93,7 @@ function BlackMage:Tick(log)
 	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) > 25 then return end
 
 
-	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5) > 1
+	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= ( menu["AOE_MIN"].int - 1 )
 
 	if player.manaPercent < 70 and player.classLevel < 72 and self.actions.manafront:canUse() then
 		log:print("Using Manafront")
@@ -125,84 +128,108 @@ function BlackMage:Combo(target, menu, log, aoe)
 		end
 	elseif not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
 		self:UseThunder(target, log, aoe)
-	elseif self:CanUseFire(target, aoe) and player.mana > (self:FireCost(target, aoe) + self:BlizzardCost(target, aoe)) then
+	elseif self:CanUseFire(target, aoe) and player.mana > self:FireCost(target, aoe) then
 		self:UseFire(target, log, aoe)
-	elseif self:CanUseBlizzard(target, aoe) then
+	elseif self:CanUseBlizzard(target, aoe) and not self.actions.manafront:canUse() then
 		self:UseBlizzard(target, log, aoe)
 	end	
 
 end
 
 function BlackMage:Weave(target, log, aoe)
-	if self:LastActionIs("thunder") and self.actions.triplecast.recastTime == 0 and player.classLevel >= 66 then
+	if self:LastActionIs("thunder") and self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
 		log:print("Using Triple Cast")
+		--log:print("1-1")
 		self.actions.triplecast:use()
-	elseif self:LastActionIs("fire") then
-		if self.actionBeforeLast == self.actions.manafront.id then
-			if self.actions.sharpcast:canUse() then
-				log:print("Using Sharp Cast")
-				self.actions.sharpcast:use()
-			end
-		elseif self.lastElement.count > 2 then
-			if player.gauge.paradoxActive and self.actions.paradox:canUse(target) then
-				log:print("Using Paradox on " .. target.name)
-				self.actions.paradox:use(target)
-			elseif self.actions.despair:canUse(target) then
-				log:print("Using Despair on " .. target.name)
-				self.actions.despair:use(target)
-			end
-		elseif self.lastElement.count > 1 then
-			if player.classJob < 86 and self.actions.leylines:canUse() then
-				log:print("Using Ley Lines")
-				self.actions.leylines:use()
-				return true
-			elseif self.actions.amplifier:canUse()  then
-				log:print("Using Amplifier")
-				self.actions.amplifier:use()
-				return true
-			elseif self.actions.swiftcast:canUse() then
-				log:print("Using Swift Cast")
-				self.actions.swiftcast:use()
-			elseif self.actions.triplecast.recastTime == 0 and player.classLevel >= 66 then
-				log:print("Using Triple Cast")
-				self.actions.triplecast:use()
-				return true
-			elseif self.actions.sharpcast:canUse() and player.classJob < 72 then
-				log:print("Using Sharp Cast")
-				self.actions.sharpcast:use()
-				return true
-			end
-		end
-	elseif self.lastAction == self.actions.blizzardiv.id and player.gauge.paradoxActive and self.actions.paradox:canUse(target) then
-		log:print("Using Paradox on " .. target.name)
-		self.actions.paradox:use(target)
-	elseif self.lastAction == self.actions.amplifier.id and self.actions.leylines:canUse()  then
-		log:print("Using Ley Lines")
-		self.actions.leylines:use()
-		return true
 	elseif self.lastAction == self.actions.triplecast.id then
-		if self.actions.despair:canUse(target) and self.lastElement.name == "fire"  then
-			log:print("Using Despair on " .. target.name)
-			self.actions.despair:use(target)
-			return true
-		elseif self:CanUseFire(target, aoe) then
+		if self.lastElement.name == "thunder" and self:CanUseFire(target, aoe) then
 			self:UseFire(target, log, aoe)
+			--log:print("2-0")
 			return true
+		elseif self.lastElement.name == "fire" and self.actions.despair:canUse(target) then
+			log:print("Using Despair on " .. target.name)
+			--log:print("6-0")
+			self.actions.despair:use(target)
 		end
+	elseif self.lastAction == self.actions.leylines.id and self:CanUseFire(target, aoe) then
+		self:UseFire(target, log, aoe)
+		--log:print("4-0")
+		return true	
+	elseif self.lastAction == self.actions.blizzardiii.id and self.actions.xenoglossy:canUse(target) then
+		log:print("Using Xenoglossy on " .. target.name)
+		--log:print("10-0")		
+		self.actions.xenoglossy:use(target)
+	elseif self.lastAction == self.actions.xenoglossy.id and self.actions.paradox:canUse(target) then
+		log:print("Using Paradox on " .. target.name)
+		--log:print("11-0")		
+		self.actions.paradox:use(target)	
 	elseif self.lastAction == self.actions.despair.id then
 		if self.actionBeforeLast == self.actions.triplecast.id and self.actions.manafront:canUse()  then
-			log:print("Using Manafront")
+			log:print("Using Manafont")
+			--log:print("6-1")
 			self.actions.manafront:use()
 			return true
 		elseif self.actionBeforeLast == self.actions.sharpcast.id and self.actions.blizzardiii:canUse(target) then
 		    log:print("Using Blizzard III on " .. target.name)
 		    self.actions.blizzardiii:use(target)
+		    --print("9-0")
 		    return true
 		end
 	elseif self.lastAction == self.actions.paradox.id and self.actions.blizzardiv:canUse(target) then
 		log:print("Using Blizzard IV on " .. target.name)
+		--print("12-0")
 		self.actions.blizzardiv:use(target)
 		return true
+	elseif self.lastElement.name == "fire" then
+		--log:print("Element Count: " .. self.lastElement.count)
+		if self.lastElement.count == 1 then
+			if self:CanUseFire(target, aoe) then
+				self:UseFire(target, log, aoe)
+				--log:print("3-0")
+				return true
+			end
+		elseif self.lastElement.count == 2 then
+		    if self.actions.amplifier:canUse()  then
+				log:print("Using Amplifier")
+				--log:print("3-1")
+				self.actions.amplifier:use()
+				return true
+			end
+			if self.actions.leylines:canUse() then
+				log:print("Using Ley Lines")
+				--log:print("3-2")
+				self.actions.leylines:use()
+				return true
+			end
+		elseif self.lastElement.count == 3 then
+			if self.actions.swiftcast:canUse() and not player:hasStatus(167) and not player:hasStatus(1211) then
+				log:print("Using Swift Cast")
+				--log:print("4-1")
+				self.actions.swiftcast:use()
+				return true
+			elseif self:CanUseFire(target, aoe) then
+				self:UseFire(target, log, aoe)
+				--log:print("5-0")
+				return true
+			end
+		elseif  self.lastElement.count == 4 and  self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
+			log:print("Using Triple Cast")
+			--log:print("5-1")
+			self.actions.triplecast:use()
+			return true
+		elseif  self.lastElement.count == 5 then
+			if self.actions.sharpcast:canUse() then
+				log:print("Using Sharp Cast")
+				--log:print("7-1")
+				self.actions.sharpcast:use()
+				return true
+			elseif self.actions.despair:canUse(target) then
+				log:print("Using Despair on " .. target.name)
+				--log:print("8-0")
+				self.actions.despair:use(target)
+				return true
+			end
+		end	
 	end
 
 	return false
@@ -241,6 +268,31 @@ function BlackMage:LastActionIs(stringName)
 			self.lastAction == self.actions.highblizzardii.id or
 			self.lastAction == self.actions.blizzardiii.id or
 			self.lastAction == self.actions.blizzardiv.id
+	end
+	return false
+end
+
+function BlackMage:ActionBeforeLastActionIs(stringName)
+	if stringName == "fire" then
+		return 
+			self.actionBeforeLast == self.actions.fire.id or
+			self.actionBeforeLast == self.actions.fireii.id or 
+			self.actionBeforeLast == self.actions.highfireii.id or
+			self.actionBeforeLast == self.actions.fireiii.id or
+			self.actionBeforeLast == self.actions.fireiv.id
+	elseif stringName == "thunder" then
+		return
+			self.actionBeforeLast == self.actions.thunder.id or
+			self.actionBeforeLast == self.actions.thunderii.id or 
+			self.actionBeforeLast == self.actions.thunderiii.id or
+			self.actionBeforeLast == self.actions.thunderiv.id
+	elseif stringName == "blizzard" then
+		return 
+			self.actionBeforeLast == self.actions.blizzard.id or
+			self.actionBeforeLast == self.actions.blizzardii.id or 
+			self.actionBeforeLast == self.actions.highblizzardii.id or
+			self.actionBeforeLast == self.actions.blizzardiii.id or
+			self.actionBeforeLast == self.actions.blizzardiv.id
 	end
 	return false
 end
@@ -371,6 +423,7 @@ function BlackMage:UseThunder(target, log, aoe)
 	if aoe then
 		if player.classLevel >= 64 and self.actions.thunderiv:canUse(target) then
 			log:print("Using Thunder IV on " .. target.name)
+			self.actions.thunderiv:use(target)
 		elseif self.actions.thunderii:canUse(target) then
 			log:print("Using Thunder II on " .. target.name)
 			self.actions.thunderii:use(target)

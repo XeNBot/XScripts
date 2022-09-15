@@ -39,12 +39,12 @@ function Bard:Load(mainMenu)
 	
 	self.menu = mainMenu
 
-	self.menu["ACTIONS"]["RANGE_DPS_M"]:subMenu("Bard", "BRD")
-	self.menu["ACTIONS"]["RANGE_DPS_M"]["BRD"]:checkbox("Use AoE Skills on multiple targets", "AOE", true)
+	self.menu["ACTIONS"]["RANGE_DPS_P"]:subMenu("Bard", "BRD")
+	self.menu["ACTIONS"]["RANGE_DPS_P"]["BRD"]:checkbox("Use AoE Skills on multiple targets", "AOE", true)
 end
 
 function Bard:Tick(log)
-	local menu   = self.menu["ACTIONS"]["RANGE_DPS_M"]["BRD"]
+	local menu   = self.menu["ACTIONS"]["RANGE_DPS_P"]["BRD"]
 	local target = TargetManager.Target	
 	
 	if player.healthPercent < 30 and self.actions.secondwind:canUse() then

@@ -21,6 +21,7 @@ function Dragoon:initialize()
 		dragonsight    = Action(1, 7398),
 		miragedive     = Action(1, 7399),
 		nastrond       = Action(1, 7400),
+		truenorth      = Action(1, 7546),
 
 		highjump       = Action(1, 16478),
 		stardiver      = Action(1, 16480),
@@ -129,12 +130,20 @@ function Dragoon:SetActionSwitch()
 		end,
 		[self.actions.fullthrust.id] = function()
         	if self.actions.fangclaw:canUse(TargetManager.Target) then
+        		if self.actions.truenorth:canUse() then
+        			self.log:print("Using True North")
+        			self.actions.truenorth:use()
+        		end
         	    self.log:print("Using Fang and Claw on " .. TargetManager.Target.name)
 				self.actions.fangclaw:use(TargetManager.Target)        	
 			end
 		end,
 		[self.actions.disembowel.id] = function()
         	if player.classLevel >= 86 and self.actions.chaoticspring:canUse(TargetManager.Target.name) then
+        		if self.actions.truenorth:canUse() then
+        			self.log:print("Using True North")
+        			self.actions.truenorth:use()
+        		end
         		self.log:print("Using Chaotic Spring on " .. TargetManager.Target.name)
 				self.actions.chaoticspring:use(TargetManager.Target)
         	elseif self.actions.chaosthrust:canUse(TargetManager.Target) then
@@ -157,12 +166,20 @@ function Dragoon:SetActionSwitch()
 		[self.actions.wheelthrust.id] = function()
         	if (self.actionBeforeLast == self.actions.chaoticspring.id or self.actionBeforeLast == self.actions.chaosthrust.id) and
         		self.actions.fangclaw:canUse(TargetManager.Target.name) then
+        		if self.actions.truenorth:canUse() then
+        			self.log:print("Using True North")
+        			self.actions.truenorth:use()
+        		end
         	    self.log:print("Using Fang And Claw on " .. TargetManager.Target.name)
 				self.actions.fangclaw:use(TargetManager.Target)        	
 			end
 		end,
 		[self.actions.heavensthrust.id] = function()
         	if self.actions.fangclaw:canUse(TargetManager.Target) then
+        		if self.actions.truenorth:canUse() then
+        			self.log:print("Using True North")
+        			self.actions.truenorth:use()
+        		end
         	    self.log:print("Using Fang and Claw on " .. TargetManager.Target.name)
 				self.actions.fangclaw:use(TargetManager.Target)        	
 			end
