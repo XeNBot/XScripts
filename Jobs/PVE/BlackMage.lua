@@ -234,7 +234,7 @@ function BlackMage:Weave(target, log, aoe)
 				--log:print("7-1")
 				self.actions.sharpcast:use()
 				return true
-			elseif self.actions.despair:canUse(target) then
+			elseif self.actions.despair:canUse(target) and player.mana < self:FireCost(target, aoe) then
 				log:print("Using Despair on " .. target.name)
 				--log:print("8-0")
 				self.actions.despair:use(target)
