@@ -218,7 +218,7 @@ function BlackMage:Weave(target, log, aoe)
 			self.actions.triplecast:use()
 			return true
 		elseif  self.lastElement.count == 5 then
-			if self.actions.sharpcast:canUse() then
+			if self.actions.sharpcast:canUse() and not player:hasStatus(867) then
 				log:print("Using Sharp Cast")
 				--log:print("7-1")
 				self.actions.sharpcast:use()
