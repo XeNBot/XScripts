@@ -111,7 +111,9 @@ function BlackMage:Combo(target, menu, log, aoe)
 	if self:Weave(target, log, aoe) then return end
 
 	-- Rotation
-	if player.classLevel >= 90 and player.gauge.paradoxActive and player.gauge.isUmbralIce and self.actions.paradox:canUse(target) then
+	if player.classLevel >= 90 and player.gauge.paradoxActive and
+	player.gauge.elementTimer >= 3 and player.gauge.elementTimer <= 5 and
+	player.gauge.isAstralFire and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
 	elseif player.gauge.polyglotStacks > 0 then
