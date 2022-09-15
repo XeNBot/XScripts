@@ -128,12 +128,23 @@ function BlackMage:Combo(target, menu, log, aoe)
 		end
 	elseif not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
 		self:UseThunder(target, log, aoe)
-	elseif self:CanUseFire(target, aoe) and player.mana > self:FireCost(target, aoe) then
-		self:UseFire(target, log, aoe)
-	elseif self:CanUseBlizzard(target, aoe) and not self.actions.manafront:canUse() then
-		self:UseBlizzard(target, log, aoe)
-	end	
+	end
 
+	if player.mana < self:FireCost(target, aoe) then
+
+		if player.gauge.isAstralFire then
+			if self.actions.despair:canUse(target) then
+				self.actions.despair:use(target)
+				log.print("Using Despair on " .. target.name)
+			elseif self:CanUseBlizzard(target, aoe) then
+				self:UseBlizzard(target, log, aoe)
+			end
+		elseif self:CanUseBlizzard(target, aoe) then
+			self:UseBlizzard(target, log, aoe)
+		end
+	elseif self:CanUseFire(target, aoe) then
+		self:UseFire(target, log, aoe)
+	end	
 end
 
 function BlackMage:Weave(target, log, aoe)
