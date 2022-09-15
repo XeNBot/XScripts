@@ -109,12 +109,11 @@ function BlackMage:Combo(target, menu, log, aoe)
 
 	if self:Weave(target, log, aoe) then return end
 
-	if player.isAstralFire and player.gauge.paradoxActive and
-		player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and
+	if player.isAstralFire and player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and
 		player.gauge.isAstralFire and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
-	elseif player.gauge.paradoxActive and player.gauge.isUmbralIce and self.actions.paradox:canUse(target) then
+	elseif player.gauge.elementTimer > 0 and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
 	elseif player.gauge.polyglotStacks > 0 then
@@ -195,8 +194,7 @@ function BlackMage:Weave(target, log, aoe)
 		self.actions.blizzardiv:use(target)
 		return true
 	elseif self.lastElement.name == "fire" then
-		if player.isAstralFire and player.gauge.paradoxActive and
-			player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 6000 and
+		if player.isAstralFire and 	player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 6000 and
 			player.gauge.isAstralFire and self.actions.paradox:canUse(target) then
 			log:print("Using Paradox on " .. target.name)
 			self.actions.paradox:use(target)
