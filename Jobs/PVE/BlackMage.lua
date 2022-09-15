@@ -86,7 +86,6 @@ function BlackMage:Load(mainMenu)
 end
 
 function BlackMage:Tick(log)
-
 	local menu   = self.menu["ACTIONS"]["RANGE_DPS_M"]["BLM"]
 	local target = TargetManager.Target
 
@@ -111,7 +110,7 @@ function BlackMage:Combo(target, menu, log, aoe)
 	if self:Weave(target, log, aoe) then return end
 
 	if player.isAstralFire and player.gauge.paradoxActive and
-		player.gauge.elementTimer >= 3 and player.gauge.elementTimer <= 5 and
+		player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and
 		player.gauge.isAstralFire and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
@@ -197,7 +196,7 @@ function BlackMage:Weave(target, log, aoe)
 		return true
 	elseif self.lastElement.name == "fire" then
 		if player.isAstralFire and player.gauge.paradoxActive and
-			player.gauge.elementTimer >= 3 and player.gauge.elementTimer <= 5 and
+			player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 6000 and
 			player.gauge.isAstralFire and self.actions.paradox:canUse(target) then
 			log:print("Using Paradox on " .. target.name)
 			self.actions.paradox:use(target)
