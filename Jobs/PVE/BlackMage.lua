@@ -196,8 +196,13 @@ function BlackMage:Weave(target, log, aoe)
 		self.actions.blizzardiv:use(target)
 		return true
 	elseif self.lastElement.name == "fire" then
+		if player.isAstralFire and player.gauge.paradoxActive and
+			player.gauge.elementTimer >= 3 and player.gauge.elementTimer <= 5 and
+			player.gauge.isAstralFire and self.actions.paradox:canUse(target) then
+			log:print("Using Paradox on " .. target.name)
+			self.actions.paradox:use(target)
 		--log:print("Element Count: " .. self.lastElement.count)
-		if self.lastElement.count == 1 then
+		elseif self.lastElement.count == 1 then
 			if self:CanUseFire(target, aoe) then
 				self:UseFire(target, log, aoe)
 				--log:print("3-0")
