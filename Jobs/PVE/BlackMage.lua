@@ -86,7 +86,7 @@ function BlackMage:Load(mainMenu)
 end
 
 function BlackMage:Tick(log)
-	
+
 	local menu   = self.menu["ACTIONS"]["RANGE_DPS_M"]["BLM"]
 	local target = TargetManager.Target
 
@@ -113,7 +113,7 @@ function BlackMage:Combo(target, menu, log, aoe)
 	if player.isAstralFire and player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
-	elseif player.isUmbralIce and self.actions.paradox:canUse(target) then
+	elseif self.lastAction == self.actions.blizzardiii.id and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
 	elseif player.gauge.polyglotStacks > 0 then
@@ -172,10 +172,12 @@ function BlackMage:Weave(target, log, aoe)
 		log:print("Using Xenoglossy on " .. target.name)
 		--log:print("10-0")		
 		self.actions.xenoglossy:use(target)
+		return true
 	elseif self.lastAction == self.actions.xenoglossy.id and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		--log:print("11-0")		
 		self.actions.paradox:use(target)	
+		return true
 	elseif self.lastAction == self.actions.despair.id then
 		if self.actionBeforeLast == self.actions.triplecast.id and self.actions.manafront:canUse()  then
 			log:print("Using Manafont")
