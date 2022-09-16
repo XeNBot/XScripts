@@ -116,12 +116,6 @@ function Machinist:MaxCombo(target)
 		self.actions.heatblast:use(target)	
 	elseif self.actions.gauss:canUse(target) and self.lastAction ~= self.actions.gauss.id then
 		self.actions.gauss:use(target)
-	elseif self.actions.headgrace:canUse(target) then
-		self.actions.headgrace:use(target)
-	elseif self.actions.footgrace:canUse(target) then
-		self.actions.footgrace:use(target)
-	elseif self.actions.leggrace:canUse(target) then
-		self.actions.leggrace:use(target)
 	elseif self.actions.reassemble:canUse() then
 		self.actions.reassemble:use()
 	elseif self.actions.hotshot:canUse(target) then
