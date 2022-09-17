@@ -71,8 +71,7 @@ function BlackMage:initialize()
 
 	end)
 
-
-
+	
 end
 
 function BlackMage:Load(mainMenu)
@@ -108,11 +107,11 @@ end
 
 function BlackMage:Combo(target, menu, log, aoe)
 
-	if self:Weave(target, log, aoe) then return end
-
 	if player.isAstralFire and player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
+	elseif self:Weave(target, log, aoe) then 
+		return
 	elseif self.lastAction == self.actions.blizzardiii.id and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
