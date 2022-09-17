@@ -107,7 +107,7 @@ end
 
 function BlackMage:Combo(target, menu, log, aoe)
 
-	if player.isAstralFire and player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and self.actions.paradox:canUse(target) then
+	if player.gauge.isAstralFire and player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and self.actions.paradox:canUse(target) then
 		log:print("Using Paradox on " .. target.name)
 		self.actions.paradox:use(target)
 	elseif self:Weave(target, log, aoe) then 
