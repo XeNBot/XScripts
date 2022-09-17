@@ -127,12 +127,12 @@ function BlackMage:Combo(target, menu, log, aoe)
 				self.actions.xenoglossy:use(target)
 			end
 		end
-	elseif not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
-		self:UseThunder(target, log, aoe)
+	elseif not player:hasStatus(164) and self.actions.sharpcast:canUse() then
+        log.print("Using Sharpcast")
+		self.actions.sharpcast:use()
 	end
 
 	if player.mana < self:FireCost(target, aoe) then
-
 		if player.gauge.isAstralFire then
 			if self.actions.despair:canUse(target) then
 				self.actions.despair:use(target)
@@ -149,16 +149,18 @@ function BlackMage:Combo(target, menu, log, aoe)
 end
 
 function BlackMage:Weave(target, log, aoe)
-	if self:LastActionIs("thunder") and self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
+    if self.lastAction == self.actions.fireiii.id and not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
+        self:UseThunder(target, log, aoe)
+	elseif self:LastActionIs("thunder") and player.gauge.isAstralFire and self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
 		log:print("Using Triple Cast")
-		--log:print("1-1")
+		--log:print("1-1")	
 		self.actions.triplecast:use()
 	elseif self.lastAction == self.actions.triplecast.id then
 		if self.lastElement.name == "thunder" and self:CanUseFire(target, aoe) then
 			self:UseFire(target, log, aoe)
 			--log:print("2-0")
 			return true
-		elseif self.lastElement.name == "fire" and self.actions.despair:canUse(target) then
+		elseif self.lastElement.name == "fire" and self.actions.despair:canUse(target) and player.mana < self:FireCost(target, aoe) then
 			log:print("Using Despair on " .. target.name)
 			--log:print("6-0")
 			self.actions.despair:use(target)
@@ -178,12 +180,12 @@ function BlackMage:Weave(target, log, aoe)
 		self.actions.paradox:use(target)	
 		return true
 	elseif self.lastAction == self.actions.despair.id then
-		if self.actionBeforeLast == self.actions.triplecast.id and self.actions.manafront:canUse()  then
+		if self.actions.manafront:canUse()  then
 			log:print("Using Manafont")
 			--log:print("6-1")
 			self.actions.manafront:use()
 			return true
-		elseif self.actionBeforeLast == self.actions.sharpcast.id and self.actions.blizzardiii:canUse(target) then
+		elseif self.actions.blizzardiii:canUse(target) then
 		    log:print("Using Blizzard III on " .. target.name)
 		    self.actions.blizzardiii:use(target)
 		    --print("9-0")
@@ -214,10 +216,10 @@ function BlackMage:Weave(target, log, aoe)
 				self.actions.leylines:use()
 				return true
 			end
-		elseif self.lastElement.count == 3 then
-			if self.actions.swiftcast:canUse() and not player:hasStatus(167) and not player:hasStatus(1211) then
+		elseif self.lastElement.count == 4 then
+			if self.actions.swiftcast:canUse() and not player:hasStatus(167) then
 				log:print("Using Swift Cast")
-				--log:print("4-1")
+				log:print("4-1")
 				self.actions.swiftcast:use()
 				return true
 			elseif self:CanUseFire(target, aoe) then
@@ -225,7 +227,7 @@ function BlackMage:Weave(target, log, aoe)
 				--log:print("5-0")
 				return true
 			end
-		elseif  self.lastElement.count == 4 and  self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
+		elseif  self.lastElement.count == 5 and  self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
 			log:print("Using Triple Cast")
 			--log:print("5-1")
 			self.actions.triplecast:use()
