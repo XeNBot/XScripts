@@ -37,7 +37,7 @@ function Reaper:Load(mainMenu)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:number("Min Soul Sacrifice Stacks",  "HARVEST_MIN", 6)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Grim Swathe",          "GRIM", true)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Death Warrant",        "DEATH", true)
-		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Hell's Ingress",           "HELL", true)
+		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Hell's Ingress",           "HELL",  true)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Arcane Crest",             "ARCANE", true)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Tenebrae Lemurum",     "TENEBRAE", true)
 

@@ -46,41 +46,41 @@ function Bard:Tick(getTarget, log)
 	local menu        = self.menu["ACTIONS"]["RANGE_DPS_P"]["BRD"]
 	local target      = getTarget(25)
 
-	if self:Weave(log) then return end
-
 	if target.valid then
-		if self.actions.blastarrow:canUse(target) then 
+		if self:Weave(target, log) then 
+			return
+		elseif self.actions.blastarrow:canUse(target) then 
 			log:print("Using Blast Arrow on " .. target.name)
 			self.actions.blastarrow:use(target)
 		elseif menu["EMPYREAL"].bool and self.actions.empyreal:canUse(target) then
 			log:print("Using Empyreal Arrow on " .. target.name)
 			self.actions.empyreal:use(target)
-		elseif menu["REPEL_SHOT"].bool and self.actions.repelshot.ready and self.actions.repelshot.target.pos:dist(player.pos) <= menu["REPEL_MIN"].int then
-			log:print("Using Repel Shot on " .. self.actions.repelshot.target.name)
-			self.actions.repelshot:use()
-		elseif menu["NOCTURNE"].bool and self.actions.nocturne.ready then
-			log:print("Using Silent Nocturne on " .. self.actions.powershot.target.name)
-			self.actions.nocturne:use()
+		elseif menu["REPEL_SHOT"].bool and self.actions.repelshot:canUse(target) and target.pos:dist(player.pos) <= menu["REPEL_MIN"].int then
+			log:print("Using Repel Shot on " .. target.name)
+			self.actions.repelshot:use(target)
+		elseif menu["NOCTURNE"].bool and self.actions.nocturne:canUse(target) then
+			log:print("Using Silent Nocturne on " .. target.name)
+			self.actions.nocturne:use(target)
 		elseif menu["APEX_ARROW"].bool and self.actions.apexarrow:canUse(target) then
 			log:print("Using Apex Arrow on " .. target.name)
 			self.actions.apexarrow:use(target)
-		elseif menu["POWER_SHOT"].bool and self.actions.powershot.ready then
-			log:print("Using Power Shot on " .. self.actions.powershot.target.name)
-			self.actions.powershot:use()
+		elseif menu["POWER_SHOT"].bool and self.actions.powershot:canUse(target) then
+			log:print("Using Power Shot on " .. target.name)
+			self.actions.powershot:use(target)
 		end
 	end
 
 end
 
-function Bard:Weave(log)
+function Bard:Weave(target, log)
 
-	if self.lastAction ~= self.actions.nocturne.id and self.actions.powershot.ready then
-		log:print("Using Pitch Perfect on " .. self.actions.powershot.target.name)
-		self.actions.powershot:use()
+	if self.lastAction ~= self.actions.nocturne.id and self.actions.powershot:canUse(target) then
+		log:print("Using Pitch Perfect on " .. target.name)
+		self.actions.powershot:use(target)
 		return true
-	elseif self.lastAction ~= self.actions.apexarrow.id and self.actions.apexarrow.ready then
-		log:print("Using Blast Arrow on " .. self.actions.apexarrow.target.name)
-		self.actions.apexarrow:use()
+	elseif self.lastAction ~= self.actions.apexarrow.id and self.actions.apexarrow:canUse(target) then
+		log:print("Using Blast Arrow on " .. target.name)
+		self.actions.apexarrow:use(target)
 		return true
 	end
 
