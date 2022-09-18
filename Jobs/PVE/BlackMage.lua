@@ -6,9 +6,11 @@ function BlackMage:initialize()
 		
 		blizzard        = Action(1, 142),
 		blizzardii      = Action(1, 25793),
-		highblizzardii  = Action(1, 25794),
+		highblizzardii  = Action(1, 25795),
 		blizzardiii     = Action(1, 154),		
 		blizzardiv      = Action(1, 3576),
+
+		freeze          = Action(1, 159),
 
 		fire            = Action(1, 141),
 		fireii          = Action(1, 147),
@@ -149,7 +151,10 @@ function BlackMage:Combo(target, menu, log, aoe)
 end
 
 function BlackMage:Weave(target, log, aoe)
-    if self.lastAction == self.actions.fireiii.id and not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
+	if (self.lastAction == self.actions.highblizzardii.id or self.lastAction == self.actions.blizzardii.id) and self.actions.freeze:canUse(target) then
+		self.actions.freeze:use(target)
+		log:print("Using Freeze on " .. target.name)
+    elseif self.lastAction == self.actions.fireiii.id and not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
         self:UseThunder(target, log, aoe)
 	elseif self:LastActionIs("thunder") and player.gauge.isAstralFire and self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
 		log:print("Using Triple Cast")
