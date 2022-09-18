@@ -35,7 +35,9 @@ function Reaper:initialize()
 	}
 
 	self.menu = nil
+	
 	self.lastAction = 0
+	self.lastComboAction = 0
 
 end
 
@@ -52,6 +54,10 @@ function Reaper:Load(mainMenu)
 
 		if result == 1 and actionType == 1 then			
 			self.lastAction = actionId
+
+			if self:IsComboAction(self.lastAction) then
+				self.lastComboAction = self.lastAction
+			end
 		end
 
 	end)
@@ -63,6 +69,18 @@ function Reaper:HasDeathDesign(target)
     local status = target:getStatus(2586)
     
     return status.valid and status.remainingTime <= 15.0
+end
+
+function Reaper:IsComboAction(actionId)
+	
+	return actionId == self.actions.waxingslice or
+		actionId == self.actions.infernalslice or
+		actionId == self.actions.spinscythe or
+		actionId == self.actions.lemuresslice or
+		actionId == self.actions.slice or
+		actionId == self.actions.nightscythe or
+		actionId == self.actions.lemuresscythe
+
 end
 
 function Reaper:Tick(log)
@@ -151,15 +169,15 @@ function Reaper:Weave(log, target)
 		log:print("Using Communio on " .. target.name)
 		self.actions.communio:use(target)
 	return true
-	elseif self.lastAction == self.actions.slice.id and self.actions.waxingslice:canUse(target) then
+	elseif self.lastComboAction == self.actions.slice.id and self.actions.waxingslice:canUse(target) then
 		log:print("Using Waxing Slice on " .. target.name)
 		self.actions.waxingslice:use(target)
 		return true
-	elseif self.lastAction == self.actions.waxingslice.id and self.actions.infernalslice:canUse(target) then
+	elseif self.lastComboAction == self.actions.waxingslice.id and self.actions.infernalslice:canUse(target) then
 		log:print("Using Infernal Slice on " .. target.name)
 		self.actions.infernalslice:use(target)
 		return true
-	elseif self.lastAction == self.actions.spinscythe.id and self.actions.nightscythe:canUse() then
+	elseif self.lastComboAction == self.actions.spinscythe.id and self.actions.nightscythe:canUse() then
 		log:print("Using Nightmare Scythe")
 		self.actions.nightscythe:use()
 		return true
