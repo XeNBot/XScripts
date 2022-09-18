@@ -73,13 +73,13 @@ end
 
 function Reaper:IsComboAction(actionId)
 	
-	return actionId == self.actions.waxingslice or
-		actionId == self.actions.infernalslice or
-		actionId == self.actions.spinscythe or
-		actionId == self.actions.lemuresslice or
-		actionId == self.actions.slice or
-		actionId == self.actions.nightscythe or
-		actionId == self.actions.lemuresscythe
+	return actionId == self.actions.waxingslice.id or
+		actionId == self.actions.infernalslice.id or
+		actionId == self.actions.spinscythe.id or
+		actionId == self.actions.lemuresslice.id or
+		actionId == self.actions.slice.id or
+		actionId == self.actions.nightscythe.id or
+		actionId == self.actions.lemuresscythe.id
 
 end
 
@@ -194,10 +194,13 @@ function Reaper:Weave(log, target)
 		log:print("Using Enshroud")
 		self.actions.enshroud:use()
 		return true
-	elseif (self.lastAction == self.actions.voidreaping.id or self.lastAction == self.actions.grimreaping.id)
-	 and self.actions.crossreaping:canUse(target) then
+	elseif self.lastAction == self.actions.voidreaping.id and self.actions.crossreaping:canUse(target) and not aoe then
 		log:print("Using Cross Reaping on " .. target.name)
 		self.actions.crossreaping:use(target)
+		return true
+	elseif self.lastAction == self.actions.grimreaping.id and self.actions.lemuresscythe:canUse(target) then
+		log:print("Using Lemure's Scythe on " .. target.name)
+		self.actions.lemuresscythe:use(target)
 		return true
 	elseif self.lastAction == self.actions.crossreaping.id and self.actions.lemuresslice:canUse(target) then
 		log:print("Using Lemure's Slice on " .. target.name)
