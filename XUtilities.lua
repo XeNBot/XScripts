@@ -1,4 +1,4 @@
--- Creates class XUtilities
+--- Creates class XUtilities
 local XUtilities = Class("XUtilities")
 
 -- Function Called when class initializes
