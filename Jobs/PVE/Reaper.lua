@@ -29,6 +29,7 @@ function Reaper:initialize()
 		lemuresscythe = Action(1, 24400),
 		harvestmoon   = Action(1, 24388),
 		grimswathe    = Action(1, 24392),
+		guillotine    = Action(1, 24384),
 
 		arcanecircle  = Action(1, 24405),
 
@@ -96,7 +97,7 @@ function Reaper:Tick(log)
 
 	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= (menu["AOE_MIN"].int - 1)
 
-	if self:Weave(log, target) then return end
+	if self:Weave(log, target, aoe) then return end
 
 	if not player:hasStatus(2594) and self.actions.soulsow:canUse() and not target:hasStatus(2586) then
 		log:print("Using Soulsow")	
@@ -113,7 +114,7 @@ function Reaper:Tick(log)
 	elseif not aoe and self.actions.soulslice:canUse(target) and not player:hasStatus(2587) then
 		log:print("Using Soul Slice on " .. target.name)
 		self.actions.soulslice:use(target)
-	elseif aoe and self.actions.soulscythe:canUse() then
+	elseif aoe and self.actions.soulscythe:canUse() and not player:hasStatus(2587) then
 		log:print("Using Soul Scythe on " .. target.name)
 		self.actions.soulscythe:use()
 	elseif self.actions.plentiful:canUse(target) then
@@ -125,15 +126,18 @@ function Reaper:Tick(log)
 	elseif aoe and self.actions.grimreaping:canUse() then
 		log:print("Using Grim Reaping on")
 		self.actions.grimreaping:use(target)
-	elseif self.actions.gibbet:canUse(target) and player:hasStatus(2588) then
+	elseif not aoe and self.actions.gibbet:canUse(target) and player:hasStatus(2588) then
 		log:print("Using Enhanced Gibbet on " .. target.name)
 		self.actions.gibbet:use(target)
-	elseif self.actions.gallows:canUse(target) and player:hasStatus(2589) then
+	elseif not aoe and self.actions.gallows:canUse(target) and player:hasStatus(2589) then
 		log:print("Using Enhanced Gallows on " .. target.name)
 		self.actions.gallows:use(target)
-	elseif self.actions.gallows:canUse(target) then
+	elseif not aoe and self.actions.gallows:canUse(target) then
 		log:print("Using Gallows on " .. target.name)
 		self.actions.gallows:use(target)
+	elseif aoe and self.actions.guillotine:canUse(target) then
+		log:print("Using Guillotine on " .. target.name)
+		self.actions.guillotine:use(target)
 	elseif not aoe and self.actions.slice:canUse(target) then
 		log:print("Using Slice on " .. target.name)
 		self.actions.slice:use(target)
@@ -154,30 +158,31 @@ function Reaper:Prepull(log, target)
 end
 
 
-function Reaper:Weave(log, target)
+function Reaper:Weave(log, target, aoe)
 	if self:HasDeathDesign(target) then
-		if not aoe and self.actions.shadowofdeath:canUse(target) then
+		if not aoe and self.actions.shadowofdeath:canUse(target) and not player:hasStatus(2587) then
 			log:print("Using Shadow of Death to extend DD on" .. target.name)
 			self.actions.shadowofdeath:use(target)
 			return true
-		elseif aoe and self.actions.whorlofdeath:canUse(target) then
+		elseif aoe and self.actions.whorlofdeath:canUse() and not player:hasStatus(2587) then
 			log:print("Using Whorl of Death to extend DD on" .. target.name)
-			self.actions.whorlofdeath:use(target)
+			self.actions.whorlofdeath:use()
 			return true
+		end	
 	end
-	elseif self.actions.communio:canUse(target) and player.gauge.lemure == 1 then
+	if self.actions.communio:canUse(target) and player.gauge.lemure == 1 then
 		log:print("Using Communio on " .. target.name)
 		self.actions.communio:use(target)
 	return true
-	elseif self.lastComboAction == self.actions.slice.id and self.actions.waxingslice:canUse(target) then
+	elseif self.lastComboAction == self.actions.slice.id and self.actions.waxingslice:canUse(target) and not player:hasStatus(2587) then
 		log:print("Using Waxing Slice on " .. target.name)
 		self.actions.waxingslice:use(target)
 		return true
-	elseif self.lastComboAction == self.actions.waxingslice.id and self.actions.infernalslice:canUse(target) then
+	elseif self.lastComboAction == self.actions.waxingslice.id and self.actions.infernalslice:canUse(target) and not player:hasStatus(2587) then
 		log:print("Using Infernal Slice on " .. target.name)
 		self.actions.infernalslice:use(target)
 		return true
-	elseif self.lastComboAction == self.actions.spinscythe.id and self.actions.nightscythe:canUse() then
+	elseif self.lastComboAction == self.actions.spinscythe.id and self.actions.nightscythe:canUse() and not player:hasStatus(2587) then
 		log:print("Using Nightmare Scythe")
 		self.actions.nightscythe:use()
 		return true
