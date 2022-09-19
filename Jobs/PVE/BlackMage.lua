@@ -52,6 +52,7 @@ function BlackMage:initialize()
 	self.menu = nil
 	self.lastAction       = 0
 	self.actionBeforeLast = 0
+	self.lastManafont = 0
 	self.lastElement = {
 		name  = "",
 		count = 0
@@ -62,6 +63,10 @@ function BlackMage:initialize()
       if sourceObj == player and actionId ~= 7 and actionId ~= 8 then
               self.actionBeforeLast = self.lastAction
             self.lastAction       = actionId
+
+			if self.lastAction == self.actions.manafont.id then
+				self.lastManafont = os.clock()
+			end
 
             if self:LastActionIs("thunder") then
                 self:SetLastElement("thunder")
@@ -87,6 +92,8 @@ function BlackMage:Load(mainMenu)
 end
 
 function BlackMage:Tick(log)
+
+	if (os.clock() - self.lastManafont) < 1.5 then return end
 
 	local menu   = self.menu["ACTIONS"]["RANGE_DPS_M"]["BLM"]
 	local target = TargetManager.Target
@@ -121,6 +128,11 @@ function BlackMage:Combo(target, menu, log, aoe)
 		log:print("Using Fire III to extend Astral Fire on " .. target.name)
 		self.actions.fireiii:use(target)
 	elseif self.lastAction == self.actions.paradox.id and self.actions.blizzardiv:canUse(target) then
+		log:print("Using Blizzard IV on " .. target.name)
+		--print("TRYING TO USE BLIZZARD")
+		self.actions.blizzardiv:use(target)
+		return true
+	elseif self.lastAction == self.actions.thunderiii.id and self.actions.blizzardiv:canUse(target) and player.gauge.umbralHearts == 0 then
 		log:print("Using Blizzard IV on " .. target.name)
 		--print("TRYING TO USE BLIZZARD")
 		self.actions.blizzardiv:use(target)
@@ -176,7 +188,7 @@ function BlackMage:Weave(target, log, aoe)
 			self:UseThunder(target, log, aoe)
 			return true
 	--Overcap feature. If its at 2 Poly stacks, should cast Xenoglossy to get rid of them
-	elseif player.gauge.polyglotStacks > 1 then
+	elseif player.gauge.polyglotStacks > 1 and not player.gauge.isUmbralIce then
 		if self.actions.xenoglossy:canUse(target) then
 			log:print("Using Xenoglossy to not overcap on " .. target.name)
 			self.actions.xenoglossy:use(target)
