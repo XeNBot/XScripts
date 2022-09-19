@@ -111,10 +111,10 @@ function Reaper:Tick(log)
 	elseif self.actions.harvestmoon:canUse(target) then
 		log:print("Using Harvest Moon on " .. target.name)
 		self.actions.harvestmoon:use(target)
-	elseif not aoe and self.actions.soulslice:canUse(target) and not player:hasStatus(2587) then
+	elseif not aoe and self.actions.soulslice:canUse(target) and not player:hasStatus(2587) and player.gauge.soul < 50 then
 		log:print("Using Soul Slice on " .. target.name)
 		self.actions.soulslice:use(target)
-	elseif aoe and self.actions.soulscythe:canUse() and not player:hasStatus(2587) then
+	elseif aoe and self.actions.soulscythe:canUse() and not player:hasStatus(2587) and player.gauge.soul < 50 then
 		log:print("Using Soul Scythe on " .. target.name)
 		self.actions.soulscythe:use()
 	elseif self.actions.plentiful:canUse(target) then
