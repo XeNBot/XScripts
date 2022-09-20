@@ -11,6 +11,8 @@ function BlackMage:initialize()
 		blizzardiv      = Action(1, 3576),
 
 		freeze          = Action(1, 159),
+		flare           = Action(1, 162),
+
 
 		fire            = Action(1, 141),
 		fireii          = Action(1, 147),
@@ -25,7 +27,7 @@ function BlackMage:initialize()
 
 		transpose       = Action(1, 149),
 		manaward        = Action(1, 157),
-		manafront       = Action(1, 158),
+		manafont       = Action(1, 158),
 
 		leylines        = Action(1, 3573),
 		sharpcast       = Action(1, 3574),
@@ -50,28 +52,31 @@ function BlackMage:initialize()
 	self.menu = nil
 	self.lastAction       = 0
 	self.actionBeforeLast = 0
+	self.lastManafont = 0
 	self.lastElement = {
 		name  = "",
 		count = 0
 
 	}
 
-	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
+	Callbacks:Add(CALLBACK_ACTION_EFFECT, function(sourceObj, pos, actionId, targetId)
+      if sourceObj == player and actionId ~= 7 and actionId ~= 8 then
+              self.actionBeforeLast = self.lastAction
+            self.lastAction       = actionId
 
-		if result == 1 and actionType == 1 then
-			self.actionBeforeLast = self.lastAction
-			self.lastAction       = actionId
-
-			if self:LastActionIs("thunder") then
-				self:SetLastElement("thunder")
-			elseif self:LastActionIs("blizzard") then
-				self:SetLastElement("blizzard")
-			elseif self:LastActionIs("fire") then
-				self:SetLastElement("fire")
+			if self.lastAction == self.actions.manafont.id then
+				self.lastManafont = os.clock()
 			end
-		end
 
-	end)
+            if self:LastActionIs("thunder") then
+                self:SetLastElement("thunder")
+            elseif self:LastActionIs("blizzard") then
+                self:SetLastElement("blizzard")
+            elseif self:LastActionIs("fire") then
+                self:SetLastElement("fire")
+            end
+      end  
+    end)
 
 	
 end
@@ -88,6 +93,8 @@ end
 
 function BlackMage:Tick(log)
 
+	if (os.clock() - self.lastManafont) < 1.5 then return end
+
 	local menu   = self.menu["ACTIONS"]["RANGE_DPS_M"]["BLM"]
 	local target = TargetManager.Target
 
@@ -96,22 +103,44 @@ function BlackMage:Tick(log)
 
 	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= ( menu["AOE_MIN"].int - 1 )
 
-	if player.manaPercent < 70 and player.classLevel < 72 and self.actions.manafront:canUse() then
-		log:print("Using Manafront")
-		self.actions.manafront:use()
-	elseif player.healthPercent < 70 and self.actions.manaward:canUse() then
+	--if player.manaPercent < 70 and player.classLevel < 72 and self.actions.manafont:canUse() then
+		--log:print("Using manafont")
+		--self.actions.manafont:use()
+	if player.healthPercent < 70 and self.actions.manaward:canUse() then
 		log:print("Using Manaward")
 		self.actions.manaward:use()
 	end
+	
+	
 
 	self:Combo(target, menu, log, aoe)
 end
 
 function BlackMage:Combo(target, menu, log, aoe)
 
-	if player.gauge.isAstralFire and player.gauge.elementTimer >= 3000 and player.gauge.elementTimer <= 5000 and self.actions.paradox:canUse(target) then
-		log:print("Using Paradox on " .. target.name)
+	if player.gauge.isAstralFire and player.gauge.elementTimer >= 2500 and player.gauge.elementTimer <= 6000 and self.actions.paradox:canUse(target) then
+		log:print("Using Paradox to extend Astral Fire on " .. target.name)
 		self.actions.paradox:use(target)
+	elseif player.gauge.isAstralFire and player.gauge.elementTimer >= 3500 and player.gauge.elementTimer <= 6000 and self.actions.fireiii:canUse(target) and player:hasStatus(165) then
+		log:print("Using Firestarter to extend Astral Fire on " .. target.name)
+		self.actions.fireiii:use(target)	
+	elseif player.gauge.isAstralFire and player.gauge.elementTimer >= 3500 and player.gauge.elementTimer <= 6000 and self.actions.fireiii:canUse(target) and player.mana >= 4800 then
+		log:print("Using Fire III to extend Astral Fire on " .. target.name)
+		self.actions.fireiii:use(target)
+	elseif self.lastAction == self.actions.paradox.id and self.actions.blizzardiv:canUse(target) then
+		log:print("Using Blizzard IV on " .. target.name)
+		--print("TRYING TO USE BLIZZARD")
+		self.actions.blizzardiv:use(target)
+		return true
+	elseif self.lastAction == self.actions.thunderiii.id and self.actions.blizzardiv:canUse(target) and player.gauge.umbralHearts == 0 then
+		log:print("Using Blizzard IV on " .. target.name)
+		--print("TRYING TO USE BLIZZARD")
+		self.actions.blizzardiv:use(target)
+		return true
+	--A check to make sure it uses Fire after Manafont... sometimes still using Blizzard 3 without it.
+	elseif self.lastAction == self.actions.manafont.id then
+		self:UseFire(target, log, aoe)
+		return true
 	elseif self:Weave(target, log, aoe) then 
 		return
 	elseif self.lastAction == self.actions.blizzardiii.id and self.actions.paradox:canUse(target) then
@@ -123,23 +152,17 @@ function BlackMage:Combo(target, menu, log, aoe)
 				log:print("Using Foul on " .. target.name)
 				self.actions.foul:use(target)
 			end
-		else
-			if self.actions.xenoglossy:canUse(target) then
-				log:print("Using Xenoglossy on " .. target.name)
-				self.actions.xenoglossy:use(target)
-			end
 		end
-	elseif not player:hasStatus(164) and self.actions.sharpcast:canUse() then
+	elseif not player:hasStatus(867) and self.actions.sharpcast:canUse() then
         log.print("Using Sharpcast")
 		self.actions.sharpcast:use()
 	end
 
 	if player.mana < self:FireCost(target, aoe) then
 		if player.gauge.isAstralFire then
-			if self.actions.despair:canUse(target) then
-				self.actions.despair:use(target)
-				log.print("Using Despair on " .. target.name)
-			elseif self:CanUseBlizzard(target, aoe) then
+			if self:CanUseManaBuster(target, aoe) then
+				self:UseManaBuster(target, aoe, log)
+			elseif self:CanUseBlizzard(target, aoe) and player.mana < 3000 then
 				self:UseBlizzard(target, log, aoe)
 			end
 		elseif self:CanUseBlizzard(target, aoe) then
@@ -154,54 +177,72 @@ function BlackMage:Weave(target, log, aoe)
 	if (self.lastAction == self.actions.highblizzardii.id or self.lastAction == self.actions.blizzardii.id) and self.actions.freeze:canUse(target) then
 		self.actions.freeze:use(target)
 		log:print("Using Freeze on " .. target.name)
+		return true
+	--elseif self.lastAction == self.actions.xenoglossy.id and self.actions.paradox:canUse(target) then
+		--log:print("Using Paradox on " .. target.name)
+		--log:print("11-0")		
+		--self.actions.paradox:use(target)	
+		--return true
+	-- Tries to keep Thunder up on target. Maybe a way to read how much time is left on Thunder dot?
+	elseif not self:HasThunder(target) and self:CanUseThunder(target, aoe) and (player.gauge.isAstralFire or player.gauge.isUmbralIce) then
+			self:UseThunder(target, log, aoe)
+			return true
+	--Overcap feature. If its at 2 Poly stacks, should cast Xenoglossy to get rid of them
+	elseif player.gauge.polyglotStacks > 1 and not player.gauge.isUmbralIce then
+		if self.actions.xenoglossy:canUse(target) then
+			log:print("Using Xenoglossy to not overcap on " .. target.name)
+			self.actions.xenoglossy:use(target)
+		end
+	--Opener Thunder (Only casts with Sharpcast up, no Thundercloud)
+	elseif player:hasStatus(867) and not player:hasStatus(164) and self:CanUseThunder(target, aoe) and not self:HasThunder(target) then
+		self:UseThunder(target, log, aoe)
+		return true
+	elseif self.lastAction == self.actions.freeze.id and self.actions.thunderiv:canUse(target) then
+		log:print("Using Thunder IV on "..target.name )
+		self.actions.thunderiv:use(target)
+		return true
+	elseif self.lastAction == self.actions.manafont.id and player.mana >= self:FireCost(target, log) and self:CanUseFire(target, aoe) then
+		self:UseFire(target, log, aoe)
+		return true
     elseif self.lastAction == self.actions.fireiii.id and not self:HasThunder(target) and self:CanUseThunder(target, aoe) then
         self:UseThunder(target, log, aoe)
+        return true
 	elseif self:LastActionIs("thunder") and player.gauge.isAstralFire and self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
 		log:print("Using Triple Cast")
 		--log:print("1-1")	
 		self.actions.triplecast:use()
+		return true
 	elseif self.lastAction == self.actions.triplecast.id then
 		if self.lastElement.name == "thunder" and self:CanUseFire(target, aoe) then
 			self:UseFire(target, log, aoe)
 			--log:print("2-0")
 			return true
-		elseif self.lastElement.name == "fire" and self.actions.despair:canUse(target) and player.mana < self:FireCost(target, aoe) then
-			log:print("Using Despair on " .. target.name)
-			--log:print("6-0")
-			self.actions.despair:use(target)
+		elseif self.lastElement.name == "fire" and self:CanUseManaBuster(target, aoe) and player.mana < self:FireCost(target, aoe) then
+			self:UseManaBuster(target, aoe, log)
+			--log:print("6-0")			
 		end
 	elseif self.lastAction == self.actions.leylines.id and self:CanUseFire(target, aoe) then
 		self:UseFire(target, log, aoe)
 		--log:print("4-0")
 		return true	
-	elseif self.lastAction == self.actions.blizzardiii.id and self.actions.xenoglossy:canUse(target) then
+	elseif self.lastAction == self.actions.blizzardiv.id and self.actions.xenoglossy:canUse(target) then
 		log:print("Using Xenoglossy on " .. target.name)
 		--log:print("10-0")		
 		self.actions.xenoglossy:use(target)
 		return true
-	elseif self.lastAction == self.actions.xenoglossy.id and self.actions.paradox:canUse(target) then
-		log:print("Using Paradox on " .. target.name)
-		--log:print("11-0")		
-		self.actions.paradox:use(target)	
-		return true
 	elseif self.lastAction == self.actions.despair.id then
-		if self.actions.manafront:canUse()  then
+		if self.actions.manafont:canUse()  then
 			log:print("Using Manafont")
-			--log:print("6-1")
-			self.actions.manafront:use()
+			self.actions.manafont:use()
+			--log:print("MANAFONT USED")
 			return true
-		elseif self.actions.blizzardiii:canUse(target) then
-		    log:print("Using Blizzard III on " .. target.name)
-		    self.actions.blizzardiii:use(target)
-		    --print("9-0")
-		    return true
+		--elseif self.actions.blizzardiii:canUse(target) and player.mana < 800 and not self.lastAction == self.actions.manafont.id then
+		    --log:print("Using Blizzard III on " .. target.name)
+		    --self.actions.blizzardiii:use(target)
+		    --print("CASTING BLIZZARD 3 ANYWAYS")
+		    --return true
 		end
-	elseif self.lastAction == self.actions.paradox.id and self.actions.blizzardiv:canUse(target) then
-		log:print("Using Blizzard IV on " .. target.name)
-		--print("12-0")
-		self.actions.blizzardiv:use(target)
-		return true
-	elseif self.lastElement.name == "fire" then
+	elseif self.lastElement.name == "fire" and not player.gauge.isUmbralIce then
 		if self.lastElement.count == 1 then
 			if self:CanUseFire(target, aoe) then
 				self:UseFire(target, log, aoe)
@@ -221,7 +262,7 @@ function BlackMage:Weave(target, log, aoe)
 				self.actions.leylines:use()
 				return true
 			end
-		elseif self.lastElement.count == 4 then
+		elseif self.lastElement.count == 3 then
 			if self.actions.swiftcast:canUse() and not player:hasStatus(167) then
 				log:print("Using Swift Cast")
 				log:print("4-1")
@@ -232,7 +273,7 @@ function BlackMage:Weave(target, log, aoe)
 				--log:print("5-0")
 				return true
 			end
-		elseif  self.lastElement.count == 5 and  self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
+		elseif  self.lastElement.count == 4 and  self.actions.triplecast:canUse() and player.classLevel >= 66 and not player:hasStatus(1211) then
 			log:print("Using Triple Cast")
 			--log:print("5-1")
 			self.actions.triplecast:use()
@@ -243,16 +284,35 @@ function BlackMage:Weave(target, log, aoe)
 				--log:print("7-1")
 				self.actions.sharpcast:use()
 				return true
-			elseif self.actions.despair:canUse(target) and player.mana < self:FireCost(target, aoe) then
-				log:print("Using Despair on " .. target.name)
+			elseif self:CanUseManaBuster(target, aoe) and player.mana < self:FireCost(target, aoe) then
+				self:UseManaBuster(target, aoe, log)
 				--log:print("8-0")
-				self.actions.despair:use(target)
-				return true
+				return 	true
 			end
 		end	
 	end
 
 	return false
+end
+
+function BlackMage:UseManaBuster(target, aoe, log)
+	
+	if aoe and self.actions.flare:canUse(target) then
+		self.actions.flare:use(target)
+		log:print("Using Flare on " .. target.name)
+	elseif self.actions.despair:canUse(target) then
+		self.actions.despair:use(target)
+		log:print("Using Despair on " .. target.name)
+	end
+end
+
+function BlackMage:CanUseManaBuster(target, aoe)
+	if aoe then
+		return self.actions.flare:canUse(target)
+	else
+		return self.actions.despair:canUse(target)
+	end
+
 end
 
 function BlackMage:SetLastElement(elementName)

@@ -15,7 +15,7 @@ function Summoner:initialize()
 		searing     = Action(1, 25801),
 
 		deathflare  = Action(1, 3582),
-		rekinkle    = Action(1, 25830),
+		rekindle    = Action(1, 25830),
 		purgatory   = Action(1, 16515),
 		astralflare = Action(1, 25821),
 		fountain    = Action(1, 16514),
@@ -27,14 +27,19 @@ function Summoner:initialize()
 		bahamut     = Action(1, 7427),
 		phoenix     = Action(1, 25831),
 
-		ruby        = Action(1, 25832),
-		topaz       = Action(1, 25833),
-		emerald     = Action(1, 25834),
+		ruby        = Action(1, 25823),
+		rubyaoe     = Action(1, 25832),
+		topaz       = Action(1, 25824),
+		topazaoe    = Action(1, 25833),
+		emerald     = Action(1, 25825),
+		emeraldaoe  = Action(1, 25834),
 		cyclone     = Action(1, 25835),
 		mbuster     = Action(1, 25836),
 		slipstream  = Action(1, 25837),
 
 		aegis       = Action(1, 25799),
+		
+		swiftcast   = Action(1, 7561),
 
 	}
 
@@ -48,7 +53,8 @@ function Summoner:Load(mainMenu)
 
 	self.menu["ACTIONS"]["RANGE_DPS_M"]:subMenu("Summoner", "SMN")
 		self.menu["ACTIONS"]["RANGE_DPS_M"]["SMN"]:checkbox("Use Aether Stacks", "AETHER", true)
-		self.menu["ACTIONS"]["RANGE_DPS_M"]["SMN"]:checkbox("Use AoE Rotations", "AOE", true)
+		self.menu["ACTIONS"]["RANGE_DPS_M"]["SMN"]:checkbox("Use AoE Skills on multiple targets", "AOE", true)		
+		self.menu["ACTIONS"]["RANGE_DPS_M"]["SMN"]:slider("Min Enemies for AoE", "AOE_MIN", 1, 1, 5, 2)
 		
 end
 
@@ -65,7 +71,9 @@ function Summoner:Tick(log)
 		self.actions.summon:use()
 	end
 
+	
 	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) >= 25 then return end
+	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= ( menu["AOE_MIN"].int - 1 )
 
 	if self.actions.searing:canUse() then
 		self.actions.searing:use()
@@ -73,19 +81,22 @@ function Summoner:Tick(log)
 		self.actions.aegis:use()
 	end
 
-	self:Combo(target, menu, log)
+	self:Combo(target, menu, log, aoe)
 end
 
-function Summoner:Combo(target, menu, log)
+function Summoner:Combo(target, menu, log, aoe)
 
 	if self.actions.ruiniv:canUse(target) then
 		self.actions.ruiniv:use(target)
+		
+	elseif self.actions.mbuster:canUse(target) then
+		log:print("Using Mountain Buster on " .. target.name)
+		self.actions.mbuster:use(target)
 	end
 
-	local aoe       = ObjectManager.BattleEnemiesAroundObject(target, 5) > 0
 	local attuned   = player.gauge.attunementTime > 0
 
-	self:CheckPrimals(attuned, target, log)
+	self:CheckPrimals(aoe, attuned, target, log)
 
 	if not self:PrimalReady() then
 
@@ -117,9 +128,9 @@ end
 
 function Summoner:ManageSummon(aoe, target, log)
 	
-	if self.actions.rekinkle:canUse(target) then
-		log:print("Using Rekinkle on " .. target.name)
-		self.actions.rekinkle:use(target)
+	if self.actions.rekindle:canUse(target) then
+		log:print("Using Rekindle on " .. target.name)
+		self.actions.rekindle:use(target)
 	elseif self.actions.deathflare:canUse(target) then
 		log:print("Using Death Flare " .. target.name)
 		self.actions.deathflare:use(target)
@@ -147,36 +158,69 @@ function Summoner:PrimalReady()
 	return player.gauge.ifritReady or player.gauge.garudaReady or player.gauge.titanReady
 end
 
-function Summoner:CheckPrimals(attuned, target, log)
+function Summoner:CheckPrimals(aoe, attuned, target, log)
 	
 	if attuned then
-		if self.actions.mbuster:canUse(target) then
-			log:print("Using Mountain  Buster on " .. target.name)
-			self.actions.mbuster:use(target)
-		elseif self.actions.topaz:canUse(target) then
-			log:print("Using Topaz Catastrophe on " .. target.name)
-			self.actions.topaz:use(target)
-		elseif self.actions.slipstream:canUse(target) then
-			log:print("Using Slipstream on " .. target.name)
-			self.actions.slipstream:use(target)
-		elseif self.actions.emerald:canUse(target) then
-			log:print("Using Emerald Catastrophe on " .. target.name)
-			self.actions.emerald:use(target)
-		elseif self.actions.cyclone:canUse(target) then
-			log:print("Using Crimson Cyclone on " .. target.name)
-			self.actions.cyclone:use(target)
-		elseif self.actions.ruby:canUse(target) then
-			log:print("Using Ruby Catastrophe on " .. target.name)
-			self.actions.ruby:use(target)
+	
+		if aoe then
+		
+			if self.actions.mbuster:canUse(target) then
+				log:print("Using Mountain Buster on " .. target.name)
+				self.actions.mbuster:use(target)
+			elseif self.actions.topaz:canUse(target) then
+				log:print("Using Topaz AOE on " .. target.name)
+				self.actions.topazaoe:use(target)
+			elseif self.actions.slipstream:canUse(target) then
+				log:print("Using Slipstream on " .. target.name)
+				self.actions.slipstream:use(target)
+			elseif self.actions.emerald:canUse(target) then
+				log:print("Using Emerald AOE on " .. target.name)
+				self.actions.emeraldaoe:use(target)
+			elseif self.actions.cyclone:canUse(target) then
+				log:print("Using Crimson Cyclone on " .. target.name)
+				self.actions.cyclone:use(target)
+			elseif self.actions.ruby:canUse(target) then
+				log:print("Using Ruby AOE on " .. target.name)
+				self.actions.rubyaoe:use(target)
+			end
+			
+		else
+		
+			if self.actions.mbuster:canUse(target) then
+				log:print("Using Mountain Buster on " .. target.name)
+				self.actions.mbuster:use(target)
+			elseif self.actions.topaz:canUse(target) then
+				log:print("Using Topaz SINGLE on " .. target.name)
+				self.actions.topaz:use(target)
+			elseif self.actions.slipstream:canUse(target) then
+				log:print("Using Slipstream on " .. target.name)
+				self.actions.slipstream:use(target)
+			elseif self.actions.emerald:canUse(target) then
+				log:print("Using Emerald SINGLE on " .. target.name)
+				self.actions.emerald:use(target)
+			elseif self.actions.cyclone:canUse(target) then
+				log:print("Using Crimson Cyclone on " .. target.name)
+				self.actions.cyclone:use(target)
+			elseif self.actions.ruby:canUse(target) then
+				log:print("Using Ruby SINGLE on " .. target.name)
+				self.actions.ruby:use(target)
+			end
 		end
-
 	else
-		if player.gauge.ifritReady and self.actions.ifrit:canUse(target) then
-			log:print("Summoning Ifrit on " .. target.name)
-			self.actions.ifrit:use(target)
-		elseif player.gauge.garudaReady and self.actions.garuda:canUse(target) then
+		if player.gauge.garudaReady and self.actions.garuda:canUse(target) then
 			log:print("Summoning Garuda on " .. target.name)
 			self.actions.garuda:use(target)
+			if self.actions.swiftcast:canUse() then
+				log:print("Using Swiftcast for Slipstream")
+				self.actions.swiftcast:use()
+			end
+		elseif player.gauge.ifritReady and self.actions.ifrit:canUse(target) then
+			log:print("Summoning Ifrit on " .. target.name)
+			self.actions.ifrit:use(target)
+			if self.actions.swiftcast:canUse() then
+				log:print("Using Swiftcast for Rubyrite")
+				self.actions.swiftcast:use()
+			end
 		elseif player.gauge.titanReady and self.actions.titan:canUse(target) then
 			log:print("Summoning Titan on " .. target.name)
 			self.actions.titan:use(target)
