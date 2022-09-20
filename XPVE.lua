@@ -17,6 +17,8 @@ function XPVE:initialize()
 	self.samurai     = LoadModule("XScripts", "\\Jobs\\PVE\\Samurai")
 	self.dragoon     = LoadModule("XScripts", "\\Jobs\\PVE\\Dragoon")
 
+	self.sage        = LoadModule("XScripts", "\\Jobs\\PVE\\Sage")
+
 	--------------------------------------------------------------------
 	-- Utilities
 	self.log         = LoadModule("XScripts", "\\Utilities\\Log")
@@ -38,6 +40,7 @@ function XPVE:initialize()
 	self.reaper:Load(self.menu)
 	self.samurai:Load(self.menu, self.log)
 	self.dragoon:Load(self.menu, self.log)
+	self.sage:Load(self.menu, self.log)
 	--------------------------------------------------------------------
 	-- Callbacks
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
@@ -81,14 +84,17 @@ function XPVE:Tick()
 		self.samurai:Tick()
 	elseif player.classJob == 39 then
 	    self.reaper:Tick(self.log)
+	elseif player.classJob == 40 then
+	    self.sage:Tick()
 	end
+
 end
 
 function XPVE:Draw()
 	if self.menu["DRAWS"]["ONOFF"].bool then
 		Graphics.DrawCircle3D(player.pos, 1, 1, Colors.Yellow)
 		Graphics.DrawText3D(Vector3(player.pos.x + player.radius, player.pos.y, player.pos.z), "Rotations On: " .. tostring(self.menu["ONOFF"].bool), 15, RGBA(255, 248, 159, 255))
-	end
+	end		
 end
 
 XPVE:new()
