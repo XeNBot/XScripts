@@ -19,10 +19,6 @@ function HealingManager:initialize()
 	self.LEVEL_MODS = LoadModule("XScripts", "\\Enums\\LevelMod")
 	self.JOB_MODS   = LoadModule("XScripts", "\\Enums\\JobMod")
 
-	--------------------------------------------------------------------
-	-- Callbacks
-	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
-	--------------------------------------------------------------------	
 end
 
 function HealingManager:Load(menu)
@@ -36,15 +32,7 @@ function HealingManager:Load(menu)
 			self.menu["HEAL_MNG"]["PRIORITY"]:number("Healer", "HEALER", 3)
 end
 
-function HealingManager:Tick()
-
-	if player.castInfo.isCasting then return end
-
-	self:HealWatch()
-
-end
-
-function HealingManager:AddAction(_action, _name, _class,  _potency, _condition, _bonusPercent)
+function HealingManager:AddAction(_action, _name, _class,  _potency, _condition, _bonusPercent, _aoe)
 	
 	if self.heal_actions[tostring(_class)] == nil then
 		self.heal_actions[tostring(_class)] = {}
@@ -55,7 +43,8 @@ function HealingManager:AddAction(_action, _name, _class,  _potency, _condition,
 		potency   = _potency,
 		condition = _condition, 
 		name      = _name, 
-		bonus     = _bonusPercent
+		bonus     = _bonusPercent,
+		aoe       = _aoe
 	}
 
 	table.insert(self.heal_actions[tostring(_class)], healing_action)
@@ -63,6 +52,13 @@ function HealingManager:AddAction(_action, _name, _class,  _potency, _condition,
 	self.menu["HEAL_MNG"]:subMenu(_name .. " Settings", _name)
 		self.menu["HEAL_MNG"][_name]:checkbox("Use On Party Player Members",      "PARTY_MEMBERS",     true)
 		self.menu["HEAL_MNG"][_name]:checkbox("Use On People outside of Party",   "NON_PARTY_MEMBERS", true)
+		self.menu["HEAL_MNG"][_name]:slider("Minimum MP Percent",                 "MIN_MP", 1, 0, 100, 0)
+
+		if _aoe then
+			self.menu["HEAL_MNG"][_name]:slider("Minimum Low Health Players",      "MIN_MP", 1, 0, 100, 0)			
+		end
+
+	self:CalculateHealingPotential(healing_action)
 
 end
 
@@ -71,9 +67,10 @@ function HealingManager:HealWatch()
 	if #self.heal_actions[tostring(player.classJob)] > 0 then
 	
 		for i, h in ipairs(self.heal_actions[tostring(player.classJob)]) do
-			if h.action.recastTime == 0 then
+			if h.action.recastTime == 0 and player.manaPercent >= self.menu["HEAL_MNG"][h.name]["MIN_MP"].int then
 
 				local potency = self:CalculateHealingPotential(h)
+
 				local players = ObjectManager.Players(function (p)
 					
 					return p.yalmX <= h.action.range and p.missingHealth >= potency and not p.isDead and
@@ -86,6 +83,7 @@ function HealingManager:HealWatch()
 						print(p.name .. " has " .. tostring(p.missingHealth) .. " missing life (" .. tostring(p.health) .. "/" .. tostring(p.maxHealth) .. ")")
 						print("Healing : " .. p.name .. " with Action : " .. h.name .. " for ~ " .. tostring(potency) .. " life")
 						h.action:use(p)
+						return true
 					end
 
 				end
@@ -94,6 +92,8 @@ function HealingManager:HealWatch()
 
 		end
 	end
+
+	return false
 
 end
 
@@ -114,12 +114,14 @@ function HealingManager:CalculateHealingPotential(heal_action)
 	local HMP   = self:CalculateHMP(levelModifier)
 	local DET   = self:CalculateDET(levelModifier)
 	local CRIT  = self:CalculateCRIT(levelModifier)
+	local TNC   = self:CalculateTNC(levelModifier)
+	local WD    = self:CalculateWD(levelModifier)
 	local h1    = math.floor( math.floor( math.floor(heal_action.potency * HMP * DET ) / 100 ) / 1000)
-	local h2    = math.floor( math.floor( h1 * CRIT ) / 1000)
+	local h2    = math.floor( math.floor( math.floor( math.floor( h1 * TNC ) / 1000 ) * CRIT ) / 1000 )
 	local bonus = heal_action.bonus ~= nil and heal_action.bonus() or 0
 
 	if bonus ~= 0 then
-		bonus = ( h2 * ( bonus - 2 ) ) / 100
+		bonus = ( h2 * bonus ) / 100
 	end
 
 	local total = math.floor( h2 + bonus)
