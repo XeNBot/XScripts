@@ -14,6 +14,18 @@ function XUtilities:initialize()
 	self.menu:checkbox("Auto Accept Quests", "AUTO_ACCEPT", true)
 	self.menu:checkbox("Auto Accept Duty Finder", "DUTY_FINDER", true)
 	self.menu:checkbox("Auto Skip Talk", "AUTO_TALK", false)
+	self.menu:label("~=[ Mount Untilities ]=~")
+	self.menu:number("Desired Mount", "MOUNT_ID", 216)
+	self.menu:button("Mount", "MOUNT", function()
+		Game.SetMount(self.menu["MOUNT_ID"].int)
+	end)
+	self.menu:button("UnMount", "UNMOUNT", function()
+		Game.SetMount(0)
+	end)
+	self.menu:button("Set Flying", "FLY", function()
+		Game.SetFlying(true)
+	end)
+
 
 	-- Adds the function Utilities:Tick() to the player tick callback table
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
