@@ -1,10 +1,3 @@
---[[Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
-	  -- prints information about the action that was requested
-		print("Action used of type " .. actionType ..
-	      " with the id of " .. actionId .. " and the target was " .. targetId ..
-	      " the result was " .. result)
-end)]]--
-
 local HealingManager = Class("HealingManager")
 
 function HealingManager:initialize()
@@ -32,57 +25,46 @@ function HealingManager:Load(menu)
 			self.menu["HEAL_MNG"]["PRIORITY"]:number("Healer", "HEALER", 3)
 end
 
-function HealingManager:AddAction(_action, _name, _class,  _potency, _condition, _bonusPercent, _aoe)
+function HealingManager:AddActionTable(tbl)
 	
-	if self.heal_actions[tostring(_class)] == nil then
-		self.heal_actions[tostring(_class)] = {}
-	end
+	for i, action in pairs(tbl) do
 
-	local healing_action = { 
-		action    = _action, 
-		potency   = _potency,
-		condition = _condition, 
-		name      = _name, 
-		bonus     = _bonusPercent,
-		aoe       = _aoe
-	}
+		table.insert(self.heal_actions, action)
 
-	table.insert(self.heal_actions[tostring(_class)], healing_action)
+		self.menu["HEAL_MNG"]:subMenu(action.name .. " Settings", action.name)
+		self.menu["HEAL_MNG"][action.name]:checkbox("Use On Party Player Members",      "PARTY_MEMBERS",     true)
+		self.menu["HEAL_MNG"][action.name]:checkbox("Use On People outside of Party",   "NON_PARTY_MEMBERS", true)
+		self.menu["HEAL_MNG"][action.name]:slider("Minimum MP Percent",                 "MIN_MP", 1, 0, 100, 0)
 
-	self.menu["HEAL_MNG"]:subMenu(_name .. " Settings", _name)
-		self.menu["HEAL_MNG"][_name]:checkbox("Use On Party Player Members",      "PARTY_MEMBERS",     true)
-		self.menu["HEAL_MNG"][_name]:checkbox("Use On People outside of Party",   "NON_PARTY_MEMBERS", true)
-		self.menu["HEAL_MNG"][_name]:slider("Minimum MP Percent",                 "MIN_MP", 1, 0, 100, 0)
-
-		if _aoe then
-			self.menu["HEAL_MNG"][_name]:slider("Minimum Low Health Players",      "MIN_MP", 1, 0, 100, 0)			
+		if action.aoe then
+			self.menu["HEAL_MNG"][action.name]:slider("Minimum # Low Health Players",   "MIN_AOE", 1, 0, 100, 3)			
 		end
 
-	self:CalculateHealingPotential(healing_action)
+	end
 
 end
 
 function HealingManager:HealWatch()
 
-	if #self.heal_actions[tostring(player.classJob)] > 0 then
+	if #self.heal_actions > 0 then
 	
-		for i, h in ipairs(self.heal_actions[tostring(player.classJob)]) do
-			if h.action.recastTime == 0 and player.manaPercent >= self.menu["HEAL_MNG"][h.name]["MIN_MP"].int then
+		for i, h in ipairs(self.heal_actions) do
+			if h.recastTime == 0 and player.manaPercent >= self.menu["HEAL_MNG"][h.name]["MIN_MP"].int then
 
 				local potency = self:CalculateHealingPotential(h)
 
 				local players = ObjectManager.Players(function (p)
 					
-					return p.yalmX <= h.action.range and p.missingHealth >= potency and not p.isDead and
+					return p.yalmX <= h.range and p.missingHealth >= potency and not p.isDead and
 					( self.menu["HEAL_MNG"][h.name]["NON_PARTY_MEMBERS"].bool or p.ally)
 
 				end)
 
 				for i, p in ipairs(players) do
-					if h.action:canUse(p) then
+					if h:canUse(p) then
 						print(p.name .. " has " .. tostring(p.missingHealth) .. " missing life (" .. tostring(p.health) .. "/" .. tostring(p.maxHealth) .. ")")
 						print("Healing : " .. p.name .. " with Action : " .. h.name .. " for ~ " .. tostring(potency) .. " life")
-						h.action:use(p)
+						h:use(p)
 						return true
 					end
 

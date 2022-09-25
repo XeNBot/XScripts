@@ -5,7 +5,6 @@ function Sage:initialize()
 	self.actions = {	
 		
 		dosis      = Action(1, 24283),
-		diagnosis  = Action(1, 24284),
 		phlegma    = Action(1, 24289),
 		eukrasia   = Action(1, 24290),
 		ekdosis    = Action(1, 24293),
@@ -19,6 +18,28 @@ function Sage:initialize()
 
 
 	}
+	
+	self.healing_bonus = function ()
+		return player.classLevel >= 40 and 30 or
+		player.classLevel >= 20 and 10 or 0
+	end
+
+	self.healing_actions = {
+
+		diagnosis  = Action(1, 24284),
+		prognosis  = Action(1, 24286),
+
+	}
+
+	self.healing_actions.diagnosis.potency = 400
+	self.healing_actions.diagnosis.name    = "Diagnosis"
+	self.healing_actions.diagnosis.bonus   = self.healing_bonus
+
+	self.healing_actions.prognosis.potency = 300
+	self.healing_actions.prognosis.name    = "Prognosis"
+	self.healing_actions.prognosis.bonus   = self.healing_bonus
+	self.healing_actions.prognosis.aoe     = true
+	self.healing_actions.prognosis.radius  = 15
 
 	self.menu = nil
 	self.log  = nil
@@ -31,7 +52,7 @@ function Sage:initialize()
 	
 
 
-	self.healingManager =  LoadModule("XScripts", "/Utilities/HealingManager")
+	self.healing_manager =  LoadModule("XScripts", "/Utilities/HealingManager")
 
 	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
 
@@ -44,8 +65,6 @@ function Sage:initialize()
 			self.actionBeforeLast = self.lastAction
 			self.lastAction = actionId
 
-			print("Used Action: " .. tostring(actionId))
-
 			if self.hasEkBuff then
 				self:SetLastEKAction(actionId)
 				self.hasEkBuff = false
@@ -56,6 +75,7 @@ function Sage:initialize()
 
 end
 
+
 function Sage:Load(menu, log)
 	
 	self.log  = log
@@ -63,15 +83,15 @@ function Sage:Load(menu, log)
 
 	self.menu["ACTIONS"]["HEALER"]:subMenu("Sage", "SGE")
 
-	self.healingManager:Load(self.menu["ACTIONS"]["HEALER"]["SGE"])
+	self.healing_manager:Load(self.menu["ACTIONS"]["HEALER"]["SGE"])
 
-	self.healingManager:AddAction(self.actions.diagnosis, "Diagnosis" , 40, 400, nil, function() return 30 end)
+	self.healing_manager:AddActionTable(self.healing_actions)
 end
 
 function Sage:Tick()
 
 	-- Priority Healing
-	if self.healingManager:HealWatch() then return end
+	if self.healing_manager:HealWatch() then return end
 
 	local target = TargetManager.Target
 	
