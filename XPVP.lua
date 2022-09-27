@@ -174,7 +174,7 @@ function XPVP:GetTarget(range)
 
 	local target = nil
 
-	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil then
+	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil and not self.lockTarget:hasStatus(3054) then
 		return self.lockTarget
 	end
 
