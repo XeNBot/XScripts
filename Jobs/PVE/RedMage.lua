@@ -4,16 +4,31 @@ function RedMage:initialize()
 
 	self.actions = {
 
-		verthunder    = Action(1, 7505),
-		veraero       = Action(1, 7507),
+		verthunder             = Action(1, 7505),
+		corps_a_corps          = Action(1, 7506),
+		veraero                = Action(1, 7507),
+		verfire                = Action(1, 7510),
+		verstone	   		   = Action(1, 7511),
 
-		swiftcast     = Action(1, 7561),
+		fleche                 = Action(1, 7517),
+		acceleration           = Action(1, 7518),
+		contre_sixte           = Action(1, 7519),
+		embolden  	           = Action(1, 7520),
+		manafication           = Action(1, 7521),
+		joltii                 = Action(1, 7524),
+		enchanted_riposte      = Action(1, 7527),
+		enchanted_zwerchhau    = Action(1, 7528),
+		enchanted_redoublement = Action(1, 7529),
+		swiftcast              = Action(1, 7561),
 
-		verthunderii  = Action(1, 16524),
-		veraeroii     = Action(1, 16525),
+		verthunderii           = Action(1, 16524),
+		veraeroii              = Action(1, 16525),
+		engagement             = Action(1, 16527),
+		scorch                 = Action(1, 16530),
 
-		verthunderiii = Action(1, 25855),
-		veraeroiii    = Action(1, 25856),
+		verthunderiii          = Action(1, 25855),
+		veraeroiii             = Action(1, 25856),
+		resolution             = Action(1, 25858),
 
 	}
 	
@@ -27,6 +42,7 @@ function RedMage:initialize()
 			
 			self.actionBeforeLast = self.lastAction
 			self.lastAction = actionId
+			
 
 		end
 
@@ -57,39 +73,105 @@ function RedMage:Combo(target)
 	
 	if self:Weave(target) then return end
 
-	if self:CanUseVerthunder(target) then
-		self:UseVerthunder(target)
-	end
-
 end
 
 function RedMage:Weave(target)
 
-	if self:LastActionIs("verthunder") and self:CanUseVeraero(target) then
-		self:UseVeraero(target)
-		return true
-	elseif self:LastActionIs("veraero") and self.actions.swiftcast:canUse() then
-	    self.actions.swiftcast:use()
+	if self:CanUseVerthunder(target) and self.lastAction == 0 then
+		self:UseVerthunder(target)
+	
+	elseif self:ActionIs(self.lastAction, "verthunder") then
+		if self:ActionIs(self.actionBeforeLast, "verthunder") and self.actions.embolden:canUse() then
+			self.actions.embolden:use()
+			self.log:print("Using embolden ")
+			return true
+		elseif self:ActionIs(self.actionBeforeLast, "verthunder") and self.actions.enchanted_riposte:canUse(target) then
+			self.actions.enchanted_riposte:use(target)
+			self.log:print("Using enchanted riposte ")
+			return true
+		elseif self.actionBeforeLast == self.actions.acceleration.id and self:CanUseVerthunder(target) then
+			self:UseVerthunder(target)
+			return true
+		elseif self:CanUseVeraero(target) and not self:ActionIs(self.actionBeforeLast, "verthunder") then
+			self:UseVeraero(target)
+			return true
+		end
+
+	elseif self:ActionIs(self.lastAction, "enchanted_riposte") and self.actions.fleche:canUse(target) then
+			self.actions.fleche:use(target)
+			self.log:print("Using fleche ")
+			return true
+
+	elseif self:ActionIs(self.lastAction,"veraero") and self.actions.swiftcast:canUse() then
+	    self.log:print("Using swifcast")
+		self.actions.swiftcast:use()
 	    return true
+
+	elseif self:ActionIs(self.lastAction,"swiftcast") and self.actions.acceleration:canUse() then
+		self.log:print("Using acceleration")
+		self.actions.acceleration:use()
+		return true
+
+	elseif self:ActionIs(self.lastAction,"acceleration") and self:CanUseVerthunder(target) then
+		self:UseVerthunder(target)
+		return true 
+	
+	elseif self:ActionIs(self.astAction,"embolden") and self.actions.manafication:canUse() then
+		self.actions.manafication:use()
+		return true
+
+	elseif self:ActionIs(self.lastAction, "manafication") and self.actions.enchanted_riposte:canUse(target) then
+		self.actions.enchanted_riposte:use(target)
+		return true
+
+	elseif self:ActionIs(self.lastAction, "fleche") and self.actions.enchanted_zwerchhau:canUse(target) then
+		self.actions.enchanted_zwerchhau:use(target)
+		return true
+
+	
 	end
 
 	return false	
 end
 
-function RedMage:LastActionIs(name)
-	
-	if name == "verthunder" then
-		return 
-			self.lastAction == self.actions.verthunderiii.id or
-			self.lastAction == self.actions.verthunderii.id or
-			self.lastAction == self.actions.verthunder.id
+function RedMage:ActionIs(action, name)
 
-	elseif name == "veraero" then
-		return 
-			self.lastAction == self.actions.veraeroiii.id or
-			self.lastAction == self.actions.veraeroii.id or
-			self.lastAction == self.actions.veraero.id
-	end
+    if name == "verthunder" then
+        return 
+            action == self.actions.verthunderiii.id or
+            action == self.actions.verthunderii.id or
+            action == self.actions.verthunder.id
+
+    elseif name == "veraero" then
+        return 
+            action == self.actions.veraeroiii.id or
+            action == self.actions.veraeroii.id or
+            action == self.actions.veraero.id
+
+    elseif name == "swiftcast" then
+            return
+            action == self.actions.swiftcast.id
+
+    elseif name == "acceleration" then
+        return
+            action == self.actions.acceleration.id
+
+    elseif name == "embolden" then
+        return
+            action == self.actions.embolden.id
+
+    elseif name == "manafication" then
+        return
+            action == self.actions.manafication.id
+
+	elseif name == "enchanted_riposte" then
+            return
+            action == self.actions.enchanted_riposte.id
+
+	elseif name == "fleche" then
+            return
+            action == self.actions.fleche.id
+    end
 
 end
 
