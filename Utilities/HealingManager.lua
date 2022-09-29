@@ -23,6 +23,7 @@ function HealingManager:Load(menu)
 			self.menu["HEAL_MNG"]["PRIORITY"]:number("Tanks",  "TANKS",  1)
 			self.menu["HEAL_MNG"]["PRIORITY"]:number("DPS",    "DPS",    2)
 			self.menu["HEAL_MNG"]["PRIORITY"]:number("Healer", "HEALER", 3)
+		self.menu["HEAL_MNG"]:slider("Minimum # Low Health Players for AoE", "MIN_AOE", 1, 0, 100, 2)
 end
 
 function HealingManager:AddActionTable(tbl)
@@ -31,25 +32,25 @@ function HealingManager:AddActionTable(tbl)
 
 		table.insert(self.heal_actions, action)
 
+		--print("Adding Action " .. action.name)
+
 		self.menu["HEAL_MNG"]:subMenu(action.name .. " Settings", action.name)
 		self.menu["HEAL_MNG"][action.name]:checkbox("Use On Party Player Members",      "PARTY_MEMBERS",     true)
 		self.menu["HEAL_MNG"][action.name]:checkbox("Use On People outside of Party",   "NON_PARTY_MEMBERS", true)
 		self.menu["HEAL_MNG"][action.name]:slider("Minimum MP Percent",                 "MIN_MP", 1, 0, 100, 0)
-
-		if action.aoe then
-			self.menu["HEAL_MNG"][action.name]:slider("Minimum # Low Health Players",   "MIN_AOE", 1, 0, 100, 3)			
-		end
-
+		
 	end
 
 end
 
 function HealingManager:HealWatch()
 
+	local saved_target = TargetManager.Target
+
 	if #self.heal_actions > 0 then
 	
 		for i, h in ipairs(self.heal_actions) do
-			if h.recastTime == 0 and player.manaPercent >= self.menu["HEAL_MNG"][h.name]["MIN_MP"].int then
+			if h.recastTime == 0 and player.manaPercent >= self.menu["HEAL_MNG"][h.name]["MIN_MP"].int and self:ConditionsMet(h) then
 
 				local potency = self:CalculateHealingPotential(h)
 
@@ -60,23 +61,56 @@ function HealingManager:HealWatch()
 
 				end)
 
-				for i, p in ipairs(players) do
-					if h:canUse(p) then
-						print(p.name .. " has " .. tostring(p.missingHealth) .. " missing life (" .. tostring(p.health) .. "/" .. tostring(p.maxHealth) .. ")")
-						print("Healing : " .. p.name .. " with Action : " .. h.name .. " for ~ " .. tostring(potency) .. " life")
-						h:use(p)
-						return true
+				if not h.aoe and #players < self.menu["HEAL_MNG"]["MIN_AOE"].int then
+
+					for i, p in ipairs(players) do
+						if h:canUse(p) then
+							print(p.name .. " has " .. tostring(p.missingHealth) .. " missing life (" .. tostring(p.health) .. "/" .. tostring(p.maxHealth) .. ")")
+							print("Healing : " .. p.name .. " with Action : " .. h.name .. " for ~ " .. tostring(potency) .. " life")
+							h:use(p)
+							if saved_target.valid and not saved_target.isDead then
+								TargetManager.SetTarget(saved_target)
+							end
+							return true
+						end
+
 					end
 
+				elseif h.aoe and #players >= self.menu["HEAL_MNG"]["MIN_AOE"].int then
+					
+					local best_target = nil
+					local num_players = 0
+
+					for i, p in ipairs(players) do
+
+						local num = ObjectManager.PlayersAroundObject(p, action.range, function (p) return p.missingHealth >= potency end)
+						if num > num_players then
+							best_target = p
+						end
+
+					end
+
+					if best_target ~= nil and h:canUse(best_target) then
+						print(best_target.name .. " has " .. tostring(best_target.missingHealth) .. " missing life (" .. tostring(best_target.health) .. "/" .. tostring(best_target.maxHealth) .. ")")
+						print("There are : " .. tostring(num_players) .. " low health players around target")
+						print("Healing : " .. best_target.name .. " with Action : " .. best_target.name .. " for ~ " .. tostring(potency) .. " life")
+						h:use(best_target)
+						if saved_target.valid and not saved_target.isDead then
+							TargetManager.SetTarget(saved_target)
+						end
+						return true
+					end
 				end
-
 			end
-
 		end
 	end
 
 	return false
 
+end
+
+function HealingManager:ConditionsMet(action)
+	return action.condition == nil  or action.condition()
 end
 
 -- Utility Functions
