@@ -61,16 +61,28 @@ function XPVP:initialize()
 
 	self.lockTarget   = nil
 
+	self.lastGuard    = 0
+
 	self.getTarget    = function (dist) return self:GetTarget(dist) end
 	self.targetFilter = function (target) return self:TargetFilter(target) end
 
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
+
+	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
+		if result == 1 and actionId == 29054 then
+			self.lastGuard = os.clock()			
+		end
+
+	end)
 
 	self.log:print("XPVP Loaded!")
 
 end
 
 function XPVP:Tick()
+
+	if (os.clock() - self.lastGuard < 4.5) then return end
+
 	-- PVP Maps
 	local mapId = 0
 
