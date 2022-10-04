@@ -15,6 +15,7 @@ local menu = Menu("XPVP")
 		menu["ACTIONS"]:subMenu("Melee DPS", "MELEE_DPS")
 		menu["ACTIONS"]:subMenu("Physical Ranged DPS", "RANGE_DPS_P")			
 		menu["ACTIONS"]:subMenu("Magic Ranged DPS", "RANGE_DPS_M")
+		menu["ACTIONS"]:checkbox("Action Directional Check", "DIRECTION_CHECK", false)
 
 	
 	menu:subMenu("Extra Settings", "EXTRA")

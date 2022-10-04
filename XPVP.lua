@@ -83,6 +83,8 @@ function XPVP:Tick()
 
 	if (os.clock() - self.lastGuard < 4.5) then return end
 
+	Game.ActionDirectionCheck = self.menu["ACTIONS"]["DIRECTION_CHECK"].bool
+
 	-- PVP Maps
 	local mapId = 0
 
