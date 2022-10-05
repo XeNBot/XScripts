@@ -99,6 +99,7 @@ function XSquadron:SetupMissions()
 	--[[ ==== Mission Variables === ]]--
 	self.currentMission           = nil
 	self.currentMissionMenuSwitch = nil
+	
 	self.missions = {
 		hatali     = {
 			name      = "Hatali",
@@ -135,6 +136,13 @@ function XSquadron:SetupMissions()
 			mapId     = 38,
 			menuIndex = 5,
 		},
+		wanderer = {
+			name      = "The Wanderer's Palace",				
+			cost      = 2500,
+			module    = LoadModule("XScripts", "/Missions/WanderersPalace"),
+			mapId     = 32,
+			menuIndex = 6,
+		}
 	}
 
 	for mission, info in pairs(self.missions) do
@@ -158,6 +166,9 @@ function XSquadron:SetupMissions()
 		[4] = function()
 			self.currentMission = self.missions.aurumvale
 		end,
+		[5] = function()
+			self.currentMission = self.missions.wanderer
+		end
 	}	
 
 end
@@ -170,7 +181,7 @@ function XSquadron:SetupCallbacks()
 		Draw          = function () return self:Draw() end,
 		EnterSquadron = function ()
 			self.stats.missions_started        = self.stats.missions_started + 1
-			self.menu["MISSIONS_ENTERED"].str  = "Missions Entered: " .. tostring(self.stats.missions_started)			
+			self.widget["MISSIONS_ENTERED"].str  = "Missions Entered: " .. tostring(self.stats.missions_started)			
 			self.route                         = Route()
 			self.deliverRoute                  = Route()
 			self.delivered                     = false
@@ -180,7 +191,7 @@ function XSquadron:SetupCallbacks()
 		end,
 		ExitSquadron = function ()
 			self.stats.missions_finished        = self.stats.missions_finished + 1
-			self.menu["MISSIONS_FINISHED"].str  = "Missions Finished: " .. tostring(self.stats.missions_finished)
+			self.widget["MISSIONS_FINISHED"].str  = "Missions Finished: " .. tostring(self.stats.missions_finished)
 			self.route                          = Route()
 			self.deliverRoute                   = Route()
 			self.delivering                     = true
@@ -309,9 +320,10 @@ end
 
 function XSquadron:DrawNodes(maxDistance)
 
-	local currentMapId = AgentManager.GetAgent("Map").currentMapId
+	local currentMapId = tostring(AgentManager.GetAgent("Map").currentMapId)
 	
 	if self.grid[currentMapId] ~= nil and self.grid[currentMapId].nodes ~= nil then
+
 		for i, waypoint in ipairs(self.grid[currentMapId].nodes.waypoints) do
 			if waypoint.pos:dist(player.pos) < maxDistance then
 				Graphics.DrawCircle3D(waypoint.pos, 20, 1, Colors.Green)
@@ -351,7 +363,7 @@ function XSquadron:InitializeMenu()
 
 	self.menu:label("~=[ XSquadron Ver 1.0 ]=~") self.menu:separator() self.menu:space()
 
-	self.menu:combobox("Mission Selector", "MISSION_ID", { "Hatali", "Torok-Rak", "Brayflox's Longstop", "Stone Vigil", "The Aurum Vale" }, 0)
+	self.menu:combobox("Mission Selector", "MISSION_ID", { "Hatali", "Torok-Rak", "Brayflox's Longstop", "Stone Vigil", "The Aurum Vale", "The Wanderer's Palace" }, 0)
 
 	self.menu:checkbox("Deliver Collectables", "EXPERT_DELIVERY", true) 
 	self.menu:checkbox("Auto Pick Best Mission", "AUTO_PICK", true)
@@ -362,15 +374,17 @@ function XSquadron:InitializeMenu()
 			self.menu["DRAW_SETTINGS"]:number("Max Draw Distance", "MAX_DRAW_DISTANCE", 50)
 			self.menu["DRAW_SETTINGS"]:checkbox("Draw Debug Info", "DEBUG_INFO", false)
 
-	self.menu:label("~=[ Information ]=~") self.menu:separator() self.menu:space()
-	self.menu:label("Missions Entered: 0",  "MISSIONS_ENTERED") 
-	self.menu:label("Missions Finished: 0", "MISSIONS_FINISHED")
-	self.menu:label("Times We've Died: 0",  "TIMES_DIED")
-
 
 	self.menu:space() self.menu:space()
 
 	self.menu:button("Start", "BTN_START", function() self:ToggleStartBtn() end)
+	self.menu:button("Open Info Widget", "INFO_WIDGET", function() self.widget.visible = true end)
+
+	self.widget = Menu("XSquadron Info", true)
+	self.widget:label("~=[ Information ]=~") self.menu:separator() self.menu:space()
+	self.widget:label("Missions Entered: 0",  "MISSIONS_ENTERED") 
+	self.widget:label("Missions Finished: 0", "MISSIONS_FINISHED")
+	self.widget:label("Times We've Died: 0",  "TIMES_DIED")
 end
 
 return XSquadron:new()

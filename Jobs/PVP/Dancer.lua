@@ -62,6 +62,8 @@ function Dancer:Tick(getTarget, log)
 
 	local menu  = self.menu["ACTIONS"]["RANGE_DPS_P"]["DNC"]
 
+	if player:hasStatus(3054) then return end
+
 	if self:HandleJumpToggle(log, menu) then return end
 
 	if menu["CONTRA"].bool and self.actions.contra:canUse() and ObjectManager.EnemiesAroundObject(player, menu["CONTRARANGE"].int) >= menu["CONTRAMIN"].int then

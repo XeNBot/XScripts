@@ -61,16 +61,30 @@ function XPVP:initialize()
 
 	self.lockTarget   = nil
 
+	self.lastGuard    = 0
+
 	self.getTarget    = function (dist) return self:GetTarget(dist) end
 	self.targetFilter = function (target) return self:TargetFilter(target) end
 
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
+
+	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
+		if result == 1 and actionId == 29054 then
+			self.lastGuard = os.clock()			
+		end
+
+	end)
 
 	self.log:print("XPVP Loaded!")
 
 end
 
 function XPVP:Tick()
+
+	if (os.clock() - self.lastGuard < 4.5) then return end
+
+	Game.ActionDirectionCheck = self.menu["ACTIONS"]["DIRECTION_CHECK"].bool
+
 	-- PVP Maps
 	local mapId = 0
 
@@ -174,7 +188,7 @@ function XPVP:GetTarget(range)
 
 	local target = nil
 
-	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil then
+	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil and not self.lockTarget:hasStatus(3054) then
 		return self.lockTarget
 	end
 

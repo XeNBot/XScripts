@@ -19,6 +19,7 @@ function XPVE:initialize()
 	self.dragoon     = LoadModule("XScripts", "\\Jobs\\PVE\\Dragoon")
 
 	self.sage        = LoadModule("XScripts", "\\Jobs\\PVE\\Sage")
+	self.whitemage   = LoadModule("XScripts", "\\Jobs\\PVE\\WhiteMage")
 
 	--------------------------------------------------------------------
 	-- Utilities
@@ -42,7 +43,10 @@ function XPVE:initialize()
 	self.reaper:Load(self.menu)
 	self.samurai:Load(self.menu, self.log)
 	self.dragoon:Load(self.menu, self.log)
+	
 	self.sage:Load(self.menu, self.log)
+	self.whitemage:Load(self.menu, self.log)
+
 	--------------------------------------------------------------------
 	-- Callbacks
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
@@ -76,6 +80,8 @@ function XPVE:Tick()
 		self.blackmage:Tick(self.log)
 	elseif player.classJob == 22 then
 		self.dragoon:Tick()
+	elseif player.classJob == 24 then
+		self.whitemage:Tick()
 	elseif player.classJob == 26 or player.classJob == 27 then
 		self.summoner:Tick(self.log)
 	elseif player.classJob == 29 or player.classJob == 30 then
