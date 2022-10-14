@@ -628,7 +628,7 @@ function XGatherer:getMapRegion(mapId)
 	
 	if mapId == "4" or mapId == "5" or mapId == "6" or mapId == "7" then
 		return 1
-	elseif mapId == "20" or mapId == "21" or mapId == "22" or mapId == "23" then
+	elseif mapId == "20" or mapId == "21" or mapId == "22" or mapId == "23" or mapId == "24" then
 		return 2
 	elseif mapId == "53" then 
 		return 3

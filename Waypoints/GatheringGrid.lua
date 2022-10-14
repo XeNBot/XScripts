@@ -1281,7 +1281,83 @@ local grid = {
 
 					}
 				)
-			}
+			},
+			["24"] = {
+
+				mapName = "Northern Thanalan",
+
+				telePoint = 22,
+
+				nodes = {
+					{
+						nodeName = "Lv50 Mineral Deposit",
+
+						startPos = Vector3(88.63,22.46,111.94),
+					
+						dataIds = {
+							[30536] = true,
+							[30537] = true,
+							[30538] = true,
+							[30539] = true,
+						},
+
+						nodeItems = {
+							{ name = "Cobalt Ore", defaultQuantity = 0, id = 5116 },
+							{ name = "Adamantoise Shell", defaultQuantity = 0, id = 5458 },
+							{ name = "Wind Shard", defaultQuantity = 0, id = 4 },
+							{ name = "Basilisk Egg", defaultQuantity = 0, id = 5263 },
+							{ name = "Ogre Horn", defaultQuantity = 0, id = 5439 },
+						}
+					}
+				},
+
+				mapWaypoints = LinkedList(
+					{
+						--Walking Waypoints
+						--Lv50 Mining Deposit
+						Vector3(-20.79,48.3,-31.26),
+						Vector3(-30.79,48.3,-27.39),
+						Vector3(-18.38,47.03,-21.93),
+						Vector3(30.89,35.99,37.57),
+						Vector3(78.16,20.4,122.7),
+						Vector3(88.63,22.46,111.94),
+						Vector3(99.68,21.47,112.35),
+						Vector3(113.6,20.69,107.1),
+						Vector3(101.64,23.96,146.53),
+						Vector3(120.59,27.57,138.53),
+						Vector3(45.77,29.42,120.83),
+						Vector3(33.3,33.16,133.12),
+						Vector3(37.49,27.84,147.94),
+						Vector3(97.54,21.73,182.43),
+						Vector3(103.85,18.24,202.53),
+						Vector3(112.01,24.52,187.81),
+						Vector3(129.76,23.94,197.17),
+						Vector3(68.47,18.69,158.7),
+						Vector3(131.64,24.83,126.06),
+
+					},
+					{
+						{1,3},
+						{2,3},
+						{3,4},
+						{4,5},
+						{5,6,9,10,11,18},
+						{5,6},
+						{6,7},
+						{7,8,9,10},
+						{8,9,19},
+						{11,12},
+						{12,13},
+						{13,14,18},
+						{14,15,18},
+						{15,16,17},
+						
+
+
+					}
+
+				)
+			}, 
 		}
 	},
 	{
@@ -1471,6 +1547,7 @@ local grid = {
 					},
 					{
 						startPos = Vector3(-190.25,12.28,-379.45),
+
 						dataIds = {
 							[30321] = true,
 							[30322] = true,
@@ -1502,6 +1579,7 @@ local grid = {
 						Vector3(-127.31,29.38,-362.16),
 						Vector3(-120.9,29.38,-355.94),
 						Vector3(-142.72,20.32,-333.45),
+						--Waypoints for Lv30 Mature Trees
 						Vector3(-190.25,12.28,-379.45),
 						--[[flying waypoints
 						Waypoint(Vector3(209.52,133.48,-262.59), true),
@@ -1534,7 +1612,7 @@ local grid = {
 						Vector3(-274.23,17.7,-355.25),
 						Vector3(-266.85,16.84,-354.66),
 						Vector3(-260.95,16.13,-352.31),
-						--Lv15 Lush Veg Patch
+						--Waypoints Lv15 Lush Veg Patch
 						Vector3(21.33,54.12,-143.16),
 						Vector3(16.43,53.59,-119.98),
 						Vector3(19.07,52.31,-102.34),
