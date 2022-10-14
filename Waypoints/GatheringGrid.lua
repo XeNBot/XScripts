@@ -1378,7 +1378,7 @@ local grid = {
 						Vector3(128.26,286.43,-73.99),
 						Vector3(104.22,297.43,-92.04),
 						Vector3(100.75,297.72,-79.3),
-
+		
 					},
 					{
 						{1, 20},
@@ -1429,6 +1429,27 @@ local grid = {
 				telePoint = 52,
 
 				nodes = {
+					{
+						startPos = Vector3(21.33,54.12,-143.16),
+
+						dataIds = {
+							[30076] = true,
+							[30077] = true,
+							[30078] = true,
+							[30079] = true,
+						},
+						nodeName = "Lv15 Lush Vegetation Patch",
+
+						nodeItems = {
+							{ name = "Ruby Tomato", defaultQuantity = 0, id = 4780 },
+							{ name = "Sunset Wheat", defaultQuantity = 0, id = 4824 },
+							{ name = "Straw", defaultQuantity = 0, id = 5342 },
+							{ name = "Fire Shard", defaultQuantity = 0, id = 2 },
+							{ name = "La Noscean Lettuce", defaultQuantity = 0, id = 4782 },
+							{ name = "Firelight Seeds", defaultQuantity = 0, id = 15865 },
+						},
+
+					},
 					{
 						startPos = Vector3(-320.45,25.56,-542.46),
 						startPos2 = Vector3(-335.99,35.69,-595.03),
@@ -1513,7 +1534,23 @@ local grid = {
 						Vector3(-274.23,17.7,-355.25),
 						Vector3(-266.85,16.84,-354.66),
 						Vector3(-260.95,16.13,-352.31),
-						
+						--Lv15 Lush Veg Patch
+						Vector3(21.33,54.12,-143.16),
+						Vector3(16.43,53.59,-119.98),
+						Vector3(19.07,52.31,-102.34),
+						Vector3(16.53,51.35,-94.76),
+						Vector3(42.06,55.87,-148.21),
+						Vector3(40.67,52.99,-129.26),
+						Vector3(53.47,54.41,-128.51),
+						Vector3(72.26,56.15,-120.94),
+						Vector3(69.78,55.69,-109.84),
+						Vector3(73.32,56.07,-96.87),
+						Vector3(78.86,56.77,-98.31),
+						Vector3(99.38,61.16,-104.13),
+						Vector3(107.43,65.55,-127.65),
+						Vector3(91.91,61.41,-134.97),
+
+
 					},
 					{ 
 						{1,3},
@@ -1521,7 +1558,7 @@ local grid = {
 						{3,4},
 						{4,5},
 						{5,6},
-						{6,7},
+						{6,7,41},
 						{7,8},
 						{8,9},
 						{9,10},
@@ -1554,7 +1591,19 @@ local grid = {
 						{37,38},
 						{38,39},
 						{39,40},
-
+						{41,42,46},
+						{42,43,46},
+						{43,44},
+						{44,45},
+						{45,46},
+						{46,47},
+						{47,48,54},
+						{48,49},
+						{49,50},
+						{50,51},
+						{51,52},
+						{52,53},
+						{53,54},
 						
 					}
 				)
