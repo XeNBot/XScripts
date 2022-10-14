@@ -269,7 +269,7 @@ function XGatherer:draw()
 
 						if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
 
-							Graphics.DrawText3D(waypoint.pos, "[" ..tostring(player.pos:dist(waypoint.pos)).."]("..tostring(i)..")", 10)
+							Graphics.DrawText3D(waypoint.pos, "[" ..tostring(math.floor(player.pos:dist(waypoint.pos)) / 100).."]("..tostring(i)..")", 20, RGBA(255, 248, 159, 255))
 
 							if waypoint.pos:dist(player.pos) < 5 and #waypoint.links > 0 then
 								for i, link in ipairs(waypoint.links) do
@@ -335,6 +335,20 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 			itemCopy.finishValue    = itemCount + menuValue
 
 			table.insert(queue.items, itemCopy)
+
+			--[[self.item_widget:label(itemInfo.name, "NAME_" .. itemInfo.name)
+			self.item_widget:label(" Amount : " .. tostring(menuValue), "AMOUNT_" .. itemInfo.name)
+			self.item_widget:button("Remove", "REMOVE_ITEM_" .. itemInfo.name , function()
+				
+				table.remove(queue.items, #queue.items)
+				self.item_widget["AMOUNT_" .. itemInfo.name]:remove()
+				self.item_widget["NAME_" .. itemInfo.name]:remove()
+				self.item_widget["SEPARATOR_" .. itemInfo.name]:remove()
+				self.item_widget["REMOVE_ITEM_" .. itemInfo.name]:remove()
+
+				print("Item Queue Size " .. tostring(#queue.items))
+			end)
+			self.item_widget:label("----------------", "SEPARATOR_" .. itemInfo.name)]]--
 		end
 	end
 
@@ -509,7 +523,7 @@ function XGatherer:drawGatherableNodes(maxDistance)
 			Graphics.DrawCircle3D(node.pos, 20, 1, Colors.Yellow)
 
 			if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
-				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
+				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 20, RGBA(255, 248, 159, 255))
 			end
 		end
 	end
@@ -523,7 +537,7 @@ function XGatherer:drawPossibleNodes(maxDistance)
 		if not node.isTargetable and node.pos:dist(player.pos) < maxDistance then
 			Graphics.DrawCircle3D(node.pos, 20, 1, Colors.Red)
 			if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
-				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
+				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 20, RGBA(255, 248, 159, 255))
 			end
 		end
 	end
@@ -605,6 +619,8 @@ function XGatherer:initializeMenu()
 			end
 		end
 	end)
+
+	--self.item_widget = Menu("XGatherer Item Queue", true)
 
 end
 
