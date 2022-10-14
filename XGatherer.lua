@@ -523,7 +523,7 @@ function XGatherer:drawGatherableNodes(maxDistance)
 			Graphics.DrawCircle3D(node.pos, 20, 1, Colors.Yellow)
 
 			if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
-				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
+				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 20, RGBA(255, 248, 159, 255))
 			end
 		end
 	end
@@ -537,7 +537,7 @@ function XGatherer:drawPossibleNodes(maxDistance)
 		if not node.isTargetable and node.pos:dist(player.pos) < maxDistance then
 			Graphics.DrawCircle3D(node.pos, 20, 1, Colors.Red)
 			if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
-				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 10)
+				Graphics.DrawText3D(node.pos, "Id: [" .. tostring(node.npcId) .. "]" .. " Dist: [" ..tostring(math.floor(player.pos:dist(node.pos)  * 10) / 10).."] Data: [" .. tostring(node.dataId) .. "]", 20, RGBA(255, 248, 159, 255))
 			end
 		end
 	end
