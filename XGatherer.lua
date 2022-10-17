@@ -109,9 +109,7 @@ function XGatherer:tick()
 		return
 	elseif self.activeQueue	 ~= nil then
 		if os.clock() - self.status.last_teleport < 10 then return end
-
-		if self.activeQueue.multimap ~= nil and tostring(self.activeQueue.multimap) ~= mapId and not self.activeQueue.multidone then
-
+		if self.activeQueue.multimap ~= nil and tostring(self.activeQueue.multimap) ~= tostring(mapId) and not self.activeQueue.multidone then
 			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.multimap))
 			
 			if self.actions.teleport:canUse() then
@@ -119,9 +117,7 @@ function XGatherer:tick()
 				self.status.last_teleport  = os.clock()
 				self.activeQueue.multidone = true
 			end
-
-		end
-		if self.activeQueue.mapId ~= mapId then
+		elseif self.activeQueue.multimap == nil and self.activeQueue.mapId ~= mapId then
 
 			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.mapId))
 			if self.actions.teleport:canUse() then
@@ -134,7 +130,8 @@ function XGatherer:tick()
 			end
 		end
 	end
-	if self.activeQueue == nil or (self.activeQueue.mapId ~= mapId) then return end
+
+	if self.activeQueue == nil or (self.activeQueue.multimap == nil and self.activeQueue.mapId ~= mapId) then return end
 
 	-- Job Check
 	if (string.find(self.activeQueue.nodeName, "Tree") or string.find(self.activeQueue.nodeName, "Lush")) and player.classJob ~= 17 then
@@ -159,8 +156,9 @@ function XGatherer:tick()
 		if not self.route.finished then
 			if self.status.goalWaypoint	== nil then
 				self.log:print("Node might be too far setting startPos as goal!")
-
-				if self.activeQueue.startPos2 ~= nil and self.activeQueue.startPos.pos:dist(player.pos) < 5 then
+				if self.activeQueue.multimap ~= nil then
+					self.status.goalWaypoint = self.activeQueue.multipoint
+				elseif self.activeQueue.startPos2 ~= nil and self.activeQueue.startPos.pos:dist(player.pos) < 5 then
 					self.status.goalWaypoint = self.activeQueue.startPos2
 				else		
 					self.status.goalWaypoint = self.activeQueue.startPos
@@ -316,6 +314,8 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 
 	self.log:print("Building new Item Gather Queue for " .. self.menu[regionId][mapId][nodeId].str .. "")
 	
+	local multipoint = (self.grid[regionId].maps[mapId].nodes[nodeId].multimap ~= nil and self.grid[regionId].maps[mapId].nodes[nodeId].multimap) or nil
+	
 	local queue = {
 
 		items      = {},
@@ -328,8 +328,9 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 		nodeName   = self.menu[regionId][mapId][nodeId].str,
 		startPos   = Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos),
 		startPos2  = self.grid[regionId].maps[mapId].nodes[nodeId].startPos2 ~= nil and Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos2),
-		multimap   = self.grid[regionId].maps[mapId].nodes[nodeId].multimap ~= nil and self.grid[regionId].maps[mapId].nodes[nodeId].multimap,
+		multimap   = multipoint,
 		multidone  = false,
+		multipoint = (multipoint ~= nil and Waypoint(self.grid[regionId].maps[tostring(multipoint)].nodes[nodeId].startPos)) or nil,
 		dataIds    = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds,
 
 	}	
