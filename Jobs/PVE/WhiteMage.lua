@@ -106,7 +106,7 @@ function WhiteMage:Tick()
 	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 8) > 1
 
 	if self.actions.presence:canUse() then
-		self.actions.precense:use()
+		self.actions.presence:use()
 	end
 	
 	if player.classLevel >= 72 then
