@@ -108,7 +108,20 @@ function XGatherer:tick()
 		self.activeQueue = self.queues[1]
 		return
 	elseif self.activeQueue	 ~= nil then
-		if self.activeQueue.mapId ~= mapId and os.clock() - self.status.last_teleport > 10 then
+		if os.clock() - self.status.last_teleport < 10 then return end
+
+		if self.activeQueue.multimap ~= nil and tostring(self.activeQueue.multimap) ~= mapId and not self.activeQueue.multidone then
+
+			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.multimap))
+			
+			if self.actions.teleport:canUse() then
+				player:teleportTo(self.activeQueue.teleId)
+				self.status.last_teleport  = os.clock()
+				self.activeQueue.multidone = true
+			end
+
+		end
+		if self.activeQueue.mapId ~= mapId then
 
 			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.mapId))
 			if self.actions.teleport:canUse() then
@@ -119,7 +132,6 @@ function XGatherer:tick()
 				end
 				self.status.last_teleport = os.clock()
 			end
-			return
 		end
 	end
 	if self.activeQueue == nil or (self.activeQueue.mapId ~= mapId) then return end
@@ -316,7 +328,9 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 		nodeName   = self.menu[regionId][mapId][nodeId].str,
 		startPos   = Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos),
 		startPos2  = self.grid[regionId].maps[mapId].nodes[nodeId].startPos2 ~= nil and Waypoint(self.grid[regionId].maps[mapId].nodes[nodeId].startPos2),
-		dataIds    = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds
+		multimap   = self.grid[regionId].maps[mapId].nodes[nodeId].multimap ~= nil and self.grid[regionId].maps[mapId].nodes[nodeId].multimap,
+		multidone  = false,
+		dataIds    = self.grid[regionId].maps[mapId].nodes[nodeId].dataIds,
 
 	}	
 
