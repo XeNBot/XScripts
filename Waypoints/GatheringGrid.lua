@@ -2317,7 +2317,135 @@ local grid = {
 
 			}
 		}
-	}	
+	},
+	{
+		regionName = "Dravania",
+
+		maps = {
+
+			["257"] = {
+
+				mapName = "Idyllshire",
+
+				telePoint = 75,
+
+				nodes = {
+					{
+						startPos = Vector3(150.28,207,116.64),
+
+						nodeItems = {
+
+						},
+
+					},
+				},
+
+				mapWaypoints = LinkedList(
+					{
+						Vector3(61.16,207.37,-12.02),
+						Vector3(84.52,207.37,-21.4),
+						Vector3(66.6,207.33,0.63),
+						Vector3(45.26,205.3,28.37),
+						Vector3(107.26,207.07,93.06),
+						Vector3(150.28,207,116.64),
+
+					},
+					{
+						{1,3},
+						{2,3},
+						{3,4},
+						{4,5},
+						{5,6},
+
+					}
+				)
+			},
+			["213"] = {
+
+				mapName = "The Dravanian Hinterlinds",
+
+				telePoint = 75,
+
+				nodes = {
+					{
+						multimap = 257,
+
+						startPos = Vector3(212.11,73.89,169.38),
+						startPos2 = Vector3(67.39,53.38,177.07),
+					
+						dataIds = {
+							[31352] = true,
+							[31353] = true,
+							[31354] = true,
+							[31355] = true,
+							[31356] = true,
+							[31357] = true,
+						},
+
+						nodeName = "Lv60 Mineral Deposit",
+
+						nodeItems = {
+							{ name = "Cuprite", defaultQuantity = 0, id = 12942},
+							{ name = "Light Kidney Ore", defaultQuantity = 0, id = 5117},
+							{ name = "Eventide Jade", defaultQuantity = 0, id = 13760},
+							{ name = "Wind Crystal", defaultQuantity = 0, id = 10},
+							{ name = "Dated Radz-at-Han Coin", defaultQuantity = 0, id = 17557},
+							{ name = "Raw Chrysolite", defaultQuantity = 0, id = 12558},
+							{ name = "Wyrm Obsidian", defaultQuantity = 0, id = 5127},
+						},
+					},
+				},
+
+				mapWaypoints = LinkedList(
+					{
+						Vector3(-217.45,103.61,-591.44),
+						Vector3(-157.78,100.73,-371.21),
+						Vector3(10.87,100.95,-167.29),
+						Waypoint(Vector3(10.87,111.89,-167.29), true),
+						Waypoint(Vector3(111.78,111.89,30.5), true),
+						Vector3(119.77,69.49,31.57),
+						Vector3(144.96,69.81,44.66),
+						Vector3(122.94,69.57,54.04),
+						Vector3(132.6,69.19,58.37),
+						Vector3(137.66,68.71,65.19),
+						Vector3(157.37,68.19,109.2),
+						Vector3(225.65,72.31,148.41),
+						Vector3(237.07,73.79,150.6),
+						Vector3(212.11,73.89,169.38),
+						Vector3(239.56,80.09,191.58),
+						Vector3(231.52,73.6,112.91),
+						Vector3(67.39,53.38,177.07),
+						Vector3(60.06,53.22,159.95),
+						Vector3(46.4,53.2,164.06),
+						Vector3(31.38,53.66,173.44),
+						Vector3(117.54,67.49,75.29),
+
+					},
+					{
+						{1,2},
+						{2,3},
+						{3,4},
+						{4,5},
+						{5,6},
+						{6,7,8,21},
+						{7,8},
+						{8,9,10,11,17},
+						{9,10},
+						{10,21},
+						{11,12,17,21},
+						{12,13,14,15,16},
+						{13,14,16},
+						{14,15},
+						{17,18,21},
+						{18,19},
+						{19,20},
+					}
+				)
+			},
+		}
+		
+
+	},	
 }
 
 
