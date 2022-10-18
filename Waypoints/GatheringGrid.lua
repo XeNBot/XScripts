@@ -2338,6 +2338,13 @@ local grid = {
 						},
 
 					},
+					{
+						startPos = Vector3(68.91,204.99,142.19),
+
+						nodeItems = {
+
+						},
+					}
 				},
 
 				mapWaypoints = LinkedList(
@@ -2348,6 +2355,7 @@ local grid = {
 						Vector3(45.26,205.3,28.37),
 						Vector3(107.26,207.07,93.06),
 						Vector3(150.28,207,116.64),
+						Vector3(68.91,204.99,142.19),
 
 					},
 					{
@@ -2356,6 +2364,7 @@ local grid = {
 						{3,4},
 						{4,5},
 						{5,6},
+						{5,7},
 
 					}
 				)
@@ -2394,10 +2403,36 @@ local grid = {
 							{ name = "Wyrm Obsidian", defaultQuantity = 0, id = 5127},
 						},
 					},
+					{
+						multimap = 257,
+
+						startPos = Vector3(-386.47,146.45,-178.5),
+						startPos2 = Vector3(-571.16,147.6,-131.67),
+
+						dataIds = {
+							[31430] = true,
+							[31431] = true,
+							[31432] = true,
+							[31433] = true,
+							[31434] = true,
+							[31435] = true,
+						},
+
+						nodeName = "Lv60 Lush Vegetation Patch",
+
+						nodeItems = {
+							{ name = "Cow Bitter", defaultQuantity = 0, id = 12639},
+							{ name = "Periwinkle", defaultQuantity = 0, id = 13762},
+							{ name = "Wind Crystal", defaultQuantity = 0, id = 10},
+							{ name = "Dated Radz-at-Han Coin", defaultQuantity = 0, id = 17557},
+							{ name = "Gaelicatnip", defaultQuantity = 0, id = 12641},
+						},
+					}
 				},
 
 				mapWaypoints = LinkedList(
 					{
+						--Lv60 Mineral Deposits
 						Vector3(-217.45,103.61,-591.44),
 						Vector3(-157.78,100.73,-371.21),
 						Vector3(10.87,100.95,-167.29),
@@ -2419,7 +2454,25 @@ local grid = {
 						Vector3(46.4,53.2,164.06),
 						Vector3(31.38,53.66,173.44),
 						Vector3(117.54,67.49,75.29),
-
+						--Lv60 Lush Vegetation Patch
+						Vector3(-530.34,151.22,-473.74),
+						Vector3(-501.77,142.08,-296.14),
+						Vector3(-510.71,141.08,-280.23),
+						Vector3(-494.75,141.68,-287.38),
+						Vector3(-485.78,142.12,-291.02),
+						Vector3(-439.11,143.32,-299.29),
+						Vector3(-351.21,141.06,-224.56),
+						Vector3(-349.73,143.9,-185.24),
+						Vector3(-375.4,144.64,-194.86),
+						Vector3(-398.04,144.97,-198.39),
+						Vector3(-388.65,146.6,-177.06),
+						Vector3(-533.32,141.55,-262.2),
+						Vector3(-520.46,147.59,-175.32),
+						Vector3(-573.54,147.99,-158.64),
+						Vector3(-571.16,147.6,-131.67),
+						Vector3(-562.58,148.26,-105.12),
+						Vector3(-520.01,148.26,-98.33),
+						Vector3(-437.36,145.04,-213.89),
 					},
 					{
 						{1,2},
@@ -2439,6 +2492,21 @@ local grid = {
 						{17,18,21},
 						{18,19},
 						{19,20},
+						{22,23},
+						{23,24,25,26,27},
+						{24,25,33},
+						{25,26},
+						{26,27},
+						{27,28},
+						{28,29,30,31,39},
+						{29,30,32},
+						{30,31,32},
+						{31,32},
+						{33,34},
+						{34,35,36,39},
+						{35,36,37,38},
+						{36,37,38},
+						{37,38},
 					}
 				)
 			},
