@@ -110,7 +110,6 @@ function XGatherer:tick()
 	elseif self.activeQueue	 ~= nil then
 		if os.clock() - self.status.last_teleport < 10 then return end
 		if self.activeQueue.multimap ~= nil and tostring(self.activeQueue.multimap) ~= tostring(mapId) and not self.activeQueue.multidone and mapId ~= tostring(self.activeQueue.mapId) then
-
 			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.multimap))
 			
 			if self.actions.teleport:canUse() then
@@ -118,7 +117,6 @@ function XGatherer:tick()
 				self.status.last_teleport  = os.clock()
 				self.activeQueue.multidone = true
 			end
-
 		elseif self.activeQueue.multimap == nil and self.activeQueue.mapId ~= mapId then
 
 			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.mapId))
@@ -317,7 +315,7 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 	self.log:print("Building new Item Gather Queue for " .. self.menu[regionId][mapId][nodeId].str .. "")
 	
 	local multipoint = (self.grid[regionId].maps[mapId].nodes[nodeId].multimap ~= nil and self.grid[regionId].maps[mapId].nodes[nodeId].multimap) or nil
-	
+
 	local queue = {
 
 		items      = {},
@@ -575,27 +573,41 @@ function XGatherer:initializeMenu()
 
 			-- loops our maps inside region
 			for mapId, mapInfo in pairs(self.grid[regionId].maps) do
-				-- Adds submenu with map name
-				self.menu[regionId]:subMenu(mapInfo.mapName, mapId)
+				-- Checks if map has node items
+				local has_items = false
+
 				for nodeId, nodeInfo in ipairs(self.grid[regionId].maps[mapId].nodes) do
-
-					self.menu[regionId][mapId]:subMenu(nodeInfo.nodeName, nodeId)
-
-					for i, itemInfo in ipairs(nodeInfo.nodeItems) do
-						self.menu[regionId][mapId][nodeId]:number(itemInfo.name, itemInfo.name, 100)
+					if #nodeInfo.nodeItems > 0 then
+						has_items = true
 					end
-					
-					self.menu[regionId][mapId][nodeId]:checkbox("Use Actions", "ACTIONS", true)
+				end
+				
+				-- Adds submenu with map name if items found
+				if has_items then
 
-					self.menu[regionId][mapId][nodeId]:combobox("Gather Mode", "GATHER_MODE", {"Normal", "Shards / Crystals"}, 0)
+					self.menu[regionId]:subMenu(mapInfo.mapName, mapId)
 
-					self.menu[regionId][mapId][nodeId]:button("Add to Queue", "QUEUE", function()
-						self:buildGatherQueue(regionId, mapId, nodeId)
-					end)
+					for nodeId, nodeInfo in ipairs(self.grid[regionId].maps[mapId].nodes) do
+
+						self.menu[regionId][mapId]:subMenu(nodeInfo.nodeName, nodeId)
+
+						for i, itemInfo in ipairs(nodeInfo.nodeItems) do
+							self.menu[regionId][mapId][nodeId]:number(itemInfo.name, itemInfo.name, 100)
+						end
+						
+						self.menu[regionId][mapId][nodeId]:checkbox("Use Actions", "ACTIONS", true)
+
+						self.menu[regionId][mapId][nodeId]:combobox("Gather Mode", "GATHER_MODE", {"Normal", "Shards / Crystals"}, 0)
+
+						self.menu[regionId][mapId][nodeId]:button("Add to Queue", "QUEUE", function()
+							self:buildGatherQueue(regionId, mapId, nodeId)
+						end)
+
+					end
+
+					self.menu[regionId]:space()
 
 				end
-
-				self.menu[regionId]:space()
 			end
 
 			self.menu:space()
