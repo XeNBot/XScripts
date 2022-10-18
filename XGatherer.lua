@@ -110,6 +110,7 @@ function XGatherer:tick()
 	elseif self.activeQueue	 ~= nil then
 		if os.clock() - self.status.last_teleport < 10 then return end
 		if self.activeQueue.multimap ~= nil and tostring(self.activeQueue.multimap) ~= tostring(mapId) and not self.activeQueue.multidone and mapId ~= tostring(self.activeQueue.mapId) then
+
 			self.log:print("Teleporting from " .. tostring(mapId) .. " to " .. tostring(self.activeQueue.multimap))
 			
 			if self.actions.teleport:canUse() then
