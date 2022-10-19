@@ -661,7 +661,7 @@ function XGatherer:getMapRegion(mapId)
 		return 2
 	elseif mapId == "53" then 
 		return 3
-	elseif mapId == "15" or mapId == "17" then 
+	elseif mapId == "15" or mapId == "17" or mapId == "18" then 
 		return 4
 	elseif mapId == "493" or mapId == "491" then 
 		return 5
