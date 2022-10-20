@@ -351,19 +351,15 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 
 			table.insert(queue.items, itemCopy)
 
-			--[[self.item_widget:label(itemInfo.name, "NAME_" .. itemInfo.name)
-			self.item_widget:label(" Amount : " .. tostring(menuValue), "AMOUNT_" .. itemInfo.name)
-			self.item_widget:button("Remove", "REMOVE_ITEM_" .. itemInfo.name , function()
+			--[[self.item_widget:label(itemInfo.name, itemInfo.name)
+			--self.item_widget[itemInfo.name]:label(" Amount : " .. tostring(menuValue), "AMOUNT_" .. itemInfo.name)
+			self.item_widget[itemInfo.name]:button("Remove", "REMOVE_ITEM_" .. itemInfo.name , function()
 				
 				table.remove(queue.items, #queue.items)
-				self.item_widget["AMOUNT_" .. itemInfo.name]:remove()
-				self.item_widget["NAME_" .. itemInfo.name]:remove()
-				self.item_widget["SEPARATOR_" .. itemInfo.name]:remove()
-				self.item_widget["REMOVE_ITEM_" .. itemInfo.name]:remove()
-
+				self.item_widget[itemInfo.name]:remove()				
 				print("Item Queue Size " .. tostring(#queue.items))
 			end)
-			self.item_widget:label("----------------", "SEPARATOR_" .. itemInfo.name)]]--
+			self.item_widget[itemInfo.name]:label("----------------", "SEPARATOR_" .. itemInfo.name)]]--
 		end
 	end
 
@@ -524,7 +520,9 @@ function XGatherer:setJob(job)
 		for slotId = 0, 15 do
 			local slot = HotBarManager[hotbar].slot[slotId]
 			if slot.icon == iconId then
+				self.log:print("Setting Job : " .. CLASS_JOBS[job])
 				slot:execute()
+				break
 			end
 		end
 	end
@@ -650,6 +648,7 @@ function XGatherer:initializeMenu()
 	end)
 
 	--self.item_widget = Menu("XGatherer Item Queue", true)
+	--self.item_widget.width = 200
 
 end
 
