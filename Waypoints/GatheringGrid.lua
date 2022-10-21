@@ -427,13 +427,56 @@ local grid = {
 						nodeName = "Lv30 Mature Tree",
 
 						nodeItems = {
-							{ name = "Chocobo Feather", defaultQuantity = 100, id = 5359 },
-							{ name = "Alligator Pear", defaultQuantity = 100, id = 4813 },
-							{ name = "Ice Shard", defaultQuantity = 100, id = 3 }
+							{ name = "Chocobo Feather", defaultQuantity = 100, id = 5359},
+							{ name = "Alligator Pear", defaultQuantity = 100, id = 4813},
+							{ name = "Ice Shard", defaultQuantity = 100, id = 3},
 
 						}
-					}
+					},  
+					{
 
+						customTele = 6,
+
+						startPos = Vector3(-258.33,0.8,490.87),
+
+						dataIds = {
+							[30060] = true,
+							[30061] = true,
+							[30062] = true,
+							[30067] = true,
+							[30318] = true,
+						},
+
+						nodeName = "LV35 Mature Tree",
+
+						nodeItems = {
+							{ name = "Tarantula", defaultQuantity = 0, id = 5562},
+							{ name = "Oak Branch", defaultQuantity = 0, id = 5409},
+							{ name = "Ice Shard", defaultQuantity = 0, id = 3},
+							{ name = "Oak Log", defaultQuantity = 0, id = 5390},
+						},
+					},
+					{
+						customTele = 6,
+
+						startPos = Vector3(-200.52,0.77,384.48),
+
+						dataIds = {
+							[30063] = true,
+							[30064] = true,
+							[30065] = true,
+							[30319] = true,
+						},
+
+						nodeName = "Lv35 Lush Vegetatio Patch",
+
+						nodeItems = {
+							{ name = "Wildfowl Feather", defaultQuantity = 0, id = 5360},
+							{ name = "Flax", defaultQuantity = 0, id = 5346},
+							{ name = "Ice Shard", defaultQuantity = 0, id = 3},
+							{ name = "White Truffle", defaultQuantity = 0, id = 4798},
+						}
+					},
 				},
 
 				mapWaypoints = LinkedList(
@@ -481,8 +524,40 @@ local grid = {
 						Vector3(87.59,7.38,-42.87),
 						Vector3(78.61,9.16,-31.32),
 						Vector3(63.63,9.25,31.74),
-						Vector3(72.01,8.92,17.17)
-
+						Vector3(72.01,8.92,17.17),
+						--Lv35 Mature Tree
+						Vector3(-226.49,21.36,349),
+						Vector3(-248.69,21.9,350.68),
+						Vector3(-243.93,17.06,367.95),
+						Vector3(-226.85,11.86,377.69),
+						Vector3(-215.65,10.93,378.71),
+						Vector3(-216.67,10.93,383.95),
+						Vector3(-231.44,6.55,382.76),
+						Vector3(-237.55,0.5,422.04),
+						Vector3(-269.32,-0.12,399.43),
+						Vector3(-265.8,0,404.16),
+						Vector3(-265.01,-0.34,417.45),
+						Vector3(-264.58,-0.43,445.08),
+						Vector3(-271.69,-0.4,443.84),
+						Vector3(-284.42,-0.47,446.91),
+						Vector3(-268.62,0.59,485.71),
+						Vector3(-276.38,0.63,485.49),
+						Vector3(-258,1.11,490.57),
+						Vector3(-257.77,-0.44,442.05),
+						--Lv35 Lush Vegetation Patch
+						Vector3(-200.52,0.77,384.48),
+						Vector3(-193.29,0.96,386.27),
+						Vector3(-189.67,1.02,377.23),
+						Vector3(-153.54,-0.43,362.87),
+						Vector3(-136.67,-0.43,361.97),
+						Vector3(-136.13,-0.42,343.56),
+						Vector3(-193.28,0.75,332.5),
+						Vector3(-217,-0.45,315.03),
+						Vector3(-226.98,-0.43,310.98),
+						Vector3(-249.71,-0.42,378.96),
+						Vector3(-255.49,-0.43,369.89),
+						Vector3(-262.57,-0.42,372.09),
+						Vector3(-254.04,-0.49,312.39),
 					},
 					{	
 						{1, 2},
@@ -521,8 +596,34 @@ local grid = {
 						{37, 38, 39, 41},
 						{38, 39},
 						{40, 41},
-
-
+						{42,43},
+						{43,44},
+						{44,45},
+						{45,46},
+						{46,47},
+						{47,48},
+						{48,49},
+						{49,50,52,53,59,60,69,70,71},
+						{50,51},
+						{51,52},
+						{52,54,59},
+						{53,54,59},
+						{54,55,59},
+						{55,56,58},
+						{56,57},
+						{57,58},
+						{60,61},
+						{61,62,63,64,65},
+						{62,65},
+						{63,64},
+						{64,65},
+						{65,66,67},
+						{66,67},
+						{67,68},
+						{68,72},
+						{69,70,72},
+						{70,71,72},
+						{71,72},
 					}
 				)
 			},
