@@ -1247,7 +1247,7 @@ local grid = {
 						{3,  4, 5, 6,62},
 						{4,  5, 6, 7},
 						{5,  6},
-						{6,  7, 8, 9, 10, 11, 14},
+						{6,  7, 8, 9, 10, 11, 14, 62},
 						{7,  8, 9, 10, 11},
 						{8,  9},
 						{9,  10, 11, 12},
@@ -1487,7 +1487,27 @@ local grid = {
 							{ name = "Laurel", defaultQuantity = 100, id = 4839 },
 							{ name = "Bloodgrass", defaultQuantity = 100, id = 7011 },
 							{ name = "Lightning Shard", defaultQuantity = 100, id = 6 },
-							{ name = "Aloe", defaultQuantity = 100, id = 4790 }
+							{ name = "Aloe", defaultQuantity = 100, id = 4790 },
+						}
+					},
+					{
+						customTele = 20,
+
+						startPos = Vector3(178.52,4.05,989.28),
+
+						dataIds = {
+							[30491] = true,
+							[30492] = true,
+							[30493] = true,
+							[30494] = true,
+						},
+
+						nodeName = "Lv35 Mineral Deposit",
+
+						nodeItems = {
+							{ name = "Lightning Shard", defaultQuantity = 0, id = 6},
+							{ name = "Raw Heliodor", defaultQuantity = 0, id = 5137},
+							{ name = "Mythril Ore", defaultQuantity = 0, id = 5114},
 						}
 					}
 				},
@@ -1537,6 +1557,22 @@ local grid = {
 						Vector3(77.83,8.44,429.93),
 						Vector3(110.85,7.07,422.5),
 						Vector3(116.95,7.07,416),
+						--Lv35 Mineral Deposit
+						Vector3(-31.31,25.51,540.01),
+						Vector3(169.78,3.09,944.02),
+						Vector3(151.07,3.11,945.42),
+						Vector3(151.61,3.11,955.87),
+						Vector3(150.62,3.18,960.64),
+						Vector3(178.59,4,989.15),
+						Vector3(189.79,4.01,987.53),
+						Vector3(197.16,4.12,989.32),
+						Vector3(200.02,3.11,960.57),
+						Vector3(204.43,4.51,939.07),
+						Vector3(208.22,4.94,934.52),
+						Vector3(256.03,4.65,940),
+						Vector3(246.24,6.89,958.96),
+						Vector3(209.84,5.94,963.4),
+						Vector3(224.45,7.59,986.53),
 					},
 					{
 						{1, 2},
@@ -1561,7 +1597,7 @@ local grid = {
 						{21,22},
 						{22,23},
 						{23,24},
-						{24,25},
+						{24,25,38},
 						{25,26,27,28,31},
 						{26,27,28,31},
 						{27,28,30,31},
@@ -1572,6 +1608,20 @@ local grid = {
 						{34,35,36,37},
 						{35,36,37},
 						{36,37},
+						{38,39},
+						{39,40,41,42,43,45,46,47},
+						{40,41,42,43},
+						{41,42,47},
+						{42,43},
+						{43,44},
+						{44,45,46},
+						{45,46},
+						{46,51,52},
+						{47,48},
+						{48,49},
+						{49,50,51},
+						{50,51},
+						{51,52},
 					}
 				)
 			},
@@ -2020,6 +2070,73 @@ local grid = {
 						{52,53},
 						{53,54},
 						
+					}
+				)
+			},
+			["19"] = {
+				mapName = "Upper La Noscea",
+
+				telePoint = 15,
+
+				nodes = {
+					{
+						nodeName = "Lv45 Mineral Deposit",
+
+						startPos = Vector3(403.27,0.39,220.91),
+
+						dataIds = {
+							[30524] = true,
+							[30525] = true,
+							[30526] = true,
+							[30527] = true,
+						},
+
+						nodeItems = {
+							{ name = "Earth Shard", defaultQuantity = 0, id = 5},
+							{ name = "Electrum Ore", defaultQuantity = 0, id = 5115},
+							{ name = "Raw Turquoise", defaultQuantity = 0, id = 5145},
+						} 
+					},
+				},
+
+				mapWaypoints = LinkedList(
+					{
+						Vector3(431.27,3.6,98.11),
+						Vector3(444.39,3.6,92.13),
+						Vector3(436.8,4.09,113.55),
+						Vector3(441.43,7.61,146.5),
+						Vector3(443.35,-3.25,157.1),
+						Vector3(449.26,-3.4,150.2),
+						Vector3(437.59,-3.4,150.73),
+						Vector3(432.25,-3.4,150.74),
+						Vector3(466.35,-2.27,175.36),
+						Vector3(465.26,-2.96,180.79),
+						Vector3(465.56,-3.29,185.03),
+						Vector3(457.47,0.81,212.01),
+						Vector3(447.78,0.95,216.05),
+						Vector3(434.8,0.75,214.78),
+						Vector3(412.37,0.04,218.37),
+						Vector3(403.27,0.39,220.91),
+						Vector3(390.74,-2.22,210.37),
+						Vector3(415.56,-3.4,199.77),
+					},
+					{
+						{1,3},
+						{2,3},
+						{3,4},
+						{4,5},
+						{5,6,7,8,9,13},
+						{6,7},
+						{7,8},
+						{9,10,18},
+						{10,11,18},
+						{11,12,18},
+						{12,13},
+						{13,14,18},
+						{14,18},
+						{15,16,18},
+						{16,18},
+						{17,18},
 					}
 				)
 			},
