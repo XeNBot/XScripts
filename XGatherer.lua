@@ -309,6 +309,7 @@ function XGatherer:draw()
 	end	
 end
 
+
 function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 	
 
@@ -348,18 +349,21 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 			itemCopy.initialAmount  = itemCount
 			itemCopy.amountToGather = menuValue
 			itemCopy.finishValue    = itemCount + menuValue
+			itemCopy.tableIndex     = self.item_widget["ITEM_TABLE"].row_count
+			itemCopy.itemTableIndex = #queue.items + 1
+			itemCopy.menuId         =  itemCopy.name .. tostring(itemCopy.tableIndex) .. tostring(itemCopy.index)
+			itemCopy.queueIndex     = queue.index
 
 			table.insert(queue.items, itemCopy)
 
-			--[[self.item_widget:label(itemInfo.name, itemInfo.name)
-			--self.item_widget[itemInfo.name]:label(" Amount : " .. tostring(menuValue), "AMOUNT_" .. itemInfo.name)
-			self.item_widget[itemInfo.name]:button("Remove", "REMOVE_ITEM_" .. itemInfo.name , function()
-				
-				table.remove(queue.items, #queue.items)
-				self.item_widget[itemInfo.name]:remove()				
-				print("Item Queue Size " .. tostring(#queue.items))
+			self.item_widget["ITEM_TABLE"]["ITEM_NAME"]:row(itemInfo.name, itemCopy.menuId)
+			self.item_widget["ITEM_TABLE"]["ITEM_AMOUNT"]:row(tostring(menuValue), itemCopy.menuId)
+			self.item_widget["ITEM_TABLE"]["ITEM_GATHERED"]:row("0", itemCopy.menuId)
+			self.item_widget["ITEM_TABLE"]["ITEM_REMOVE"]:row("X", itemCopy.menuId,
+			function ()
+				self.item_widget["ITEM_TABLE"]:remove_row(itemCopy.menuId)
+				self:remove_from_item_queue(itemCopy)
 			end)
-			self.item_widget[itemInfo.name]:label("----------------", "SEPARATOR_" .. itemInfo.name)]]--
 		end
 	end
 
@@ -375,6 +379,25 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 		self.log:print("Tried adding Queue with no items!")
 	end
 
+end
+
+function XGatherer:remove_from_item_queue(item)
+
+	if self.queues[item.queueIndex] == nil then
+		print("Error Removing Item from Queue [ " .. item.name .. "]")
+		print("Queue Index is nil : " .. tostring(item.queueIndex))
+	end
+
+	for i, item_check in ipairs(self.queues[item.queueIndex].items) do
+		if item_check.menuId == item.menuId then
+			table.remove(self.queues[item.queueIndex].items, i)
+			print("Removed " .. item_check.name .. " from Item Queue")
+		end	
+	end
+
+	if self.queues[item.queueIndex].items == 0 then
+		table.remove(self.queues, item.queueIndex)
+	end
 end
 
 
@@ -414,6 +437,7 @@ function XGatherer:getNextQueueItem()
 
 			if InventoryManager.GetItemCount(item.id) > item.finishValue then
 				table.remove(self.activeQueue.items, i)
+				self.item_widget["ITEM_TABLE"]:remove_row(item.menuId)
 				self.log:print("Finished Gathering " .. item.amountToGather .. "(s) " .. item.name)			
 			else
 				self.status.last_item = item
@@ -438,7 +462,10 @@ function XGatherer:gatherNextItem(gatheringAddon)
 
 		if itemToGather == nil then return end
 
-		self.log:print("Gathering Item: " .. itemToGather.name .. ", Need to gather " .. tostring((itemToGather.finishValue - InventoryManager.GetItemCount(itemToGather.id))) .. " more")
+		local current_amount = InventoryManager.GetItemCount(itemToGather.id)
+
+		self.item_widget["ITEM_TABLE"]["ITEM_GATHERED"][itemToGather.menuId].str = tostring(current_amount - itemToGather.initialAmount)
+		self.log:print("Gathering Item: " .. itemToGather.name .. ", Need to gather " .. tostring((itemToGather.finishValue - current_amount)) .. " more")
 		TaskManager:GatherItem(itemToGather.id)
 	end
 end
@@ -646,10 +673,22 @@ function XGatherer:initializeMenu()
 			end
 		end
 	end)
+	self.menu:button("Open Item Queue Widget", "OPEN_ITEM_WIDGET", function()
+		self.item_widget.visible = true
+	end)
 
-	--self.item_widget = Menu("XGatherer Item Queue", true)
-	--self.item_widget.width = 200
-
+	self.item_widget = Menu("XGatherer Item Queue", true)
+	self.item_widget.width = 420
+	self.item_widget:table("Item Table", "ITEM_TABLE")
+	self.item_widget["ITEM_TABLE"]:column("Item Name", "ITEM_NAME")	
+	self.item_widget["ITEM_TABLE"]:column("Amount",    "ITEM_AMOUNT")	
+	self.item_widget["ITEM_TABLE"]:column("Gathered",  "ITEM_GATHERED")	
+	self.item_widget["ITEM_TABLE"]:column("Remove",    "ITEM_REMOVE")
+	
+	self.item_widget["ITEM_TABLE"]["ITEM_NAME"].width     = 150
+	self.item_widget["ITEM_TABLE"]["ITEM_AMOUNT"].width   = 90
+	self.item_widget["ITEM_TABLE"]["ITEM_GATHERED"].width = 90
+	self.item_widget["ITEM_TABLE"]["ITEM_REMOVE"].width   = 90
 end
 
 function XGatherer:getMapRegion(mapId)
