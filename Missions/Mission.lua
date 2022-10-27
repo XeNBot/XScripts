@@ -10,7 +10,11 @@ function Mission:initialize()
 	self.exit_callbacks = {}
 end
 
+--[[ Virtual Functions for Child Objects ]]--		
+-- Custom Object Interaction
 function Mission:CustomInteract() return false end
+-- Custom Targetting
+function Mission:CustomTarget(range) return false end
 
 
 function Mission:SetMainModule(mod)
@@ -37,8 +41,9 @@ function Mission:Tick()
 	if self:CustomInteract() then return end
 
 	local range      = player.isMelee and 20 or 25
+
 	local mobsAround = ObjectManager.BattleEnemiesAroundObject(player, 15,
-		 function(obj) 
+		 function(obj)
 		 	return self.mainModule.b_filter[obj.npcId] ~= true 
 		 end)
 	if mobsAround > 0 then
@@ -63,8 +68,9 @@ end
 
 function Mission:HandleMobs(range)
 	
-	local target = TargetManager.Target
+	if self:CustomTarget(range) then return end
 
+	local target = TargetManager.Target
 	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 then
 
 		local objects = ObjectManager.Battle( function(target) 
@@ -93,7 +99,7 @@ function Mission:DeathWatch()
 		self.mainModule.route = Route()
 		self.mainModule.stats.times_died = self.mainModule.stats.times_died + 1
 		self.mainModule.log:print("Oh noes we died! reviving....")
-		self.mainModule.menu["TIMES_DIED"].str = "Times We've Died: " .. tostring(self.mainModule.stats.times_died)
+		self.mainModule.widget["TIMES_DIED"].str = "Times We've Died: " .. tostring(self.mainModule.stats.times_died)
 	end
 end
 

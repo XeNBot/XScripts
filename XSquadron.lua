@@ -280,6 +280,21 @@ function XSquadron:Interactables()
 	if shortcut.valid then
 		player:rotateTo(shortcut.pos)
 		TaskManager:Interact(shortcut, self.callbacks.Shortcut)
+		return true
+	end	
+
+	local gate = ObjectManager.EventObject(function(obj) return self.interactables.gates[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
+	if gate.valid then
+		player:rotateTo(gate.pos)
+		TaskManager:Interact(gate)
+		return true
+	end	
+
+	local door = ObjectManager.EventObject(function(obj) return self.interactables.doors[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
+	if door.valid then
+		player:rotateTo(door.pos)
+		TaskManager:Interact(door)
+		return true
 	end	
 
 	return false
