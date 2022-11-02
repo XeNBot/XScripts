@@ -19,6 +19,8 @@ function Samurai:initialize()
 		tsubame    = Action(1, 16483),
 		kaeshi     = Action(1, 16486),
 
+		truenorth  = Action(1, 7546),
+
 	}
 
 	self.menu             = nil
@@ -40,10 +42,10 @@ function Samurai:Load(mainMenu, log)
 		--self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]:slider("Min Enemies for AoE", "AOE_MIN", 1, 1, 3, 2)
 	
 	Callbacks:Add(CALLBACK_ACTION_EFFECT, function(source, pos, actionId, targetId)
-
-		if source == player and actionId ~= 7 then
+		if source.id == player.id and actionId ~= 7 then
 			self.actionBeforeLast = self.lastAction
 			self.lastAction       = actionId
+			switch(actionId, self.actionSwitch)
 		end
 
 	end)
@@ -58,8 +60,6 @@ function Samurai:Tick()
 	local menu   = self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]
 
 	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.yalmX > 3 then return end
-
-	local mei = player:getStatus(1233)
 
 	switch(self.lastAction, self.actionSwitch)
 
@@ -82,13 +82,6 @@ end
 function Samurai:SetActionSwitch()
 	
 	self.actionSwitch = { 
-        [0] = function()
-        	if self.actions.meikyo:canUse() then
-				self.log:print("Using Meikyo Shisui")
-				self.actions.meikyo:use()
-				--self.log:print("1-0")
-			end
-		end,
 		[self.actions.yukikaze.id] = function()
 			if self.actions.midare:canUse(TargetManager.Target) then
 				self.log:print("Using Midare Setsugekka on " .. TargetManager.Target.name )
@@ -97,7 +90,7 @@ function Samurai:SetActionSwitch()
 			end
 		end,		
 		[self.actions.gekko.id] = function()
-			if self.actionBeforeLast == self.actions.kaeshi.id and self.actions.shinten:canUse(TargetManager.Target) then
+			if self.actions.shinten:canUse(TargetManager.Target) then
 				self.log:print("Using Hissatsu: Shinten on " .. TargetManager.Target.name)
 				--self.log:print("6-1")
 				self.actions.shinten:use(TargetManager.Target)
@@ -127,7 +120,6 @@ function Samurai:SetActionSwitch()
 			end
 		end,
 		[self.actions.shinten.id] = function()
-			self.log:print("Shinten Switch")
 			if self.actions.higanbana:canUse(TargetManager.Target) then
 				self.log:print("Using Higanbana on " .. TargetManager.Target.name )
 				--self.log:print("7-0")
@@ -135,6 +127,16 @@ function Samurai:SetActionSwitch()
 			end
 		end,
 		[self.actions.meikyo.id] = function()
+			if self.actions.truenorth:canUse() then
+				self.actions.truenorth:use()
+				self.log:print("Using True North")
+			elseif self.actions.gekko:canUse(TargetManager.Target) then
+				self.log:print("Using Gekko on " .. TargetManager.Target.name )
+				--self.log:print("2-0")
+				self.actions.gekko:use(TargetManager.Target)
+			end
+		end,
+		[self.actions.truenorth.id] = function()
 			if self.actions.gekko:canUse(TargetManager.Target) then
 				self.log:print("Using Gekko on " .. TargetManager.Target.name )
 				--self.log:print("2-0")
