@@ -2,7 +2,7 @@ local HealingManager = Class("HealingManager")
 
 function HealingManager:initialize()
 	
-	print("Healing Manager Initialized")
+	--print("Healing Manager Initialized")
 
 	self.menu = nil
 	self.heal_actions = {}
@@ -32,19 +32,18 @@ function HealingManager:AddActionTable(tbl)
 
 		table.insert(self.heal_actions, action)
 
-		--print("Adding Action " .. action.name)
-
 		self.menu["HEAL_MNG"]:subMenu(action.name .. " Settings", action.name)
 		self.menu["HEAL_MNG"][action.name]:checkbox("Use On Party Player Members",      "PARTY_MEMBERS",     true)
 		self.menu["HEAL_MNG"][action.name]:checkbox("Use On People outside of Party",   "NON_PARTY_MEMBERS", true)
 		self.menu["HEAL_MNG"][action.name]:slider("Minimum MP Percent",                 "MIN_MP", 1, 0, 100, 0)
 		
+		self:CalculateHealingPotential(action)
 	end
 
 end
 
 function HealingManager:HealWatch()
-
+	
 	local saved_target = TargetManager.Target
 
 	if #self.heal_actions > 0 then
@@ -55,8 +54,7 @@ function HealingManager:HealWatch()
 				local potency = self:CalculateHealingPotential(h)
 
 				local players = ObjectManager.Players(function (p)
-					
-					return p.yalmX <= h.range and p.missingHealth >= potency and not p.isDead and
+					return p.yalmX <= h.range and p.missingHealth > potency and not p.isDead and
 					( self.menu["HEAL_MNG"][h.name]["NON_PARTY_MEMBERS"].bool or p.ally)
 
 				end)
@@ -64,7 +62,7 @@ function HealingManager:HealWatch()
 				if not h.aoe and #players < self.menu["HEAL_MNG"]["MIN_AOE"].int then
 
 					for i, p in ipairs(players) do
-						if h:canUse(p) then
+						if h:canUse(p) and p.missingHealth > potency then
 							print(p.name .. " has " .. tostring(p.missingHealth) .. " missing life (" .. tostring(p.health) .. "/" .. tostring(p.maxHealth) .. ")")
 							print("Healing : " .. p.name .. " with Action : " .. h.name .. " for ~ " .. tostring(potency) .. " life")
 							h:use(p)
@@ -124,23 +122,34 @@ function HealingManager:CalculateHealingPotential(heal_action)
 
 	if levelModifier == nil or jobModifier == nil then
 		print("[ HealingManager::Error ] - Could not find modifier" )
-		return
+		return 0
 	end
 
-	local HMP   = self:CalculateHMP(levelModifier)
+	local HMP   = self:CalculateHMP()
+	--print("HMP Calculated " .. tostring(HMP))
 	local DET   = self:CalculateDET(levelModifier)
+	--print("DET Calculated " .. tostring(DET))
 	local CRIT  = self:CalculateCRIT(levelModifier)
+	--print("CRIT Calculated " .. tostring(CRIT))
 	local TNC   = self:CalculateTNC(levelModifier)
-	local WD    = self:CalculateWD(levelModifier)
-	local h1    = math.floor( math.floor( math.floor(heal_action.potency * HMP * DET ) / 100 ) / 1000)
-	local h2    = math.floor( math.floor( math.floor( math.floor( h1 * TNC ) / 1000 ) * CRIT ) / 1000 )
+	--print("TNC Calculated " .. tostring(TNC))
+	local WD    = self:CalculateWD(levelModifier, jobModifier)
+	--print("WD Calculated " .. tostring(WD))
+
+	local main_heal = self:CalculateMainHeal(levelModifier)
+	--print("Calculated Main Heal : " .. tostring(main_heal))
+ 
+	local oh1   = math.floor( math.floor( math.floor(heal_action.potency * main_heal * DET) * TNC ) * WD )
+	--print("Calculated Oh1 : " .. tostring(oh1))
+	--local oh2   = math.floor( oh1 * CRIT)
+	--print("Calculated Oh2 : " .. tostring(oh2))	
 	local bonus = heal_action.bonus ~= nil and heal_action.bonus() or 0
 
 	if bonus ~= 0 then
-		bonus = ( h2 * bonus ) / 100
+		bonus = ( oh1 * bonus ) / 100
 	end
 
-	local total = math.floor( h2 + bonus)
+	local total = math.floor( oh1 + bonus)
 	
 	--print("Calculated to Heal ~ : " .. tostring(total))
 
@@ -148,34 +157,43 @@ function HealingManager:CalculateHealingPotential(heal_action)
 	
 end
 
-function HealingManager:CalculateMainHeal(mod)
+function HealingManager:CalculateMainHeal(level_mod)
 	
-	return (math.floor( 100 * (player.mind - mod.main) / 304 ) + 100) / 100 
+	if player.classLevel >= 80 then
+		return (math.floor( 100 * (player.mind - level_mod.main) / 304 ) + 100) / 100 
+	else
+		return (math.floor( 100 * (player.mind - level_mod.main) / 264 ) + 100) / 100 
+	end
 
 end
 
-function HealingManager:CalculateWD(mod)
-	return math.floor( (mod.main * player.mind / 1000) + 100)
+function HealingManager:CalculateWD(level_mod, job_mod)
+	return math.floor( (level_mod.main * job_mod.mnd / 1000) + InventoryManager.MainHand.magicDamage) / 100
 end
 
-function HealingManager:CalculateDET(mod)
+function HealingManager:CalculateDET(level_mod)
 	
-	return math.floor( 130 * (player.determination - mod.main) / mod.div + 1000 )
+	return math.floor( 130 * (player.determination - level_mod.main) / level_mod.div + 1000 ) / 1000
 
 end
 
-function HealingManager:CalculateTNC(mod)
+function HealingManager:CalculateTNC(level_mod)
 	
-	return math.floor( 100 * (player.tenacity - mod.sub) / mod.div + 1000 )
+	return math.floor( 100 * (player.tenacity - level_mod.sub) / level_mod.div + 1000 ) / 1000
 
 end
 
-function HealingManager:CalculateCRIT(mod)
-	return math.floor( 200 * (player.criticalHit - mod.sub) /  mod.div + 1400 )
+function HealingManager:CalculateCRIT(level_mod)
+	return math.floor( 200 * (player.criticalHit - level_mod.sub) /  level_mod.div + 1400 ) / 1000
 end
 
 function HealingManager:CalculateHMP()
-	return math.floor ( 100 * (player.healingMagicPotency - 340) / 304 ) + 100
+
+	if player.classLevel >= 80 then
+		return math.floor ( 100 * (player.healingMagicPotency - 340) / 304 + 100)
+	else
+		return math.floor ( 100 * (player.healingMagicPotency - 292) / 264 + 100)
+	end
 end
 
 function HealingManager:GetJobModifier()
@@ -193,7 +211,7 @@ function HealingManager:GetLevelModifier()
 		player.classLevel < 59 and self.LEVEL_MODS["50"] or
 		player.classLevel < 69 and self.LEVEL_MODS["60"] or
 		player.classLevel < 79 and self.LEVEL_MODS["70"] or
-		LEVEL_MODS["80"]
+		self.LEVEL_MODS["80"]
 end
 
 return HealingManager:new()
