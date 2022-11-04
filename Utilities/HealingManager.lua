@@ -37,7 +37,6 @@ function HealingManager:AddActionTable(tbl)
 		self.menu["HEAL_MNG"][action.name]:checkbox("Use On People outside of Party",   "NON_PARTY_MEMBERS", true)
 		self.menu["HEAL_MNG"][action.name]:slider("Minimum MP Percent",                 "MIN_MP", 1, 0, 100, 0)
 		
-		self:CalculateHealingPotential(action)
 	end
 
 end
