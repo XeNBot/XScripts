@@ -24,7 +24,8 @@ function XUtilities:initialize()
 	self.menu:checkbox("Auto Skip Talk", "AUTO_TALK", false)
 	self.menu:label("~=[ Mount Untilities ]=~")
 	self.menu:number("Desired Mount", "MOUNT_ID", 216)
-	self.menu:hotkey("Mount / UnMount", "MOUNT_KEY", {0x10, 0x31}) self.menu:space()
+	self.menu:hotkey("Mount / UnMount", "MOUNT_KEY", {0x10, 0x31})
+	self.menu:checkbox("Auto Fly When Mounted", "AUTO_FLY", false) self.menu:space()
 	self.menu:hotkey("Set Flying", "FLYING_KEY", {0x10, 0x32})
 	
 	-- Adds the function Utilities:Tick() to the player tick callback table
@@ -37,7 +38,9 @@ function XUtilities:Tick()
 			self.current_mount_id = self.menu["MOUNT_ID"].int
 			self.log:print("Setting Mount ID " .. tostring(self.current_mount_id))
 			Game.SetMount(self.current_mount_id)
-			Game.SetFlying(true)
+			if self.menu["AUTO_FLY"].bool then
+				Game.SetFlying(true)
+			end
 		else 
 			self.log:print("Getting off Mount!")
 			self.current_mount_id = 0
