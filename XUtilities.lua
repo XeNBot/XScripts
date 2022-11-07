@@ -7,7 +7,11 @@ function XUtilities:initialize()
 	self.last_mount = os.clock()
 	self.current_mount_id = 0
 
-	self.last_fly = os.clock()
+	self.last_fly   = os.clock()
+	self.manual_fly = false
+
+	self.last_jump  = os.clock()
+	self.jump_count = 0
 
 	-- Loads Log
 	self.log = LoadModule("XScripts", "\\Utilities\\Log")
@@ -29,10 +33,37 @@ function XUtilities:initialize()
 	self.menu:hotkey("Set Flying", "FLYING_KEY", {0x10, 0x32})
 	
 	-- Adds the function Utilities:Tick() to the player tick callback table
-	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
+	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)	
+	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
+		if actionType == 13 and result == 1 and not player.isMounted then
+			print("Mounted Manually! Mount ID : " ..tostring(actionId))
+			if self.menu["AUTO_FLY"].bool then
+				self.manual_fly = true
+			end
+		end
+	end)
 end
 
 function XUtilities:Tick()
+	if player.isMounted and self.menu["AUTO_FLY"].bool then
+
+		if Keyboard.IsKeyDown(32) then
+			if self.jump_count == 0 then
+				self.last_jump  = os.clock()
+				self.jump_count = 1
+			elseif self.jump_count == 1 and (os.clock() - self.last_jump) > 0.5 then
+				Game.SetFlying(true)
+				self.jump_count = 0
+			end
+		end
+
+		if self.manual_fly and player.isMounted then
+			Game.SetFlying(true)
+			self.manual_fly = false
+		end
+
+	end
+
 	if self.menu["MOUNT_KEY"].keyDown and (os.clock() - self.last_mount) > 1 then
 		if self.current_mount_id == 0 then
 			self.current_mount_id = self.menu["MOUNT_ID"].int
