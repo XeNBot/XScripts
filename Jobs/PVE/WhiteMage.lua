@@ -106,7 +106,7 @@ function WhiteMage:Tick()
 	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 8) > 1
 
 	if self.actions.presence:canUse() then
-		self.actions.presence:use()
+		self.actions.precense:use()
 	end
 	
 	if player.classLevel >= 72 then
@@ -123,14 +123,10 @@ function WhiteMage:LowCombo(target, aoe)
 		self:UseAero(target)
 	end
 
-	if aoe then
-		if self:CanUseHoly(target) then
-			self:UseHoly(target)
-		end
-	else
-		if self:CanUseStone(target) then
-			self:UseStone(target)
-		end
+	if aoe and self:CanUseHoly(target) then
+		self:UseHoly(target)
+	elseif self:CanUseStone(target) then
+		self:UseStone(target)
 	end
 end
 

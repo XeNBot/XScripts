@@ -11,7 +11,6 @@ function HealingManager:initialize()
 	-- Stats modifiers
 	self.LEVEL_MODS = LoadModule("XScripts", "\\Enums\\LevelMod")
 	self.JOB_MODS   = LoadModule("XScripts", "\\Enums\\JobMod")
-
 end
 
 function HealingManager:Load(menu)
@@ -36,7 +35,7 @@ function HealingManager:AddActionTable(tbl)
 		self.menu["HEAL_MNG"][action.name]:checkbox("Use On Party Player Members",      "PARTY_MEMBERS",     true)
 		self.menu["HEAL_MNG"][action.name]:checkbox("Use On People outside of Party",   "NON_PARTY_MEMBERS", true)
 		self.menu["HEAL_MNG"][action.name]:slider("Minimum MP Percent",                 "MIN_MP", 1, 0, 100, 0)
-		
+
 	end
 
 end
@@ -52,53 +51,65 @@ function HealingManager:HealWatch()
 
 				local potency = self:CalculateHealingPotential(h)
 
-				local players = ObjectManager.Players(function (p)
-					return p.yalmX <= h.range and p.missingHealth > potency and not p.isDead and
+				local filter = function (p)
+					return p.yalmX <= h.range and h:canUse(p) and p.missingHealth > potency and not p.isDead and
 					( self.menu["HEAL_MNG"][h.name]["NON_PARTY_MEMBERS"].bool or p.ally)
-
-				end)
-
-				if not h.aoe and #players < self.menu["HEAL_MNG"]["MIN_AOE"].int then
-
-					for i, p in ipairs(players) do
-						if h:canUse(p) and p.missingHealth > potency then
-							print(p.name .. " has " .. tostring(p.missingHealth) .. " missing life (" .. tostring(p.health) .. "/" .. tostring(p.maxHealth) .. ")")
-							print("Healing : " .. p.name .. " with Action : " .. h.name .. " for ~ " .. tostring(potency) .. " life")
-							h:use(p)
-							if saved_target.valid and not saved_target.isDead then
-								TargetManager.SetTarget(saved_target)
-							end
-							return true
-						end
-
-					end
-
-				elseif h.aoe and #players >= self.menu["HEAL_MNG"]["MIN_AOE"].int then
-					
-					local best_target = nil
-					local num_players = 0
-
-					for i, p in ipairs(players) do
-
-						local num = ObjectManager.PlayersAroundObject(p, action.range, function (p) return p.missingHealth >= potency end)
-						if num > num_players then
-							best_target = p
-						end
-
-					end
-
-					if best_target ~= nil and h:canUse(best_target) then
-						print(best_target.name .. " has " .. tostring(best_target.missingHealth) .. " missing life (" .. tostring(best_target.health) .. "/" .. tostring(best_target.maxHealth) .. ")")
-						print("There are : " .. tostring(num_players) .. " low health players around target")
-						print("Healing : " .. best_target.name .. " with Action : " .. best_target.name .. " for ~ " .. tostring(potency) .. " life")
-						h:use(best_target)
-						if saved_target.valid and not saved_target.isDead then
-							TargetManager.SetTarget(saved_target)
-						end
-						return true
-					end
 				end
+
+				local players = ObjectManager.Players(filter)
+				local npc_players = ObjectManager.NPCPlayers(filter)
+
+				if #players > 0 then
+					return self:ShouldHealTable(h, players, potency)
+				elseif #npc_players > 0 then
+					return self:ShouldHealTable(h, npc_players, potency)				
+				end				
 			end
+		end
+	end
+
+	return false
+
+end
+
+function HealingManager:ShouldHealTable(action , tbl, potency)
+	if not action.aoe and #tbl < self.menu["HEAL_MNG"]["MIN_AOE"].int then
+		for i, p in ipairs(tbl) do
+			if action:canUse(p) then
+				print(p.name .. " has " .. tostring(p.missingHealth) .. " missing life (" .. tostring(p.health) .. "/" .. tostring(p.maxHealth) .. ")")
+				print("Healing : " .. p.name .. " with Action : " .. action.name .. " for ~ " .. tostring(potency) .. " life")
+				action:use(p)
+				if saved_target.valid and not saved_target.isDead then
+					TargetManager.SetTarget(saved_target)
+				end
+				return true
+			end
+
+		end
+
+	elseif action.aoe and #tbl >= self.menu["HEAL_MNG"]["MIN_AOE"].int then
+		
+		local best_target = nil
+		local num_players = 0
+
+		for i, p in ipairs(tbl) do
+
+			local num = ObjectManager.PlayersAroundObject(p, action.range, function (p) return p.missingHealth >= potency end)
+			if num > num_players then
+				best_target = p
+			end
+
+		end
+
+		if best_target ~= nil and action:canUse(best_target) then
+			print(best_target.name .. " has " .. tostring(best_target.missingHealth) .. " missing life (" .. tostring(best_target.health) .. "/" .. tostring(best_target.maxHealth) .. ")")
+			print("There are : " .. tostring(num_players) .. " low health players around target")
+			print("Healing : " .. best_target.name .. " with Action : " .. best_target.name .. " for ~ " .. tostring(potency) .. " life")
+			action:use(best_target)
+			if saved_target.valid and not saved_target.isDead then
+				TargetManager.SetTarget(saved_target)
+			end
+			return true
 		end
 	end
 
@@ -132,7 +143,7 @@ function HealingManager:CalculateHealingPotential(heal_action)
 	--print("CRIT Calculated " .. tostring(CRIT))
 	local TNC   = self:CalculateTNC(levelModifier)
 	--print("TNC Calculated " .. tostring(TNC))
-	local WD    = self:CalculateWD(levelModifier, jobModifier)
+	local WD    = self:CalculateWD(levelModifier)
 	--print("WD Calculated " .. tostring(WD))
 
 	local main_heal = self:CalculateMainHeal(levelModifier)
@@ -166,8 +177,8 @@ function HealingManager:CalculateMainHeal(level_mod)
 
 end
 
-function HealingManager:CalculateWD(level_mod, job_mod)
-	return math.floor( (level_mod.main * job_mod.mnd / 1000) + InventoryManager.MainHand.magicDamage) / 100
+function HealingManager:CalculateWD(level_mod)
+	return math.floor( ( ( level_mod.main * player.attackMagicPotency ) / 1000) + InventoryManager.MainHand.magicDamage) / 100
 end
 
 function HealingManager:CalculateDET(level_mod)
@@ -180,6 +191,10 @@ function HealingManager:CalculateTNC(level_mod)
 	
 	return math.floor( 100 * (player.tenacity - level_mod.sub) / level_mod.div + 1000 ) / 1000
 
+end
+
+function HealingManager:CalculateSPD(level_mod)
+	return math.floor( 130 * (spellSpeed - level_mod.sub) / level_mod.div + 1000 ) / 1000
 end
 
 function HealingManager:CalculateCRIT(level_mod)
