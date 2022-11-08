@@ -76,12 +76,12 @@ function XPVE:Tick()
 		self.warrior:Tick(self.log)
 	elseif player.classJob == 5 or player.classJob == 23 then
 		self.bard:Tick(self.log)
+	elseif player.classJob == 6 or player.classJob == 24 then
+		self.whitemage:Tick()
 	elseif player.classJob == 7 or player.classJob == 25 then
 		self.blackmage:Tick(self.log)
 	elseif player.classJob == 22 then
-		self.dragoon:Tick()
-	elseif player.classJob == 24 then
-		self.whitemage:Tick()
+		self.dragoon:Tick()	
 	elseif player.classJob == 26 or player.classJob == 27 then
 		self.summoner:Tick(self.log)
 	elseif player.classJob == 29 or player.classJob == 30 then
