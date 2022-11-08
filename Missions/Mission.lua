@@ -30,7 +30,6 @@ function Mission:AddExitCallback(callback)
 end
 
 function Mission:Tick() 
-
 	self:DeathWatch()
 
 	local currentMapId = AgentManager.GetAgent("Map").currentMapId
@@ -42,9 +41,9 @@ function Mission:Tick()
 
 	local range      = player.isMelee and 20 or 25
 
-	local mobsAround = ObjectManager.BattleEnemiesAroundObject(player, 15,
+	local mobsAround = ObjectManager.BattleEnemiesAroundObject(player, range,
 		 function(obj)
-		 	return self.mainModule.b_filter[obj.npcId] ~= true 
+		 	return self.mainModule.b_filter[obj.npcId] ~= true and ActionManager.ActionInRange(self:GetRangeCheckAction(), obj, player)
 		 end)
 	if mobsAround > 0 then
 
@@ -71,10 +70,14 @@ function Mission:HandleMobs(range)
 	if self:CustomTarget(range) then return end
 
 	local target = TargetManager.Target
-	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 then
+	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
 
 		local objects = ObjectManager.Battle( function(target) 
-			return self.mainModule.b_filter[target.npcId] ~= true and target.isTargetable and not target.isDead and target.pos:dist(player.pos) < range 
+			return 
+				self.mainModule.b_filter[target.npcId] ~= true and
+				target.isTargetable and not target.isDead and
+				target.pos:dist(player.pos) < range and
+				ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player)
 		end)
 
 		for i, obj in ipairs(objects) do
@@ -87,6 +90,38 @@ function Mission:HandleMobs(range)
 	else
 		player:rotateTo(target.pos)
 	end
+end
+
+function Mission:GetRangeCheckAction()
+	
+	if player.classJob == 1 or  player.classJob == 19 then
+		return 7
+	elseif player.classJob == 3 or player.classJob == 21 then
+		return 7
+	elseif player.classJob == 5 or player.classJob == 23 then
+		return 8
+	elseif player.classJob == 6 or player.classJob == 24 then
+		return 119
+	elseif player.classJob == 7 or player.classJob == 25 then
+		return 142
+	elseif player.classJob == 22 then
+		return 7
+	elseif player.classJob == 26 or player.classJob == 27 then
+		return 163
+	elseif player.classJob == 29 or player.classJob == 30 then
+		return 7
+	elseif player.classJob == 31 then
+		return 8
+	elseif player.classJob == 34 then
+		return 7
+	elseif player.classJob == 35 then
+		return 7503
+	elseif player.classJob == 39 then
+	    return 7
+	elseif player.classJob == 40 then
+	    return 24283
+	end
+
 end
 
 function Mission:DeathWatch()
@@ -109,7 +144,7 @@ function Mission:Exit()
 	end)
 	if exit.valid then
 		TaskManager:Interact(exit, self.mainModule.callbacks.ExitSquadron)
-		self.mainModule.lastExit = os.clock()
+		self.mainModule.last_exit = os.clock()
 
 		for i, callback in ipairs(self.exit_callbacks) do
 			callback()
