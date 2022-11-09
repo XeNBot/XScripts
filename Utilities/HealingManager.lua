@@ -59,10 +59,9 @@ function HealingManager:HealWatch()
 				local players = ObjectManager.Players(filter)
 				local npc_players = ObjectManager.NPCPlayers(filter)
 
-				if #players > 0 then
-					return self:ShouldHealTable(h, players, potency)
-				elseif #npc_players > 0 then
-					return self:ShouldHealTable(h, npc_players, potency)				
+				if #players > 0 and self:ShouldHealTable(h, players, potency) or
+					#npc_players > 0 and self:ShouldHealTable(h, npc_players, potency)then
+					return true
 				end				
 			end
 		end
