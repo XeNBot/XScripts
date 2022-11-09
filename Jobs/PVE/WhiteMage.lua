@@ -70,13 +70,11 @@ function WhiteMage:initialize()
 	self.healing_manager =  LoadModule("XScripts", "/Utilities/HealingManager")
 
 	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
-
 		if result == 1 and actionType == 1 then
 			self.actionBeforeLast = self.lastAction
 			self.lastAction = actionId
 			
 		end
-
 	end)
 
 end
@@ -95,7 +93,6 @@ function WhiteMage:Load(menu, log)
 end
 
 function WhiteMage:Tick()
-
 	-- Priority Healing
 	if self.healing_manager:HealWatch() then return end
 
@@ -106,7 +103,7 @@ function WhiteMage:Tick()
 	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 8) > 1
 
 	if self.actions.presence:canUse() then
-		self.actions.precense:use()
+		ActionManager.UseAction(1, 136, 3758096384)
 	end
 	
 	if player.classLevel >= 72 then
