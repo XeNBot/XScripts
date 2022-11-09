@@ -59,8 +59,8 @@ function HealingManager:HealWatch()
 				local players = ObjectManager.Players(filter)
 				local npc_players = ObjectManager.NPCPlayers(filter)
 
-				if #players > 0 and self:ShouldHealTable(h, players, potency) or
-					#npc_players > 0 and self:ShouldHealTable(h, npc_players, potency)then
+				if #players > 0 and self:ShouldHealTable(h, players, potency, saved_target) or
+					#npc_players > 0 and self:ShouldHealTable(h, npc_players, potency, saved_target)then
 					return true
 				end				
 			end
@@ -71,7 +71,7 @@ function HealingManager:HealWatch()
 
 end
 
-function HealingManager:ShouldHealTable(action , tbl, potency)
+function HealingManager:ShouldHealTable(action , tbl, potency, saved_target)
 	if not action.aoe and #tbl < self.menu["HEAL_MNG"]["MIN_AOE"].int then
 		for i, p in ipairs(tbl) do
 			if action:canUse(p) then

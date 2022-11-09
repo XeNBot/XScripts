@@ -43,6 +43,15 @@ function XDutyRunner:initialize()
 			map_id        = 31,
 			level         = 15,
 		},
+		{
+			
+			name          = "Brayflox's Longstop",
+			tab_index     = 0,
+			mission_index = 7,
+			module        = LoadModule("XScripts", "/Missions/Brayflox"),
+			map_id        = 45,
+			level         = 32,
+		},
 	}
 
 	for i, mission in ipairs(self.missions) do
