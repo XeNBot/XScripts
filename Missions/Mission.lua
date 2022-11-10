@@ -51,7 +51,7 @@ function Mission:Tick()
 	
 	if should_target and TargetManager.Target.valid and not ActionManager.ActionInRange(self:GetRangeCheckAction(), TargetManager.Target, player) then
 		self.last_los = os.clock()
-		TargetManager.Target = nil
+		TargetManager.SetTarget(nil)
 	end
 
 	if mobsAround > 0 and should_target then
