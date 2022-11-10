@@ -4,6 +4,8 @@ local Sastasha = Class("Sastasha", Mission)
 
 function Sastasha:initialize()
 	
+	Mission.initialize(self)
+
 	self.event_objects = {
 		-- Coral Formations
 		[2000213] = true,
@@ -22,7 +24,6 @@ function Sastasha:initialize()
 
 
 	}
-
 end
 
 function Sastasha:CustomInteract()

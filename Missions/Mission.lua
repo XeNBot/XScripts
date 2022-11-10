@@ -6,8 +6,11 @@ function Mission:initialize()
 	self.mainModule     = nil
 	-- deathWatch 
 	self.died           = false
-
+	-- LoS
+	self.last_los           = 0
+	
 	self.exit_callbacks = {}
+	
 end
 
 --[[ Virtual Functions for Child Objects ]]--		
@@ -29,23 +32,29 @@ function Mission:AddExitCallback(callback)
 	end
 end
 
-function Mission:Tick() 
+function Mission:Tick()
 	self:DeathWatch()
-
+	
 	local currentMapId = AgentManager.GetAgent("Map").currentMapId
 	local nodes        = self.mainModule.grid[tostring(currentMapId)].nodes
 	local waypoints    = nodes.waypoints
 	local goal         = waypoints[#waypoints].pos
 
 	if self:CustomInteract() then return end
-
-	local range      = player.isMelee and 20 or 25
+	local range         = player.isMelee and 20 or 25
+	local should_target = os.clock() - self.last_los > 2
 
 	local mobsAround = ObjectManager.BattleEnemiesAroundObject(player, range,
 		 function(obj)
 		 	return self.mainModule.b_filter[obj.npcId] ~= true and ActionManager.ActionInRange(self:GetRangeCheckAction(), obj, player)
 		 end)
-	if mobsAround > 0 then
+	
+	if should_target and TargetManager.Target.valid and not ActionManager.ActionInRange(self:GetRangeCheckAction(), TargetManager.Target, player) then
+		self.last_los = os.clock()
+		TargetManager.Target = nil
+	end
+
+	if mobsAround > 0 and should_target then
 
 		if TaskManager:IsBusy() then TaskManager:Stop() end
 
@@ -87,8 +96,6 @@ function Mission:HandleMobs(range)
 			break
 		end
 
-	else
-		player:rotateTo(target.pos)
 	end
 end
 
