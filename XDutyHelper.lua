@@ -5,10 +5,13 @@ function XDutyRunner:initialize()
 	--[[ ==== Script Variables ==== ]]--
 	self.started         = false
 	self.current_mission = nil
+
+	-- Timers
 	self.last_enter_duty = 0
 	self.last_shortcut   = 0
 	self.last_exit       = 0
-
+	
+	-- Route
 	self.route           = Route()
 
 	-- Stats
@@ -44,6 +47,14 @@ function XDutyRunner:initialize()
 			level         = 15,
 		},
 		{
+			name          = "Thousand Maws of Toto-Rak",
+			tab_index     = 0,
+			mission_index = 5,
+			module        = LoadModule("XScripts", "/Missions/TotoRak"),
+			map_id        = 9,
+			level         = 24,
+		},
+		{
 			
 			name          = "Brayflox's Longstop",
 			tab_index     = 0,
@@ -75,7 +86,7 @@ function XDutyRunner:Tick()
 	if self:CanNotTick(map_id) then return end
 	
 	if self.current_mission == nil then
-		self.current_mission = self.missions[self.menu["MISSION_ID"].int + 1]
+		self.current_mission = self.menu["AUTO_PICK"].bool and self:BestDuty() or self.missions[self.menu["MISSION_ID"].int + 1]
 	end
 
 	if self.current_mission == nil then return end
@@ -97,11 +108,28 @@ end
 function XDutyRunner:CanNotTick(map_id)
 	return 
 
-		not self.started or 
+		not self.started or
+		player.classLevel < 15 or 
 		(os.clock() - self.last_enter_duty) < 8 or
 		(os.clock() - self.last_shortcut) < 8 or
 		(os.clock() - self.last_exit) < 8 or
-		self.grid[tostring(AgentManager.GetAgent("Map").currentMapId)] == nil and TaskManager:IsBusy()
+		self.grid[tostring(map_id)] == nil and TaskManager:IsBusy()
+end
+
+function XDutyRunner:BestDuty()
+	
+	local highest_level = 0
+
+
+
+	if player.classLevel < 24 then
+		return self.missions[1]
+	elseif player.classLevel < 32 then
+		return self.missions[2]
+	else
+		return self.missions[3]
+	end
+
 end
 
 function XDutyRunner:Draw()
@@ -181,6 +209,9 @@ function XDutyRunner:setupCallbacks()
 				self.started = true
 			else
 				self.menu["BTN_START"].str = "Start"
+				if TaskManager:IsBusy() then 
+					TaskManager:Stop() 
+				end
 				self.started = false
 			end
 		end,

@@ -11,6 +11,7 @@ function Brayflox:initialize()
 	Mission.initialize(self)
 
 	-- Runstop Headgate Key
+	self.goblin_pathfinder = 1004346
 	self.headgate_key = 2000521
 	self.opened_gate  = false
 
@@ -20,7 +21,7 @@ end
 
 function Brayflox:CustomInteract()
 
-	local pathfinder = ObjectManager.EventNpcObject(function(obj) return obj.name == "Goblin Pathfinder" and self.mainModule.callbacks.InteractFilter(obj) end)
+	local pathfinder = ObjectManager.EventNpcObject(function(obj) return obj.dataId == self.goblin_pathfinder and self.mainModule.callbacks.InteractFilter(obj) end)
 	if pathfinder.valid and not self.opened_gate and InventoryManager.GetItemCount(self.headgate_key) < 1 then
 		player:rotateTo(pathfinder.pos)
 		TaskManager:Interact(pathfinder)
