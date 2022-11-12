@@ -247,6 +247,20 @@ local grid = {
 			}
 		),
 	},
+	["35"] = {
+	
+		nodes = LinkedList(
+			{
+				Vector3(-13.58,0,0.29),
+				Vector3(0.71,0,-0.05),
+				Vector3(15.79,0,0.19),
+			},
+			{
+				{1, 2},
+				{2, 3},
+			}
+		)
+	},
 	["45"] = {
 
 		nodes = LinkedList(
