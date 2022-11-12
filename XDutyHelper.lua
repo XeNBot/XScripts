@@ -47,6 +47,15 @@ function XDutyRunner:initialize()
 			level         = 15,
 		},
 		{
+
+			name          = "The Bowl of Embers",
+			tab_index     = 0,
+			mission_index = 4,
+			module        = LoadModule("XScripts", "/Missions/BowlOfEmbers"),
+			map_id        = 35,
+			level         = 20,
+		},
+		{
 			name          = "Thousand Maws of Toto-Rak",
 			tab_index     = 0,
 			mission_index = 5,
