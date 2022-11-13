@@ -34,6 +34,7 @@ function XDutyRunner:initialize()
 		[1299]  = true,
 		[1300]  = true,
 		[10484] = true,
+		[1486] = true,
 	}
 	--[[ ==== Missions Table ==== ]]--
 	self.missions = {		
@@ -72,10 +73,32 @@ function XDutyRunner:initialize()
 			map_id        = 45,
 			level         = 32,
 		},
+		{
+
+			name          = "Castrum Meridianum",
+			tab_index     = 0,
+			mission_index = 11,
+			module        = LoadModule("XScripts", "/Missions/CastrumMeridianum"),
+			map_id        = 47,
+			level         = 50,
+		},
+		{
+
+			name          = "Snowcloak",
+			tab_index     = 0,
+			mission_index = 14,
+			module        = LoadModule("XScripts", "/Missions/Snowcloak"),
+			map_id        = 174,
+			level         = 50,
+		},
 	}
 
 	for i, mission in ipairs(self.missions) do
-		mission.module:SetMainModule(self)
+		if mission.module ~= nil then 
+			mission.module:SetMainModule(self)
+		else 
+			print("Failed initialization of " ..mission.name)
+		end
 	end
 	
 	-- Sets up required callbacks
