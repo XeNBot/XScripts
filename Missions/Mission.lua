@@ -7,8 +7,10 @@ function Mission:initialize()
 	-- deathWatch 
 	self.died           = false
 	-- LoS
-	self.last_los           = 0
-	
+	self.last_los       = 0
+	-- Field of View
+	self.fov            = 20
+	-- Custom Exit Callbacks
 	self.exit_callbacks = {}
 	
 end
@@ -41,27 +43,28 @@ function Mission:Tick()
 	local goal         = waypoints[#waypoints].pos
 
 	if self:CustomInteract() then return end
-	local range         = player.isMelee and 20 or 25
+
 	local should_target = os.clock() - self.last_los > 2
 
-	local mobsAround = ObjectManager.BattleEnemiesAroundObject(player, range,
-		 function(obj)
-		 	return self.mainModule.b_filter[obj.npcId] ~= true and ActionManager.ActionInRange(self:GetRangeCheckAction(), obj, player)
-		 end)
+	local objects = ObjectManager.Battle(function(target) 
+		return 
+			self.mainModule.b_filter[target.npcId] ~= true and
+			target.isTargetable and not target.isDead and
+			target.pos:dist(player.pos) < self.fov and
+			ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player)
+	end)
 	
-	if should_target and TargetManager.Target.valid and not ActionManager.ActionInRange(self:GetRangeCheckAction(), TargetManager.Target, player) then
+	if TargetManager.Target.valid and not ActionManager.ActionInRange(self:GetRangeCheckAction(), TargetManager.Target, player) then
 		self.last_los = os.clock()
 		TargetManager.SetTarget(nil)
 	end
 
-	if mobsAround > 0 and should_target then
-
+	if #objects > 0 and should_target then
 		if TaskManager:IsBusy() then TaskManager:Stop() end
 
-		Mission.HandleMobs(self, range)
+		self:HandleMobs(self.fov, objects)
 	elseif not TaskManager:IsBusy() then
 		if player.pos:dist(goal) > 3 then
-
 			if not self.mainModule.route.finished then
 				self.mainModule.route:builda(nodes, goal)
 			else
@@ -74,20 +77,12 @@ function Mission:Tick()
 
 end
 
-function Mission:HandleMobs(range)
-	
+function Mission:HandleMobs(range, objects)
 	if self:CustomTarget(range) then return end
 
 	local target = TargetManager.Target
+	
 	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
-
-		local objects = ObjectManager.Battle( function(target) 
-			return 
-				self.mainModule.b_filter[target.npcId] ~= true and
-				target.isTargetable and not target.isDead and
-				target.pos:dist(player.pos) < range and
-				ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player)
-		end)
 
 		for i, obj in ipairs(objects) do
 			self.mainModule.log:print("Set new Target: " .. obj.name)
@@ -95,14 +90,13 @@ function Mission:HandleMobs(range)
 			TargetManager.SetTarget(obj)
 			break
 		end
-
 	end
 end
 
 function Mission:GetRangeCheckAction()
 	
 	if player.classJob == 1 or  player.classJob == 19 then
-		return 7
+		return 7533
 	elseif player.classJob == 3 or player.classJob == 21 then
 		return 7
 	elseif player.classJob == 5 or player.classJob == 23 then
