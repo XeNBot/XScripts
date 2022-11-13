@@ -28,7 +28,7 @@ end
 
 function Sastasha:CustomInteract()
 
-	if ObjectManager.BattleEnemiesAroundObject(player, 15) > 0 then return false end
+	if ObjectManager.BattleEnemiesAroundObject(player, self.fov) > 0 then return false end
 
 	local event_object = ObjectManager.EventObject(function (obj)
 		return self.event_objects[obj.dataId] == true and self.mainModule.callbacks.InteractFilter(obj)
