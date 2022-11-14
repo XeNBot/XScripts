@@ -5,7 +5,8 @@ local Brayflox = Class("Brayflox", Mission)
 function Brayflox:initialize()
 
 	self.event_objects = {
-		[2001466] = true
+		[2001462] = true,
+		[2001466] = true,
 	}
 
 	Mission.initialize(self)

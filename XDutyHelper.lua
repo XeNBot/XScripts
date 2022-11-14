@@ -33,8 +33,8 @@ function XDutyRunner:initialize()
 		[1298]  = true,
 		[1299]  = true,
 		[1300]  = true,
+		[1486]  = true,
 		[10484] = true,
-		[1486] = true,
 	}
 	--[[ ==== Missions Table ==== ]]--
 	self.missions = {		
@@ -74,6 +74,15 @@ function XDutyRunner:initialize()
 			level         = 32,
 		},
 		{
+			
+			name          = "The Stone Vigil",
+			tab_index     = 0,
+			mission_index = 9,
+			module        = LoadModule("XScripts", "/Missions/StoneVigil"),
+			map_id        = 37,
+			level         = 41,
+		},
+		{
 
 			name          = "Castrum Meridianum",
 			tab_index     = 0,
@@ -97,7 +106,7 @@ function XDutyRunner:initialize()
 		if mission.module ~= nil then 
 			mission.module:SetMainModule(self)
 		else 
-			print("Failed initialization of " ..mission.name)
+			print("Failed to set main module in " .. mission.name)
 		end
 	end
 	
@@ -149,17 +158,17 @@ function XDutyRunner:CanNotTick(map_id)
 end
 
 function XDutyRunner:BestDuty()
-	
-	local highest_level = 0
-
-
 
 	if player.classLevel < 24 then
 		return self.missions[1]
 	elseif player.classLevel < 32 then
-		return self.missions[2]
-	else
 		return self.missions[3]
+	elseif player.classLevel < 41 then
+		return self.missions[4]
+	elseif player.classLevel < 50 then
+		return self.missions[5]
+	else
+		return self.missions[6]
 	end
 
 end

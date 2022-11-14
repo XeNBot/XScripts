@@ -12,6 +12,10 @@ function Mission:initialize()
 	self.fov            = 20
 	-- Custom Exit Callbacks
 	self.exit_callbacks = {}
+	-- Boss Table
+	self.bosses         = {}
+	-- Walking to Safety?
+	self.safe_walking   = false
 	
 end
 
@@ -44,29 +48,31 @@ function Mission:Tick()
 
 	if self:CustomInteract() then return end
 
+	local target = TargetManager.Target
+	
 	local should_target = os.clock() - self.last_los > 2
 
-	local objects = ObjectManager.Battle(function(target) 
+	local objects = ObjectManager.Battle(function(obj) 
 		return 
-			self.mainModule.b_filter[target.npcId] ~= true and
-			target.isTargetable and not target.isDead and
-			target.pos:dist(player.pos) < self.fov and
-			ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player)
+			self.mainModule.b_filter[obj.npcId] ~= true and
+			obj.isTargetable and not obj.isDead and
+			obj.pos:dist(player.pos) < self.fov and
+			ActionManager.ActionInRange(self:GetRangeCheckAction(), obj, player)
 	end)
 	
-	if TargetManager.Target.valid and not ActionManager.ActionInRange(self:GetRangeCheckAction(), TargetManager.Target, player) then
+	if target.valid and not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
 		self.last_los = os.clock()
 		TargetManager.SetTarget(nil)
 	end
 
 	if #objects > 0 and should_target then
-		if TaskManager:IsBusy() then TaskManager:Stop() end
+		if TaskManager:IsBusy() and not self.safe_walking then TaskManager:Stop() end
 
 		self:HandleMobs(self.fov, objects)
 	elseif not TaskManager:IsBusy() then
 		if player.pos:dist(goal) > 3 then
-			if not self.mainModule.route.finished then
-				self.mainModule.route:builda(nodes, goal)
+			if not self.mainModule.route.finished and not self.mainModule.route.started then
+				self.mainModule.route:buildc(nodes, goal)
 			else
 				TaskManager:WalkToWaypoint(self.mainModule.route.waypoints[self.mainModule.route.index], function(waypoint) self.mainModule.callbacks.WalkToWaypoint(waypoint) end)
 			end
@@ -89,8 +95,43 @@ function Mission:HandleMobs(range, objects)
 			Keyboard.SendKey(38)
 			TargetManager.SetTarget(obj)
 			break
-		end
+		end	
 	end
+
+	local bosses_around = ObjectManager.Battle(function(obj) return obj.yalmX < self.fov and self.bosses[obj.npcId] end)
+
+	if #bosses_around > 0 then
+		self:HandleBoss()
+	end
+end
+
+function Mission:HandleBoss()
+	
+	local npc_players = ObjectManager.NPCPlayers()
+	local walk_object = nil
+
+	for i, obj in ipairs(npc_players) do
+		
+		if player.isHealer and obj.isRange and obj.isDPS then
+			walk_object = obj
+			break
+		end
+
+	end
+	if walk_object ~= nil and walk_object.yalmX > 2 and not self.safe_walking then
+		if TaskManager:IsBusy() then 
+			TaskManager:Stop()	
+		end
+		
+		self.safe_walking = true		
+
+		TaskManager:WalkToWaypoint(
+			Waypoint(walk_object.pos),
+			function(waypoint) self.safe_walking = false end,
+			true
+		)		
+	end
+
 end
 
 function Mission:GetRangeCheckAction()
