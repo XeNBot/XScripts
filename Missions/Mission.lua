@@ -1,7 +1,6 @@
 local Mission = Class("Mission")
 
 function Mission:initialize()
-
 	-- XSquadron Module
 	self.mainModule     = nil
 	-- deathWatch 
@@ -16,7 +15,8 @@ function Mission:initialize()
 	self.bosses         = {}
 	-- Walking to Safety?
 	self.safe_walking   = false
-	
+	-- Melee Walk to mob
+	self.mob_walking    = false	
 end
 
 --[[ Virtual Functions for Child Objects ]]--		
@@ -40,6 +40,10 @@ end
 
 function Mission:Tick()
 	self:DeathWatch()
+
+	if player.isMelee then
+		self.fov = 15
+	end
 	
 	local currentMapId = AgentManager.GetAgent("Map").currentMapId
 	local nodes        = self.mainModule.grid[tostring(currentMapId)].nodes
@@ -52,21 +56,29 @@ function Mission:Tick()
 	
 	local should_target = os.clock() - self.last_los > 2
 
-	local objects = ObjectManager.Battle(function(obj) 
+	local objects = ObjectManager.Battle(function(obj)
+
+		if not player.isMelee then
+			return 
+				self.mainModule.b_filter[obj.npcId] ~= true and
+				obj.isTargetable and not obj.isDead and
+				obj.pos:dist(player.pos) < self.fov and
+				ActionManager.ActionInRange(self:GetRangeCheckAction(), obj, player)
+		end
 		return 
 			self.mainModule.b_filter[obj.npcId] ~= true and
 			obj.isTargetable and not obj.isDead and
-			obj.pos:dist(player.pos) < self.fov and
-			ActionManager.ActionInRange(self:GetRangeCheckAction(), obj, player)
+			obj.pos:dist(player.pos) < self.fov
+		
 	end)
 	
-	if target.valid and not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
+	if target.valid and not player.isMelee and not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
 		self.last_los = os.clock()
 		TargetManager.SetTarget(nil)
 	end
 
 	if #objects > 0 and should_target then
-		if TaskManager:IsBusy() and not self.safe_walking then TaskManager:Stop() end
+		if TaskManager:IsBusy() and not self.safe_walking and not self.mob_walking then TaskManager:Stop() end
 
 		self:HandleMobs(self.fov, objects)
 	elseif not TaskManager:IsBusy() then
@@ -84,18 +96,45 @@ function Mission:Tick()
 end
 
 function Mission:HandleMobs(range, objects)
+
 	if self:CustomTarget(range) then return end
 
 	local target = TargetManager.Target
 	
-	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
+	if player.isMelee then
 
-		for i, obj in ipairs(objects) do
-			self.mainModule.log:print("Set new Target: " .. obj.name)
-			Keyboard.SendKey(38)
-			TargetManager.SetTarget(obj)
-			break
-		end	
+		local closest_obj = self:ClosestObject(objects)
+
+		if closest_obj.valid and closest_obj.kind == 2 and closest_obj.subKind == 5 then
+
+			if ActionManager.ActionInRange(self:GetRangeCheckAction(), closest_obj, player) then
+				TargetManager.SetTarget(closest_obj)
+			else
+				if TaskManager:IsBusy() and not self.mob_walking then
+					TaskManager:Stop()
+				end
+
+				self.mob_walking = true
+
+				TaskManager:WalkToWaypoint(
+					Waypoint(closest_obj.pos),
+					function(waypoint) self.mob_walking = false end,
+					true
+				)
+			end
+				
+		end		
+
+	else
+		if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
+
+			for i, obj in ipairs(objects) do
+				self.mainModule.log:print("Set new Target: " .. obj.name)
+				Keyboard.SendKey(38)
+				TargetManager.SetTarget(obj)
+				break
+			end	
+		end
 	end
 
 	local bosses_around = ObjectManager.Battle(function(obj) return obj.yalmX < self.fov and self.bosses[obj.npcId] end)
@@ -132,6 +171,20 @@ function Mission:HandleBoss()
 		)		
 	end
 
+end
+
+function Mission:ClosestObject(obj_list)
+	local closest      = nil
+	local closest_dist = 1000
+
+	for i, obj in ipairs(obj_list) do
+		if obj.yalmX < closest_dist then
+			closest = obj
+			closest_dist = obj.yalmX
+		end
+	end
+
+	return closest
 end
 
 function Mission:GetRangeCheckAction()
