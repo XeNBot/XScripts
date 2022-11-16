@@ -91,6 +91,24 @@ function XDutyRunner:initialize()
 			map_id        = 174,
 			level         = 50,
 		},
+		{
+			
+			name          = "The Keeper of the Lake",
+			tab_index     = 0,
+			mission_index = 15,
+			module        = LoadModule("XScripts", "/Missions/KeeperOfTheLake"),
+			map_id        = 201, 202, 203,
+			level         = 50,
+		},
+		{
+
+			name          = "The Vault",
+			tab_index     = 1,
+			mission_index = 3,
+			module        = LoadModule("XScripts", "/Missions/Vault"),
+			map_id        = 248, 249, 250, 251,
+			level         = 57,
+		},
 	}
 
 	for i, mission in ipairs(self.missions) do
