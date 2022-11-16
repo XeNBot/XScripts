@@ -34,12 +34,6 @@ function KeeperOfTheLake:CustomInteract()
 end
 
 function KeeperOfTheLake:CustomTarget(range)
-	
-	local Cohort_Vangaurd = ObjectManager.BattleObject( function(obj) return (obj.npcId == 3357) and obj.isTargetable and not obj.isDead and obj.pos:dist(player.pos) < range end )
-	if Cohort_Vangaurd.valid then
-		TargetManager.SetTarget(Cohort_Vangaurd)
-		return true
-	end
 
     local Mirage_Dragon = ObjectManager.BattleObject( function(obj) return (obj.npcId == 3375) and obj.isTargetable and not obj.isDead and obj.pos:dist(player.pos) < range end )
 	if Mirage_Dragon.valid then
