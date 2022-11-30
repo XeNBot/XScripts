@@ -12,6 +12,7 @@ function XPVE:initialize()
 
 	self.paladin     = LoadModule("XScripts", "\\Jobs\\PVE\\Paladin")
 	self.warrior     = LoadModule("XScripts", "\\Jobs\\PVE\\Warrior")
+	self.darkknight  = LoadModule("XScripts", "\\Jobs\\PVE\\DarkKnight")
 
 	self.ninja       = LoadModule("XScripts", "\\Jobs\\PVE\\Ninja")
 	self.reaper      = LoadModule("XScripts", "\\Jobs\\PVE\\Reaper")
@@ -38,6 +39,7 @@ function XPVE:initialize()
 
 	self.paladin:Load(self.menu)
 	self.warrior:Load(self.menu)
+	self.darkknight:Load(self.menu)
 
 	self.ninja:Load(self.menu)
 	self.reaper:Load(self.menu)
@@ -88,6 +90,8 @@ function XPVE:Tick()
 		self.ninja:Tick(self.log)
 	elseif player.classJob == 31 then
 		self.machinist:Tick(self.log)
+	elseif player.classJob == 32 then
+		self.darkknight:Tick(self.log)
 	elseif player.classJob == 34 then
 		self.samurai:Tick()
 	elseif player.classJob == 35 then
