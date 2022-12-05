@@ -1,4 +1,5 @@
-local XPVE = Class("XPVE")
+local XPVE         = Class("XPVE")
+local XPVE_VERSION = 1.5
 
 function XPVE:initialize()
 	--------------------------------------------------------------------
@@ -13,6 +14,7 @@ function XPVE:initialize()
 	self.paladin     = LoadModule("XScripts", "\\Jobs\\PVE\\Paladin")
 	self.warrior     = LoadModule("XScripts", "\\Jobs\\PVE\\Warrior")
 	self.darkknight  = LoadModule("XScripts", "\\Jobs\\PVE\\DarkKnight")
+	self.gunbreaker  = LoadModule("XScripts", "\\Jobs\\PVE\\Gunbreaker")
 
 	self.ninja       = LoadModule("XScripts", "\\Jobs\\PVE\\Ninja")
 	self.reaper      = LoadModule("XScripts", "\\Jobs\\PVE\\Reaper")
@@ -43,20 +45,25 @@ function XPVE:initialize()
 
 	self.ninja:Load(self.menu)
 	self.reaper:Load(self.menu)
-	self.samurai:Load(self.menu, self.log)
+	self.samurai:Load(self)
 	self.dragoon:Load(self.menu, self.log)
 	
 	self.sage:Load(self.menu, self.log)
 	self.whitemage:Load(self.menu, self.log)
+
+	self.gunbreaker:Load(self)
 
 	--------------------------------------------------------------------
 	-- Callbacks
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)
 	Callbacks:Add(CALLBACK_PLAYER_DRAW, function() self:Draw() end)
 	--------------------------------------------------------------------	
+
+	print("Loaded XPVE Ver : " .. tostring(XPVE_VERSION))
 end
 
 function XPVE:Tick()
+	if _G.Evading then return end
 
 	if self.menu["ONOFF_KEY"].keyDown and (os.clock() - self.lastToggle) > 1 then
 		local menuName = "ONOFF"
@@ -111,4 +118,4 @@ function XPVE:Draw()
 	end		
 end
 
-XPVE:new()
+_G.XPVE = XPVE:new()

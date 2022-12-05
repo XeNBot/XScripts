@@ -10,12 +10,19 @@ function XPVEClass:initialize()
 	self.class_name_short   = "PVE"
 	self.class_category     = "PVE_CLASS"
 	self.class_range        = 3
-	self.menu               = nil
 	
-	self.using_opener       = false
-	self.using_combo        = false
-	self.using_cd_phase     = false
-	self.using_odd_burst    = false
+	self.menu               = nil
+	self.class_menu         = nil
+	
+	self.pre_pulling        = false
+	self.pre_pull_done      = false
+
+	-- Rotations
+	self.current_rotation    = 0
+	self.last_rotation       = 0
+	self.last_burst_rotation = nil
+	self.rotations           = {}
+	self.skip_step           = false
 
 	-- Target Information
 	self.target             = nil
@@ -23,38 +30,13 @@ function XPVEClass:initialize()
 
 	-- Actions Table
 	self.actions                   = {}
-	self.action_switch             = {}
-	self.use_action_switch         = false
-
-	-- Opener Variables
-	self.pre_pulling               = false
-	self.pre_pull_done             = false
-	self.opener_step               = 1
-	self.opener_switch             = {}
-	self.opener_done               = false
-	self.use_opener_switch         = false
-
-	-- Cooldown Phase Variables
-	self.cd_phase            = false
-	self.cd_phase_done       = false
-	self.cd_phase_step       = 1
-	self.cd_phase_switch     = {}
-	self.use_cd_phase_switch = false
-
-	-- Odd Burst Variables
-	self.odd_burst_phase      = false
-	self.odd_burst_done       = false
-	self.odd_burst_step       = 1
-	self.odd_burst_switch     = {}
-	self.use_odd_burst_switch = false
-
-
+	
 	-- Action Variables
 	self.last_action         = 0
 	self.action_before_last  = 0
 
 	-- Loads Log
-	self.log = LoadModule("XScripts", "\\Utilities\\Log")
+	self.log = LoadModule("XScriptsT", "\\Utilities\\Log")
 
 	-- Functions Quick Calls
 	-- Objects Around
@@ -67,167 +49,109 @@ function XPVEClass:initialize()
 		if source.id == player.id and action_id ~= 7 and action_id ~= 8 then
 			self.action_before_last = self.last_action
 	        self.last_action        = action_id
-
 	        if self.use_action_switch then
 	        	switch(action_id, self.action_switch)
 	        end
 
-	        if self.using_opener and self.use_opener_switch then
-	        	self.opener_step = self.opener_step + 1
-	        	--print("Changing Step to : " .. tostring(self.opener_step))
-	        	switch(self.opener_step, self.opener_switch)
-	        elseif self.using_cd_phase and self.use_cd_phase_switch then
-	        	self.cd_phase_step = self.cd_phase_step + 1
-	        	--print("Changing CD Phase Step to : " .. tostring(self.cd_phase_step))
-	        	switch(self.cd_phase_step, self.cd_phase_switch)
-	        elseif self.using_odd_burst and self.use_odd_burst_switch then
-	        	self.odd_burst_step = self.odd_burst_step + 1
-	        	--print("Changing CD Phase Step to : " .. tostring(self.cd_phase_step))
-	        	switch(self.odd_burst_step, self.odd_burst_switch)
-	        end	        
+	        if self.skip_step then
+	        	self.skip_step = false
+	        	return
+	        end
 
+	        for i, rotation in ipairs(self.rotations) do
+	        	if rotation.using then
+	        		rotation.step = rotation.step + 1
+	        		--print("Changing " .. rotation.name .. " Step to " .. tostring(rotation.step))
+	        		switch(rotation.step, rotation.switch)
+	        	end
+
+	        end
 		end
     end)
 end
 
-function XPVEClass:SetOpener(tbl)
-
-	local opener_size  = #tbl
-	self.opener_switch = {}
-
-	for i = 1, #tbl do
-
-		local action_name  = tbl[i]
-		local action       = self.actions[action_name]
-
-		if action then
-
-			local execute_func = self:GetOpenerExecFunc(self.actions[action_name], i)
-
-			self.opener_switch[i] = execute_func
-		else
-			print("Error Adding Action to Opener!")
-		end
-	end
-
-end
-
-function XPVEClass:SetCooldownPhase(tbl)
-
-	local max = #tbl
+function XPVEClass:AddRotation(
+	rotation_name, rotation_actions, auto_continue)
 	
-	self.cd_phase_switch = {}	
+	local index = #self.rotations + 1
 
-	for i = 1, max do
-
-		local action_name  = tbl[i]
-		local action       = self.actions[action_name]
-
-		if action then
-
-			local execute_func = self:GetCooldownPhaseExecFunc(self.actions[action_name], i, max)
-
-			self.cd_phase_switch[i] = execute_func
-
-
-		else
-			print("Error Adding Action to CD Phase!")
-		end
-	end
-
+	table.insert(
+		self.rotations,
+		{ 
+			name    = rotation_name,
+			step    = 1,
+			index   = index,
+			using   = false,
+			switch  = self:GetSwitchTable(rotation_actions, auto_continue),
+			can_use = function ()
+				return self.class_menu["ROTATIONS"][rotation_name].bool
+			end,
+			equals = function(rotation) 
+				return rotation.index == index 
+			end
+		}
+	)
 end
 
-function XPVEClass:SetOddBurst(tbl)
-
-	local max = #tbl
+function XPVEClass:GetSwitchTable(actions, auto_continue)
 	
-	self.odd_burst_switch = {}	
+	local switch_table = {}
+	local max          = #actions
 
-	for i = 1, max do
-
-		local action_name  = tbl[i]
+	for i = 1, #actions do
+		local action_name  = actions[i]
 		local action       = self.actions[action_name]
 
 		if action then
 
-			local execute_func = self:GetOddBurstPhaseExecFunc(self.actions[action_name], i, max)
+			local rotation_index = #self.rotations + 1
 
-			self.odd_burst_switch[i] = execute_func
+			local execute_func = self:GetExecuteFunc(
+				action, i, max, rotation_index, auto_continue
+			)
 
+			switch_table[i] = execute_func
 
-		else
-			print("Error Adding Action to Odd Burst Phase!")
 		end
+
 	end
+
+	return switch_table
 
 end
 
-function XPVEClass:GetOddBurstPhaseExecFunc(action, step, max)
-
+function XPVEClass:GetExecuteFunc(action, step, max, rotation_index, auto_continue)
 	local target = action.canTargetEnemy and self.target or nil
 
 	return function()
+
+		if player.isCasting then return end
+
+		if step == 1 then
+			self.last_rotation    = self.current_rotation
+			self.current_rotation = rotation_index
+		end
+
 		if action:canUse(self.target) then			
 			action:use(self.target)
 			self.log:print(
 				"Using " .. ((target == nil and action.name) 
 				or (action.name .. " on " .. target.name))
 			)
-			self.log:print("Odd Burst Step " .. tostring(step))
+			self.log:print( self.rotations[rotation_index].name .. " Step " .. tostring(step))
 
 			if step == max then
-				self.using_odd_burst = false
-				self.odd_burst_step  = 1
-				self.odd_burst_done  = true
 
-				print("Finished Odd Burst Phase")
+				self.rotations[rotation_index].using = false
+				self.rotations[rotation_index].step  = 1
+				
+				print("Finished " .. self.rotations[rotation_index].name .. " Phase")
+
+				self.skip_step        = true
+				self.current_rotation = 0
 			end
-		end
-	end
-end
-
-function XPVEClass:GetCooldownPhaseExecFunc(action, step, max)
-
-	local target = action.canTargetEnemy and self.target or nil
-
-	return function()
-		if action:canUse(self.target) then			
-			action:use(self.target)
-			self.log:print(
-				"Using " .. ((target == nil and action.name) 
-				or (action.name .. " on " .. target.name))
-			)
-			self.log:print("CD Phase Step " .. tostring(step))
-
-			if step == max then
-				self.using_cd_phase = false
-				self.cd_phase_step  = 1
-				self.cd_phase_done  = true
-
-				print("Finished CD Phase")
-			end
-		end
-	end
-end
-
-function XPVEClass:GetOpenerExecFunc(action, step, max)
-
-	local target = action.canTargetEnemy and self.target or nil
-
-	return function()
-		if action:canUse(self.target) then			
-			action:use(self.target)
-			self.log:print(
-				"Using " .. ((target == nil and action.name) 
-				or (action.name .. " on " .. target.name))
-			)
-			self.log:print("Opener Step " .. tostring(step))
-
-			if step == max then
-				self.using_opener = false
-				self.opener_step  = 1
-				self.opener_done  = true
-			end
+		elseif player.classLevel < action.level and auto_continue then
+			self.rotations[rotation_index].step  = self.rotations[rotation_index].step  + 1
 		end
 	end
 end
@@ -236,6 +160,17 @@ function XPVEClass:Load(main_module)
 	self.menu        = main_module.menu
 
 	self.menu["ACTIONS"][self.class_category]:subMenu(self.class_name, self.class_name_short)
+
+	self.class_menu = self.menu["ACTIONS"][self.class_category][self.class_name_short]
+
+	if #self.rotations > 0 then
+		self.class_menu:subMenu("Rotations", "ROTATIONS")
+
+		for i, rotation in ipairs(self.rotations) do
+			self.class_menu["ROTATIONS"]:checkbox("Use " .. rotation.name, rotation.name, true)
+		end
+
+	end
 end
 
 function XPVEClass:Tick()

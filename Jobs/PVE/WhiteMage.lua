@@ -35,23 +35,19 @@ function WhiteMage:initialize()
 	}	
 
 	self.healing_actions.cure.potency     = 450
-	self.healing_actions.cure.name        = "Cure"
 	self.healing_actions.cure.bonus       = self.healing_bonus
 	self.healing_actions.cure.condition   = function () return not player:hasStatus(155) end
 
 	self.healing_actions.cureii.potency   = 700
-	self.healing_actions.cureii.name      = "Cure II"
 	self.healing_actions.cureii.bonus     = self.healing_bonus
 	self.healing_actions.cureii.condition = function () return player:hasStatus(155) end
 
 	self.healing_actions.medica.potency   = 300
-	self.healing_actions.medica.name      = "Medica"
 	self.healing_actions.medica.bonus     = self.healing_bonus
 	self.healing_actions.medica.aoe       = true
 	self.healing_actions.medica.radius    = 20
 
 	self.healing_actions.medicaii.potency = 200
-	self.healing_actions.medicaii.name    = "Medica II"
 	self.healing_actions.medicaii.bonus   = self.healing_bonus
 	self.healing_actions.medicaii.aoe     = true
 	self.healing_actions.medicaii.radius  = 20

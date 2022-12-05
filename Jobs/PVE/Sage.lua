@@ -5,6 +5,7 @@ function Sage:initialize()
 	self.actions = {	
 		
 		dosis      = Action(1, 24283),
+		diagnosis  = Action(1, 24284),
 		phlegma    = Action(1, 24289),
 		eukrasia   = Action(1, 24290),
 		ekdosis    = Action(1, 24293),
@@ -32,11 +33,9 @@ function Sage:initialize()
 	}
 
 	self.healing_actions.diagnosis.potency = 400
-	self.healing_actions.diagnosis.name    = "Diagnosis"
 	self.healing_actions.diagnosis.bonus   = self.healing_bonus
 
 	self.healing_actions.prognosis.potency = 300
-	self.healing_actions.prognosis.name    = "Prognosis"
 	self.healing_actions.prognosis.bonus   = self.healing_bonus
 	self.healing_actions.prognosis.aoe     = true
 	self.healing_actions.prognosis.radius  = 15
