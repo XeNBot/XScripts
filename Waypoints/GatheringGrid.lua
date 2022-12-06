@@ -3120,11 +3120,36 @@ local grid = {
 							{ name = "Study Vat Material", defaultQuantity = 0, id = 24571},
 						},
 					},
+					{
+						customTele = 108,
+
+						startPos = Vector3(-30.83,79.65,-353.04),
+						startPos2 = Vector3(115.31,50.88,-470.18),
+
+						dataIds = {
+							[32255] = true,
+							[32256] = true,
+							[32257] = true,
+							[32258] = true,
+							[32259] = true,
+							[32260] = true,
+						},
+
+						nodeName = "Lvl 70 Vegetation Patch",
+
+						nodeItems = {
+							{ name = "Doman Eggplant", defaultQuantity = 0, id = 19854},
+							{ name = "Wind Crystal", defaultQuantity = 0, id = 10},
+							{ name = "Yanxian Parsley", defaultQuantity = 0, id = 19911},
+							{ name = "Nagxian Cudweed", defaultQuantity = 0, id = 19913},
+							{ name = "Daikon Radish", defaultQuantity = 0, id = 19855},
+						},
+					},
 				},
 
 				mapWaypoints = LinkedList(
-					--Lvl 70 Mineral Deposit
 					{
+						--Lvl 70 Mineral Deposit
 						Vector3(443.71,68.02,-85.79),
 						Vector3(422.17,68.02,-94.29),
 						Vector3(449.15,66.14,-121.57),
@@ -3153,7 +3178,33 @@ local grid = {
 						Vector3(822.91,131.46,15.1),
 						Vector3(868.48,138.41,-16.16),
 						Vector3(846.41,134.05,15.23),
-						Vector3(842.85,135.37,24.37),    --29
+						Vector3(842.85,135.37,24.37),   
+						--Lvl 70 Vegetation patch
+						Vector3(241.91,4.38,-388.43),     --30
+						Vector3(274.11,9.19,-415.34),
+						Vector3(306.8,15.91,-434.62),
+						Vector3(308.66,18.57,-466.18),
+						Vector3(328.3,24.97,-496.52),
+						Vector3(307.88,29.53,-499.13),
+						Vector3(264.41,53.51,-471.75),
+						Vector3(211.94,57.48,-438.55),
+						Vector3(183.4,59.15,-443.77),
+						Vector3(153.04,50.41,-479.52),   
+						Vector3(115.31,50.88,-470.18),   --40
+						Vector3(116.37,49.82,-479.83),
+						Vector3(99.93,47.48,-483.35),
+						Vector3(97.2,41.44,-503.27),
+						Vector3(76.6,32.75,-520.07),
+						Vector3(37.2,38.46,-509.25),
+						Vector3(16.16,44.64,-522.08),
+						Vector3(27.58,44.29,-539.9),
+						Vector3(33.71,44.6,-553.39),
+						Vector3(25.83,48.46,-572.91),     
+						Vector3(22.95,55.13,-463.85),    --50
+						Vector3(17.88,66.49,-432.2),
+						Vector3(0.42,77.44,-374.11),
+						Vector3(-34.03,76.86,-367.04),
+						Vector3(-30.83,79.65,-353.04),
 					},
 					{
 						{1, 3},
@@ -3179,6 +3230,31 @@ local grid = {
 						{24, 25},
 						{27, 28},
 						{28, 29},
+						{30, 31},
+						{31, 32},
+						{32, 33},
+						{33, 34},
+						{34, 35},
+						{35, 36},
+						{36, 37},
+						{37, 38},
+						{38, 39},
+						{39, 40},
+						{40, 41},
+						{41, 42},
+						{42, 43},
+						{43, 44},
+						{44, 45},
+						{45, 46, 50},
+						{46, 47, 48, 49, 50},
+						{47, 48, 49},
+						{48, 49},
+						{49, 50},
+						{50, 51},
+						{51, 52},
+						{52, 53, 54},
+						{53, 54},
+
 					}
 				)
 			},
