@@ -14,7 +14,7 @@ function XFisher:initialize()
 	-- new way of using actions
 	self.actions = {
 
-		cast     = Action(1, 289, "Cast"),
+		cast     = Action(1, 289),
 		hook     = Action(1, 296),
 		mooch    = Action(1, 297),
 		mooch2   = Action(1, 268),
