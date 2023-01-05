@@ -84,6 +84,9 @@ function XEvade:Tick()
 
 			if info.draw_obj ~= nil then	
 				if not _G.Evading and info.action.effectRange < 100 and info.draw_obj:is_point_inside(player.pos) then
+					if TaskManager:IsBusy() then
+						TaskManager:Stop()
+					end
 					self:DodgeAction(info)
 				end
 			end
@@ -153,9 +156,9 @@ function XEvade:DodgeAction(info)
 	_G.Evading        = true
 
 	self.evade_pos    = dodge_pos
-	self.evade_source = info.source
+	self.evade_source = info.source	
 
-	TaskManager:WalkToWaypoint(Waypoint(dodge_pos), function(Waypoint) self:OnWalkToWaypoint() end, true)
+	TaskManager:Walk(dodge_pos, function(pos) self:OnEvade() end, true)
 end
 
 function XEvade:GetDrawObject(info)
@@ -334,7 +337,7 @@ function XEvade:CalculateBestCirclePos(info)
 	return best_pos
 end
 
-function XEvade:OnWalkToWaypoint()
+function XEvade:OnEvade()
 	
 	_G.Evading = false
 
