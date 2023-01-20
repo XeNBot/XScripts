@@ -1,4 +1,5 @@
 local XEvade = Class("XEvade")
+local _VERSION = 1.1
 
 function XEvade:initialize()
 
@@ -37,8 +38,8 @@ end
 
 function XEvade:initializeMenu()
 	
-	self.menu = Menu("XEvade")
-		self.menu:subMenu("Evade Actions", "ACTIONS")
+	self.menu = Menu("XEvade " .. tostring(_VERSION))
+		self.menu:subMenu("Actions", "ACTIONS")
 			self.menu["ACTIONS"]:checkbox("Evade Circles",     "EVADE_CIRCLES",    true)
 			self.menu["ACTIONS"]:checkbox("Evade Rectangles ", "EVADE_RECTANGLES", true)
 			self.menu["ACTIONS"]:checkbox("Evade Cones ",      "EVADE_CONES",      true)
@@ -46,6 +47,10 @@ function XEvade:initializeMenu()
 			self.menu["DRAWS"]:checkbox("Draw Evade Status", "EVADE_STATUS", true)
 			self.menu["DRAWS"]:sliderF("Text Size", "EVADE_STATUS_SIZE", 0.5, 5, 20, 10)
 		
+		self.menu:subMenu("Settings", "SETTINGS")
+			self.menu["SETTINGS"]:slider("Dodge Precision", "PRECISION", 1, 2, 100, 10)
+			self.menu["SETTINGS"]:sliderF("Extra Hitbox", "EXTRA_HITBOX", 0.5, 0, 10, 1)
+
 		self.menu:checkbox("Enable XEvade", "ENABLED", true)
 		self.menu:hotkey("Enable / Disable Key", "ENABLE_KEY", 77)
 		self.menu:hotkey("Force Stop Key", "STOP_KEY", 76)
@@ -75,20 +80,12 @@ function XEvade:Tick()
 			print("Removing Action : " .. info.action.name)
 			self.current_actions[info.hash] = nil
 			table.remove(self.current_actions, hash)
-		else
-			if info.action.castType == LINE_AOE then
-				info.draw_obj = self:DrawLineAction(info)
-			elseif info.action.castType == CONE_SOURCE then
-				info.draw_obj = self:DrawConeAction(info)
-			end
-
-			if info.draw_obj ~= nil then	
-				if not _G.Evading and info.action.effectRange < 100 and info.draw_obj:is_point_inside(player.pos) then
-					if TaskManager:IsBusy() then
-						TaskManager:Stop()
-					end
-					self:DodgeAction(info)
+		elseif info.draw_obj ~= nil then	
+			if _G.EvadeOn and not _G.Evading and info.action.effectRange < 100 and info.draw_obj:is_point_inside(player.pos) then
+				if TaskManager:IsBusy() then
+					TaskManager:Stop()
 				end
+				self:DodgeAction(info)
 			end
 		end
 	end
@@ -114,7 +111,7 @@ function XEvade:Tick()
 			info.draw_obj = self:GetDrawObject(info)
 
 			if not self.current_actions[info.hash] then
-				print("Found Evade Action : " .. action.name)
+				print("Found Evade Action : " .. action.name .. " / " .. action.castType)
 
 				self.current_actions[info.hash] = info
 
@@ -128,21 +125,20 @@ function XEvade:Draw()
 	
 	for hash, info in pairs(self.current_actions) do
 		if info.draw_obj ~= nil then					
-			info.draw_obj:draw(Colors.Yellow)					
+			info.draw_obj:draw(Colors.Blue)					
 		end
 	end
 
 	if _G.Evading and self.evade_pos ~= nil and self.evade_source.isCasting then
 		Graphics.DrawLine3D(self.evade_pos, player.pos, Colors.Yellow)
-		Graphics.DrawText3D(self.evade_pos, "SAFE SPOT", 10, RGBA(255, 248, 159, 255))
-		Graphics.DrawCircle3D(self.evade_pos, 3, 1, Colors.Yellow)
+		Graphics.DrawText3D(self.evade_pos, "SAFE SPOT", 10, Colors.Yellow)
+		Graphics.DrawCircle3D(self.evade_pos, 3, 1, Colors.Blue)
 	end
 
 	if self.menu["DRAWS"]["EVADE_STATUS"].bool then
 		local text  = (_G.EvadeOn and "ON") or "OFF"
-		local color = (_G.EvadeOn and RGBA(75, 239, 37, 255) or RGBA(175, 184, 4, 255))
+		local color = (_G.EvadeOn and Colors.Yellow or Colors.Red)
 		
-		Graphics.DrawCircle3D(player.pos, 1, 1, Colors.Yellow)
 		Graphics.DrawText3D(player.pos, "XEvade Status : " .. text, self.menu["DRAWS"]["EVADE_STATUS_SIZE"].float, color)
 	end
 end
@@ -163,47 +159,59 @@ end
 
 function XEvade:GetDrawObject(info)
 	if info.action.castType == CIRCLE_TARGET or info.action.castType == CIRCLE_SOURCE then
-		return self:DrawCircleAction(info)
+		return self:GetDrawCircleObj(info)
 	elseif info.action.castType == LINE_AOE or info.action.castType == OBJ_COLLISION then
-		return self:DrawLineAction(info)
+		return self:GetDrawLineObject(info)
 	elseif info.action.castType == CONE_SOURCE or info.action.castType == CONE_BEHIND then
-		return self:DrawConeAction(info)
+		return self:GetDrawConeObject(info)
 	end
 end
 
-function XEvade:DrawCircleAction(info)
+function XEvade:GetDrawCircleObj(info)
 
 	local circle   = Circle()	
-		
-	if info.action.castType == CIRCLE_SOURCE then
+	circle.radius  = info.action.effectRange		
+
+	if not info.action.targetArea then
 		circle.center = info.source.pos
-		circle.radius = info.action.effectRange + info.source.radius
-	elseif info.action.castType == CIRCLE_TARGET then
-		circle.radius = info.action.effectRange
+	else
 		circle.center = info.cast_info.castLocation
 	end
 	
-	return circle	
+	return circle:polygon(100)
 end
 
-function XEvade:DrawConeAction(info)
+function XEvade:GetDrawConeObject(info)
+	
+	local p          = info.source.pos
+	local radius     = info.action.effectRange + info.source.radius
+	local multiplier,
+		  angle      = self:GetConeMA(info.action)
 
-	local p        = info.source.pos
-	local a        = info.source.angle
-	local l, w     = self:GetConeLW(info.action)
+	local a          = info.source.angle - angle
+	local point      = math.pi * 2 / 100	
+	
 
-	local behind_source    = Vector3(p.x  + ((info.source.radius)  * math.cos(a)), p.y,  p.z - ((info.source.radius) * math.sin(a)))
-	local front_source_end = Vector3(p.x  - ((info.source.radius   * l)  * math.cos(a)), p.y,  p.z + ((info.source.radius * l) * math.sin(a)))
+	local poly_points = {}
 
-	local front_source_end_left     = Vector3(front_source_end.x  + (w * math.cos(info.source.rotation)), front_source_end.y, front_source_end.z - (w * math.sin(info.source.rotation)))
-	local front_source_end_right    = Vector3(front_source_end.x  - (w * math.cos(info.source.rotation)), front_source_end.y, front_source_end.z + (w * math.sin(info.source.rotation)))
+	table.insert(poly_points, p)
 
-	local poly = Polygon({ p, front_source_end_left, front_source_end_right})
+	for angle = 0, math.pi / multiplier , point do
 
-	return poly
+		local s_pos = 
+			Vector3(
+				p.x - (radius * math.cos(angle + a)),
+				p.y,
+				p.z + (radius * math.sin(angle + a))
+			)
+		
+		table.insert(poly_points, s_pos)		
+	end
+
+	return Polygon(poly_points)
 end
 
-function XEvade:DrawLineAction(info)
+function XEvade:GetDrawLineObject(info)
 	
 	local source = ObjectManager.GetById(info.source.id)
 	
@@ -231,106 +239,24 @@ end
 
 function XEvade:CalculateDodgePos(info)
 
-	if info.action.castType == LINE_AOE or info.action.castType == OBJ_COLLISION then
-		if self.menu["ACTIONS"]["EVADE_RECTANGLES"].bool then
-			return self:CalculateBestLineAOEPos(info)
-		end
-	elseif info.action.castType == CIRCLE_TARGET or info.action.castType == CIRCLE_SOURCE then
-		if self.menu["ACTIONS"]["EVADE_CIRCLES"].bool then
-			return self:CalculateBestCirclePos(info)
-		end
-	elseif info.action.castType == CONE_SOURCE or info.action.castType == CONE_BEHIND then
-		if self.menu["ACTIONS"]["EVADE_CONES"].bool then
-			return self:CalculateBestConePos(info)
-		end
-	end
+	local best_pos  = nil
+	local best_dist = 10000
 
-	return nil
-end
+	local draw_obj    = info.draw_obj
+	local safe_points = 
+		draw_obj:get_safe_points(
+			player.pos, 
+			self.menu["SETTINGS"]["PRECISION"].int, 
+			self.menu["SETTINGS"]["EXTRA_HITBOX"].float
+		)
 
-function XEvade:CalculateBestLineAOEPos(info)
-	
-	local best_pos      = nil
-	local best_pos_dist = 10000
-	local dodge_table   = {}
-
-	local p        = player.pos
-	local dist     = info.source.yalmX >= 4 and info.source.yalmX or 2.5
-	local w        = (info.action.modifier / 2) + ( player.radius + 2)
-
-	local foward   = Vector3(p.x  - ((dist * 2)  * math.cos(player.angle)), p.y,  p.z +  ((dist * 2) * math.sin(player.angle)))
-	local back     = Vector3(p.x  + ((info.action.effectRange - dist) * math.cos(player.angle)), p.y,  p.z -  ((info.action.effectRange + dist) * math.sin(player.angle)))
-	local left     = Vector3(p.x  + (w * math.cos(player.rotation)), p.y, p.z - (w * math.sin(player.rotation)))
-	local right    = Vector3(p.x  - (w * math.cos(player.rotation)), p.y, p.z + (w * math.sin(player.rotation)))
-
-	table.insert(dodge_table, foward)
-	table.insert(dodge_table, back)
-	table.insert(dodge_table, left)
-	table.insert(dodge_table, right)
-
-	for i, pos in ipairs(dodge_table) do
-		local dist = pos:dist(player.pos)
-		if not info.draw_obj:is_point_inside(pos) and dist < best_pos_dist then
-			best_pos      = pos
-			best_pos_dist = dist
-		end
-	end
-
-	return best_pos
-
-end
-
-function XEvade:CalculateBestConePos(info)
-	
-	local best_pos      = nil
-	local best_pos_dist = 10000
-	local dodge_table   = {}
-
-	local p        = info.source.pos
-	local a        = info.source.angle
-	local l,w        = self:GetConeLW(info.action)
-
-	l = l + player.radius + 1
-
-	local behind_source    = Vector3(p.x  + ((info.source.radius)  * math.cos(a)), p.y,  p.z - ((info.source.radius) * math.sin(a)))
-	local front_source_end = Vector3(p.x  - ((info.source.radius   * l)  * math.cos(a)), p.y,  p.z + ((info.source.radius * l) * math.sin(a)))	
-
-	table.insert(dodge_table, behind_source)
-	table.insert(dodge_table, front_source_end)
-
-	for i, pos in ipairs(dodge_table) do
-		local dist = pos:dist(player.pos)
-		if dist < best_pos_dist then
-			best_pos      = pos
-			best_pos_dist = dist
-		end
-	end
-
-	return best_pos
-
-end
-
-function XEvade:CalculateBestCirclePos(info)
-
-	local best_pos      = nil
-	local best_pos_dist = 10000
-	local dodge_table   = {}
-
-	local radius = info.action.effectRange
-	local s = (info.action.castType == CIRCLE_TARGET and ObjectManager.GetById(info.source.targetId)) or info.source
-
-	if s.valid then
-		table.insert(dodge_table, Vector3(s.pos.x - radius - 3, s.pos.y, s.pos.z))
-		table.insert(dodge_table, Vector3(s.pos.x + radius + 3, s.pos.y, s.pos.z))
-		table.insert(dodge_table, Vector3(s.pos.x, s.pos.y, s.pos.z - radius - 3))
-		table.insert(dodge_table, Vector3(s.pos.x, s.pos.y, s.pos.z + radius + 3))
-	end
-
-	for i, pos in ipairs(dodge_table) do
-		local dist = pos:dist(player.pos)
-		if not info.draw_obj:is_point_inside(pos) and dist < best_pos_dist then
-			best_pos      = pos
-			best_pos_dist = dist
+	if #safe_points > 0 then
+		for i, p in ipairs(safe_points) do
+			local dist = player.pos:dist(p)
+			if not draw_obj:is_point_inside(p) and dist < best_dist then
+				best_pos  = p
+				best_dist = dist
+			end
 		end
 	end
 
@@ -351,16 +277,19 @@ function XEvade:ObjectFilter(obj)
 
 end
 
-function XEvade:GetConeLW(action)
-	if action.aspect == 1 then
-		return 4, 8
-	elseif action.aspect == 3 then
-		return 3.5, 8
-	elseif action.aspect == 5 then
-		return 3, 11
+function XEvade:GetConeMA(action)
+	
+	if action.degrees == 180 then
+		return 1, 1.5
+	elseif action.degrees == 120 then
+		return 1.5, 1.05
+	elseif action.degrees == 90 then
+		return 2, 0.75
+	elseif action.degrees == 60 then
+		return 3, 0.5				
 	end
 
-	return 1, 1
+	return 2, 0.75
 
 
 end
