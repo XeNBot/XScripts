@@ -105,7 +105,7 @@ function XEvade:Tick()
 		local h           = tonumber(tostring(s.id) .. tostring(id))
 		local info        = self:GetActionInfo(action, s)
 
-		if self:ValidCastType(action) and not self.current_actions[info.hash] then			
+		if self:ValidCastType(action) then			
 			
 			local info    = self:GetActionInfo(action, s)		
 			info.draw_obj = self:GetDrawObject(info)
@@ -115,6 +115,8 @@ function XEvade:Tick()
 
 				self.current_actions[info.hash] = info
 
+			else
+				self.current_actions[info.hash].draw_obj = info.draw_obj
 			end
 		end
 	end	
