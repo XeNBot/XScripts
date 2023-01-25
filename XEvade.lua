@@ -170,12 +170,13 @@ end
 function XEvade:GetDrawCircleObj(info)
 
 	local circle   = Circle()	
-	circle.radius  = info.action.effectRange		
 
 	if not info.action.targetArea then
 		circle.center = info.source.pos
+		circle.radius  = info.action.effectRange + info.source.radius	
 	else
 		circle.center = info.cast_info.castLocation
+		circle.radius  = info.action.effectRange
 	end
 	
 	return circle:polygon(100)
