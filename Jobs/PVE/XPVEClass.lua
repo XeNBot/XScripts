@@ -36,7 +36,7 @@ function XPVEClass:initialize()
 	self.action_before_last  = 0
 
 	-- Loads Log
-	self.log = LoadModule("XScriptsT", "\\Utilities\\Log")
+	self.log = LoadModule("XScripts", "\\Utilities\\Log")
 
 	-- Functions Quick Calls
 	-- Objects Around
