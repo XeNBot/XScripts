@@ -49,13 +49,23 @@ function Ninja:Execute(log)
 	local list = AgentManager.GetAgent("Map").currentMapId == 51 and ObjectManager.Battle() or ObjectManager.GetEnemyPlayers()
 
 	for i, object in ipairs(list) do
-		if object.pos:dist(player.pos) < 20 and object.healthPercent < 50 and not object:hasStatus(3054) and self.actions.seiton:canUse(object) then
+		if self:CanExecute(object) then
 			log:print("Using Seiton on " .. object.name)
 		 	self.actions.seiton:use(object)		 	
 		 end
 	end
 end
 
+function Ninja:CanExecute(object)
+	return 
+		object.pos:dist(player.pos) < 20 and
+		object.healthPercent < 50 and
+		-- Guard
+		not object:hasStatus(3054) and
+		-- Undead Redemption (DK)
+		not object:hasStatus(3039) and
+		self.actions.seiton:canUse(object)
+end
 
 function Ninja:Tick(getTarget, log)
 
