@@ -134,7 +134,6 @@ function XDutyRunner:Tick()
 	
 	
 	if map_id ~= self.current_mission.map_id then
-		
 		TaskManager:EnterDutySupport(
 			self.current_mission.tab_index, 
 			self.current_mission.mission_index,
@@ -148,7 +147,7 @@ end
 
 function XDutyRunner:CanNotTick(map_id)
 	return 
-
+		_G.Evading or
 		not self.started or
 		player.classLevel < 15 or 
 		(os.clock() - self.last_enter_duty) < 8 or

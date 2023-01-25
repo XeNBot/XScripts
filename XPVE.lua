@@ -63,6 +63,7 @@ function XPVE:initialize()
 end
 
 function XPVE:Tick()
+	
 	if _G.Evading then return end
 
 	if self.menu["ONOFF_KEY"].keyDown and (os.clock() - self.lastToggle) > 1 then
