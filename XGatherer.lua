@@ -34,8 +34,12 @@ function XGatherer:initialize()
 		last_teleport   = 0,
 		gathering       = false,
 		last_item       = nil,
-		last_mount      = 0
+		last_mount      = 0,
+		manual          = false
 	}
+
+	-- Manual Hotkey
+	self.last_manual = 0
 
 	-- walking route
 	self.route  = Route()
@@ -81,6 +85,8 @@ end
 
 
 function XGatherer:tick()
+	self:ManualGathering()
+
 	if TaskManager:IsBusy() or 
 		not self.status.running or
 		 (os.clock() - self.status.last_mount < 2) or
@@ -182,7 +188,32 @@ function XGatherer:tick()
 			self:GoToRoute()
 		end	
 	end
+end
 
+function XGatherer:ManualGathering()
+	if TaskManager:IsBusy() then return end
+
+	-- Manual Gathering
+	if self.menu["MANUAL_SETTINGS"]["MANUAL_START_KEY"].keyDown then
+		if os.clock() - self.last_manual < 1 then return end
+		self.status.manual = (self.status.manual == true and false) or true
+	end	
+
+	if self.status.manual then
+		
+		local closestNode = self:getClosestGatheringNode()		
+		local gatheringAddon = AddonManager.GetAddon("Gathering")
+		
+		if gatheringAddon == nil then
+			if closestNode ~= nil and closestNode.pos:dist(player.pos) <= 3.5 then
+				player:rotateTo(closestNode.pos)
+				self:useCordials()
+				TaskManager:Interact(closestNode)
+			end
+		elseif not gatheringAddon:isGathering() then						
+			TaskManager:GatherItem(self.menu["MANUAL_SETTINGS"]["MANUAL_GATHERING_SLOT"].int)
+		end
+	end
 end
 
 function XGatherer:GoToRoute()
@@ -236,13 +267,25 @@ function XGatherer:getClosestGatheringNode(dataIds)
 	local closestNode = nil
 	local distance    = 10000
 
-	for i, obj in pairs(ObjectManager.Gathering) do
-		if obj.isTargetable and dataIds[obj.dataId] ~= nil then
-			if obj.pos:dist(player.pos) < distance then
+	if dataIds ~= nil then
+
+		for i, obj in pairs(ObjectManager.Gathering) do
+			if obj.isTargetable and dataIds[obj.dataId] ~= nil then
+				if obj.pos:dist(player.pos) < distance then
+					closestNode = obj
+					distance = obj.pos:dist(player.pos)
+				end
+			end
+		end
+	else
+
+		for i, obj in pairs(ObjectManager.Gathering) do
+			if obj.isTargetable and obj.pos:dist(player.pos) < distance then
 				closestNode = obj
 				distance = obj.pos:dist(player.pos)
 			end
 		end
+
 	end
 
 	return closestNode
@@ -351,7 +394,7 @@ function XGatherer:buildGatherQueue(regionId, mapId, nodeId)
 			itemCopy.finishValue    = itemCount + menuValue
 			itemCopy.tableIndex     = self.item_widget["ITEM_TABLE"].row_count
 			itemCopy.itemTableIndex = #queue.items + 1
-			itemCopy.menuId         =  itemCopy.name .. tostring(itemCopy.tableIndex) .. tostring(itemCopy.index)
+			itemCopy.menuId         = itemCopy.name .. tostring(itemCopy.tableIndex) .. tostring(itemCopy.index)
 			itemCopy.queueIndex     = queue.index
 
 			table.insert(queue.items, itemCopy)
@@ -456,6 +499,7 @@ function XGatherer:gatherNextItem(gatheringAddon)
 	self.status.goalWaypoint = nil
 
 	self:useNodeActions()
+
 
 	if not gatheringAddon:isGathering() then				
 		local itemToGather = self:getNextQueueItem()
@@ -640,6 +684,9 @@ function XGatherer:initializeMenu()
 
 	self.menu:separator() self.menu:space()
 	self.menu:label("~=[ Other Settings ]=~") self.menu:space() self.menu:separator()
+		self.menu:subMenu("Manual Settings", "MANUAL_SETTINGS")
+			self.menu["MANUAL_SETTINGS"]:number("Gathering Slot", "MANUAL_GATHERING_SLOT", 0)
+			self.menu["MANUAL_SETTINGS"]:hotkey("Start Key", "MANUAL_START_KEY", 112)
 		self.menu:subMenu("Draw Settings", "DRAW_SETTINGS")
 			self.menu["DRAW_SETTINGS"]:checkbox("Draw Routes", "DRAW_ROUTE", true) 
 			self.menu["DRAW_SETTINGS"]:checkbox("Draw Waypoints", "DRAW_WAYPOINTS", false) 
