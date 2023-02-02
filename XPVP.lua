@@ -80,7 +80,6 @@ function XPVP:initialize()
 end
 
 function XPVP:Tick()
-
 	if (os.clock() - self.lastGuard < 4.5) then return end
 
 	Game.ActionDirectionCheck = self.menu["ACTIONS"]["DIRECTION_CHECK"].bool
@@ -99,12 +98,15 @@ function XPVP:Tick()
 	if player:hasStatus(3054) then return end
 	-- Invisible
 	if player:hasStatus(895) then return end
+	
 	-- Common Actions
 	if self.common:Tick(self.log) then return end
 
 	if Keyboard.IsKeyDown(9) and self.menu["TARGET"]["LOCK"].bool then
 		self:SetTabTarget()
 	end
+
+	
 
 	if self.lockTarget ~= nil and not TargetManager.Target.valid or (TargetManager.Target.valid and TargetManager.Target.isDead) then
 		self.lockTarget = nil
@@ -168,7 +170,7 @@ function XPVP:TargetFilter(target)
 	if self.menu["TARGET"]["GUARD_CHECK"].bool then
 		return not target:hasStatus(3054)
 	end
-	return true
+	return not target.ally
 end
 
 function XPVP:GetTarget(range)
@@ -183,7 +185,13 @@ function XPVP:GetTarget(range)
 	end
 
 	if mapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
-		return TargetManager.Target
+		local target = TargetManager.Target
+		if target.valid and not target.ally then
+			return target
+		end
+
+		return nil
+
 	end
 
 	local target = nil

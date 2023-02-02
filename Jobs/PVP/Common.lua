@@ -71,40 +71,45 @@ function Common:Load(mainMenu)
 		end
 
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Recuperate", "RECUPERATE", true)
-	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Sprint",     "SPRINT", true)
-
-	Callbacks:Add(CALLBACK_ACTION_EFFECT, 
-		function(source, pos, actionId, targetId) self:ActionEffect(source, pos, actionId, targetId) end)
+	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Sprint",     "SPRINT", true)	
 end
 
-function Common:ActionEffect(source, pos, actionId, targetId)
+function Common:GuardActionCheck(log)
+
+	if not self.actions.guard:canUse() then return end
 	
-	if source.ally then return end
+	for i, enemy in ipairs(ObjectManager.GetEnemyPlayers(
+		function(enemy) return enemy.isCasting end)) do
+		
+		local action = self.guard_actions[enemy.castInfo.actionId]
 
-	local action = self.guard_actions[actionId]
+		if action ~= nil then
 
-	if self.actions.guard:canUse() and action ~= nil then
+			local guard = false
+			local pos   = enemy.castInfo.castLocation
 
-		local guard = false
+			local t_player   = (enemy.castInfo.castTargetId == player.id) or (enemy.targetId == player.id)
 
-		if action.type == "TARGET" and targetId == player.id then
-			guard = true
-		elseif action.type == "POS" and player.pos:dist(pos) <= action.range then
-			guard = true
-		elseif action.type == "AOE" then
-			if targetId == player.id then
+			if action.type == "TARGET" and t_player then
 				guard = true
-			else
-				local obj = ObjectManager.GetById(targetId)
-				if obj.valid and obj.pos:dist(player.pos) <= action.range then
+			elseif action.type == "POS" and player.pos:dist(pos) <= action.range then
+				guard = true
+			elseif action.type == "AOE" then
+				if t_player then
 					guard = true
+				else
+					local obj = ObjectManager.GetById(enemy.castInfo.castTargetId)
+					if obj.valid and obj.pos:dist(player.pos) <= action.range then
+						guard = true
+					end
 				end
 			end
-		end
 
-		if guard then
-			self.log:print("Guarding Limit Break: " .. action.name .. ", From: " .. source.name)
-			self.actions.guard:use()
+			if guard then
+				self.log:print("Guarding Limit Break: " .. action.name .. ", From: " .. enemy.name)
+				self.actions.guard:use()
+			end
+
 		end
 
 	end
@@ -127,6 +132,8 @@ end
 
 function Common:Tick(log)
 	
+	self:GuardActionCheck(log)
+
 	local actions = self.actions
 	local menu    = self.menu["ACTIONS"]["COMMON"]
 	if self.log == nil then self.log = log end
