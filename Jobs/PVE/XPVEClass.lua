@@ -47,8 +47,10 @@ function XPVEClass:initialize()
 
 	Callbacks:Add(CALLBACK_ACTION_EFFECT, function(source, pos, action_id, target_id)
 		if source.id == player.id and action_id ~= 7 and action_id ~= 8 then
+
 			self.action_before_last = self.last_action
 	        self.last_action        = action_id
+	        
 	        if self.use_action_switch then
 	        	switch(action_id, self.action_switch)
 	        end
@@ -61,10 +63,8 @@ function XPVEClass:initialize()
 	        for i, rotation in ipairs(self.rotations) do
 	        	if rotation.using then
 	        		rotation.step = rotation.step + 1
-	        		--print("Changing " .. rotation.name .. " Step to " .. tostring(rotation.step))
 	        		switch(rotation.step, rotation.switch)
 	        	end
-
 	        end
 		end
     end)
@@ -98,7 +98,7 @@ function XPVEClass:GetSwitchTable(actions, auto_continue)
 	local switch_table = {}
 	local max          = #actions
 
-	for i = 1, #actions do
+	for i = 1, max do
 		local action_name  = actions[i]
 		local action       = self.actions[action_name]
 
@@ -150,7 +150,7 @@ function XPVEClass:GetExecuteFunc(action, step, max, rotation_index, auto_contin
 				self.skip_step        = true
 				self.current_rotation = 0
 			end
-		elseif player.classLevel < action.level and auto_continue then
+		elseif player.classLevel < action.level then
 			self.rotations[rotation_index].step  = self.rotations[rotation_index].step  + 1
 		end
 	end
@@ -202,7 +202,7 @@ function XPVEClass:ValidTarget(target, dist)
 		dist = self.class_range
 	end
 
-	return  target.valid and target.kind == 2 and target.subKind == 5 and target.yalmX < dist
+	return  target.valid and not target.ally and target.kind == 2 and target.subKind == 5 and target.yalmX < dist
 end
 
 return XPVEClass

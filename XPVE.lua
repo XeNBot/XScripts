@@ -6,6 +6,7 @@ function XPVE:initialize()
 	-- Classes
 	self.bard        = LoadModule("XScripts", "\\Jobs\\PVE\\Bard")
 	self.machinist   = LoadModule("XScripts", "\\Jobs\\PVE\\Machinist")
+	self.dancer      = LoadModule("XScripts", "\\Jobs\\PVE\\Dancer")
 	
 	self.summoner    = LoadModule("XScripts", "\\Jobs\\PVE\\Summoner")
 	self.blackmage   = LoadModule("XScripts", "\\Jobs\\PVE\\BlackMage")
@@ -34,6 +35,7 @@ function XPVE:initialize()
 	
 	self.bard:Load(self.menu)
 	self.machinist:Load(self.menu)
+	self.dancer:Load(self)
 	
 	self.summoner:Load(self.menu)
 	self.blackmage:Load(self.menu)
@@ -63,7 +65,6 @@ function XPVE:initialize()
 end
 
 function XPVE:Tick()
-	
 	if _G.Evading then return end
 
 	if self.menu["ONOFF_KEY"].keyDown and (os.clock() - self.lastToggle) > 1 then
@@ -104,6 +105,8 @@ function XPVE:Tick()
 		self.samurai:Tick()
 	elseif player.classJob == 35 then
 		self.redmage:Tick()
+	elseif player.classJob == 38 then
+		self.dancer:Tick()
 	elseif player.classJob == 39 then
 	    self.reaper:Tick(self.log)
 	elseif player.classJob == 40 then
@@ -114,8 +117,7 @@ end
 
 function XPVE:Draw()
 	if self.menu["DRAWS"]["ONOFF"].bool then
-		Graphics.DrawCircle3D(player.pos, 1, 1, Colors.Yellow)
-		Graphics.DrawText3D(Vector3(player.pos.x + player.radius, player.pos.y, player.pos.z), "Rotations On: " .. tostring(self.menu["ONOFF"].bool), 15, RGBA(255, 248, 159, 255))
+		Graphics.DrawText3D(Vector3(player.pos.x + player.radius, player.pos.y, player.pos.z), "Rotations On: " .. tostring(self.menu["ONOFF"].bool), 15, Colors.Yellow)
 	end		
 end
 
