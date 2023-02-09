@@ -80,14 +80,12 @@ function XEvade:Tick()
 			print("Removing Action : " .. info.action.name)
 			self.current_actions[info.hash] = nil
 			table.remove(self.current_actions, hash)
-		elseif info.draw_obj ~= nil then	
-			if _G.EvadeOn and not _G.Evading and info.action.effectRange < 100 and info.draw_obj:is_point_inside(player.pos) then
-				if TaskManager:IsBusy() then
-					TaskManager:Stop()
-				end
-				self:DodgeAction(info)
+		elseif info.draw_obj ~= nil and self:CanDodge(info) then	
+			if TaskManager:IsBusy() then
+				TaskManager:Stop()
 			end
-		end
+			self:DodgeAction(info)
+		end	
 	end
 
 	if _G.Evading and self.evade_pos ~= nil then
@@ -143,6 +141,15 @@ function XEvade:Draw()
 		
 		Graphics.DrawText3D(player.pos, "XEvade Status : " .. text, self.menu["DRAWS"]["EVADE_STATUS_SIZE"].float, color)
 	end
+end
+
+function XEvade:CanDodge(info)
+
+	if info.action.effectRange >= 25 and info.castType == CIRCLE_SOURCE then
+		return false
+	end
+
+	return _G.EvadeOn and not _G.Evading and info.draw_obj:is_point_inside(player.pos)
 end
 
 function XEvade:DodgeAction(info)
