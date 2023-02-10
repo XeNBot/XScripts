@@ -144,8 +144,7 @@ function XEvade:Draw()
 end
 
 function XEvade:CanDodge(info)
-
-	if info.action.effectRange >= 25 and info.castType == CIRCLE_SOURCE then
+	if info.action.effectRange >= 25 and ((info.action.castType == CIRCLE_SOURCE) or (info.action.castType == CIRCLE_TARGET)) then
 		return false
 	end
 
