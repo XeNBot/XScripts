@@ -7,6 +7,8 @@ function XUtilities:initialize()
 	self.last_mount = os.clock()
 	self.current_mount_id = 0
 
+	self.last_zoom  = 0
+
 	self.last_fly   = os.clock()
 	self.manual_fly = false
 
@@ -26,6 +28,7 @@ function XUtilities:initialize()
 	self.menu:checkbox("Auto Accept Quests", "AUTO_ACCEPT", true)
 	self.menu:checkbox("Auto Accept Duty Finder", "DUTY_FINDER", true)
 	self.menu:checkbox("Auto Skip Talk", "AUTO_TALK", false)
+	self.menu:sliderF("Max Zoom Distance", "MAX_ZOOM", 0.5, 20, 100, 20)
 	self.menu:label("~=[ Mount Untilities ]=~")
 	self.menu:number("Desired Mount", "MOUNT_ID", 216)
 	self.menu:hotkey("Mount / UnMount", "MOUNT_KEY", {0x10, 0x31})
@@ -45,6 +48,12 @@ function XUtilities:initialize()
 end
 
 function XUtilities:Tick()
+	local max_zoom = self.menu["MAX_ZOOM"].float
+	if self.last_zoom ~= max_zoom then
+		Game.SetMaxZoom(max_zoom)
+		self.last_zoom = max_zoom
+	end
+
 	if player.isMounted and self.menu["AUTO_FLY"].bool then
 
 		if Keyboard.IsKeyDown(32) then
