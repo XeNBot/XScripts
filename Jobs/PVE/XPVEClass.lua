@@ -10,10 +10,11 @@ function XPVEClass:initialize()
 	self.class_name_short   = "PVE"
 	self.class_category     = "PVE_CLASS"
 	self.class_range        = 3
-	
+
 	self.menu               = nil
 	self.class_menu         = nil
-	
+	self.class_widget       = nil
+
 	self.pre_pulling        = false
 	self.pre_pull_done      = false
 
@@ -30,7 +31,7 @@ function XPVEClass:initialize()
 
 	-- Actions Table
 	self.actions                   = {}
-	
+
 	-- Action Variables
 	self.last_action         = 0
 	self.action_before_last  = 0
@@ -50,7 +51,7 @@ function XPVEClass:initialize()
 
 			self.action_before_last = self.last_action
 	        self.last_action        = action_id
-	        
+
 	        if self.use_action_switch then
 	        	switch(action_id, self.action_switch)
 	        end
@@ -72,12 +73,12 @@ end
 
 function XPVEClass:AddRotation(
 	rotation_name, rotation_actions, auto_continue)
-	
+
 	local index = #self.rotations + 1
 
 	table.insert(
 		self.rotations,
-		{ 
+		{
 			name    = rotation_name,
 			step    = 1,
 			index   = index,
@@ -86,15 +87,15 @@ function XPVEClass:AddRotation(
 			can_use = function ()
 				return self.class_menu["ROTATIONS"][rotation_name].bool
 			end,
-			equals = function(rotation) 
-				return rotation.index == index 
+			equals = function(rotation)
+				return rotation.index == index
 			end
 		}
 	)
 end
 
 function XPVEClass:GetSwitchTable(actions, auto_continue)
-	
+
 	local switch_table = {}
 	local max          = #actions
 
@@ -132,10 +133,10 @@ function XPVEClass:GetExecuteFunc(action, step, max, rotation_index, auto_contin
 			self.current_rotation = rotation_index
 		end
 
-		if action:canUse(self.target) then			
-			action:use(self.target)
+		if target ~= nil and action:canUse(target) then
+			action:use(target)
 			self.log:print(
-				"Using " .. ((target == nil and action.name) 
+				"Using " .. ((target == nil and action.name)
 				or (action.name .. " on " .. target.name))
 			)
 			self.log:print( self.rotations[rotation_index].name .. " Step " .. tostring(step))
@@ -144,7 +145,7 @@ function XPVEClass:GetExecuteFunc(action, step, max, rotation_index, auto_contin
 
 				self.rotations[rotation_index].using = false
 				self.rotations[rotation_index].step  = 1
-				
+
 				print("Finished " .. self.rotations[rotation_index].name .. " Phase")
 
 				self.skip_step        = true
@@ -159,15 +160,19 @@ end
 function XPVEClass:Load(main_module)
 	self.menu        = main_module.menu
 
-	self.menu["ACTIONS"][self.class_category]:subMenu(self.class_name, self.class_name_short)
+	if self.class_name ~= "PvE Class" then
 
-	self.class_menu = self.menu["ACTIONS"][self.class_category][self.class_name_short]
+		self.menu["ACTIONS"][self.class_category]:subMenu(self.class_name, self.class_name_short)
 
-	if #self.rotations > 0 then
-		self.class_menu:subMenu("Rotations", "ROTATIONS")
+		self.class_menu = self.menu["ACTIONS"][self.class_category][self.class_name_short]
 
-		for i, rotation in ipairs(self.rotations) do
-			self.class_menu["ROTATIONS"]:checkbox("Use " .. rotation.name, rotation.name, true)
+		if #self.rotations > 0 then
+			self.class_menu:subMenu("Rotations", "ROTATIONS")
+
+			for i, rotation in ipairs(self.rotations) do
+				self.class_menu["ROTATIONS"]:checkbox("Use " .. rotation.name, rotation.name, true)
+			end
+
 		end
 
 	end
@@ -179,7 +184,7 @@ function XPVEClass:Tick()
 		self.target = TargetManager.Target
 		self.last_target_time = os.clock()
 	end
-	
+
 end
 
 function XPVEClass:AddActionTable(tbl)
