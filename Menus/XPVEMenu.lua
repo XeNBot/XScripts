@@ -17,5 +17,6 @@ local menu = Menu("XPVE")
 	menu:checkbox("Use Rotations", "ONOFF", true)
 	menu:hotkey("Toggle On / Off", "ONOFF_KEY", 84)
 	menu:hotkey("Prepull Key", "PREPULL_KEY", 90)
+	menu:hotkey("Set AoE on / off", "AOE_KEY", {16,  76})
 
 return menu
