@@ -68,7 +68,7 @@ function Dancer:Tick()
 	local target = self.get_target()
 	if not self:ValidTarget(target) then return end
 
-	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5, function(o) return o.isTargetable end) >= 2	
+	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5, function(o) return o.isTargetable end) >= 2 and _G.PVE_AOE
 
 	if self.has_standard_step() or self.has_technical_step() then
 		return switch(player.gauge.currentStep, self.step_switch)
@@ -158,7 +158,7 @@ function Dancer:UseFanDance(target, aoe)
 
 end
 
-function Dancer:CanUseFanDance(target)
+function Dancer:CanUseFanDance(target, aoe)
 
 	if player.classLevel >= 66 then
 		return self.actions.fan_dance_iii:canUse(target)

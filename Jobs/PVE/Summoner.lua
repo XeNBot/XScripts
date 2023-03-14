@@ -73,7 +73,7 @@ function Summoner:Tick(log)
 
 	
 	if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or target.pos:dist(player.pos) >= 25 then return end
-	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= ( menu["AOE_MIN"].int - 1 )
+	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= ( menu["AOE_MIN"].int - 1 ) and _G.PVE_AOE
 
 	if self.actions.searing:canUse() then
 		self.actions.searing:use()

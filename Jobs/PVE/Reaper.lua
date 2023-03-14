@@ -95,7 +95,7 @@ function Reaper:Tick(log)
 		return self:Prepull(log, target)
 	end
 
-	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= (menu["AOE_MIN"].int - 1)
+	local aoe = menu["AOE"].bool and ObjectManager.BattleEnemiesAroundObject(target, 5) >= (menu["AOE_MIN"].int - 1) and _G.PVE_AOE
 
 	if self:Weave(log, target, aoe) then return end
 
