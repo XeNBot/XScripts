@@ -29,5 +29,6 @@ local menu = Menu("XPVP")
 
 	menu:hotkey("ComboKey", "COMBO_KEY", 88)
 	menu:hotkey("Toggle Jump Key: ", "JUMP_KEY", 84)
+	menu:hotkey("Set Auto Target on / off", "AUTO_TARGET_KEY", {16,  75})
 
 return menu

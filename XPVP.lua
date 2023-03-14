@@ -30,7 +30,7 @@ function XPVP:initialize()
 	self.summoner    = LoadModule("XScripts", "\\Jobs\\PVP\\Summoner")
 	self.redmage     = LoadModule("XScripts", "\\Jobs\\PVP\\RedMage")
 	-- Common Actions
-	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common") 
+	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common")
 
 	-- Loads the menus of each Job
 	-- Healers
@@ -59,9 +59,10 @@ function XPVP:initialize()
 	-- Common Actions
 	self.common:Load(self.menu)
 
-	self.lockTarget   = nil
+	self.lockTarget       = nil
 
-	self.lastGuard    = 0
+	self.lastGuard        = 0
+	self.last_auto_target = 0
 
 	self.getTarget    = function (dist) return self:GetTarget(dist) end
 	self.targetFilter = function (target) return self:TargetFilter(target) end
@@ -70,7 +71,7 @@ function XPVP:initialize()
 
 	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
 		if result == 1 and actionId == 29054 then
-			self.lastGuard = os.clock()			
+			self.lastGuard = os.clock()
 		end
 
 	end)
@@ -83,6 +84,15 @@ function XPVP:Tick()
 	if (os.clock() - self.lastGuard < 4.5) then return end
 
 	Game.ActionDirectionCheck = self.menu["ACTIONS"]["DIRECTION_CHECK"].bool
+
+	if (os.clock() - self.last_auto_target) > 1 and self.menu["AUTO_TARGET_KEY"].keyDown then
+		if self.menu["TARGET"]["AUTO"].bool then
+			self.menu["TARGET"]["AUTO"].bool = false
+		else
+			self.menu["TARGET"]["AUTO"].bool = true
+		end
+		self.last_auto_target = os.clock()
+	end
 
 	-- PVP Maps
 	local mapId = 0
@@ -98,7 +108,7 @@ function XPVP:Tick()
 	if player:hasStatus(3054) then return end
 	-- Invisible
 	if player:hasStatus(895) then return end
-	
+
 	-- Common Actions
 	if self.common:Tick(self.log) then return end
 
@@ -106,7 +116,7 @@ function XPVP:Tick()
 		self:SetTabTarget()
 	end
 
-	
+
 
 	if self.lockTarget ~= nil and not TargetManager.Target.valid or (TargetManager.Target.valid and TargetManager.Target.isDead) then
 		self.lockTarget = nil
@@ -158,10 +168,10 @@ function XPVP:Tick()
 end
 
 function XPVP:SetTabTarget()
-	
+
 	if TargetManager.Target.valid and self.lockTarget ~= TargetManager.Target then
 		self.lockTarget = TargetManager.Target
-		self.log:print("Locking to Target: " .. TargetManager.Target.name)		
+		self.log:print("Locking to Target: " .. TargetManager.Target.name)
 	end
 end
 

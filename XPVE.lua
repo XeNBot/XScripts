@@ -82,7 +82,12 @@ function XPVE:Tick()
 	end
 
 	if (os.clock() - self.last_pve_aoe) > 1 and self.menu["AOE_KEY"].keyDown then
-		_G.PVE_AOE = _G.PVE_AOE and false or true
+		if _G.PVE_AOE then
+			_G.PVE_AOE = false
+		else
+			_G.PVE_AOE = true
+		end
+		self.last_pve_aoe = os.clock()
 	end
 
 	if player.castInfo.isCasting or not self.menu["ONOFF"].bool then return end
