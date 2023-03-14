@@ -48,6 +48,7 @@ function Reaper:Load(mainMenu)
 
 	self.menu["ACTIONS"]["MELEE_DPS"]:subMenu("Reaper", "RPR")
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Harpe", "HARPE", true)
+		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use Soulsow", "SOULSOW", true)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:checkbox("Use AoE Rotations", "AOE", true)
 		self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]:slider("Min Enemies for AoE", "AOE_MIN", 1, 1, 3, 2)
 	
@@ -99,7 +100,7 @@ function Reaper:Tick(log)
 
 	if self:Weave(log, target, aoe) then return end
 
-	if not player:hasStatus(2594) and self.actions.soulsow:canUse() and not target:hasStatus(2586) then
+	if not player:hasStatus(2594) and self.actions.soulsow:canUse() and not target:hasStatus(2586) and menu["SOULSOW"].bool then
 		log:print("Using Soulsow")	
 		self.actions.soulsow:use()
 	elseif not aoe and self.actions.shadowofdeath:canUse(target) and not target:hasStatus(2586) then

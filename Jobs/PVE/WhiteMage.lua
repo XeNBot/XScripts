@@ -10,6 +10,7 @@ function WhiteMage:initialize()
 
     self.class_widget         = Menu("White Mage XPVE" , true)
 	self.class_widget.width   = 300
+	self.class_widget.visible = player.classJob == 6 or player.classJob == 24
 	
 
 	self.actions = {
