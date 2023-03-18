@@ -13,6 +13,15 @@ local menu = Menu("XPVE")
 		menu["DRAWS"]:checkbox("Draw On/Off Toggle", "ONOFF", true)
 
 	menu:space() menu:space()
+	menu:separator()
+	menu:button("Open Class Widget", "OPEN_CLASS_WIDGET", function()
+
+		if _G.XPVE ~= nil and _G.XPVE.current_class ~= nil and _G.XPVE.current_class.class_widget ~= nil then
+			_G.XPVE.current_class.class_widget.visible = true
+		end
+	end)
+	menu:hotkey("Open Class Widget Key", "CLASS_WIDGET_KEY", {16,  80})
+	menu:separator()
 
 	menu:checkbox("Use Rotations", "ONOFF", true)
 	menu:hotkey("Toggle On / Off", "ONOFF_KEY", 84)
