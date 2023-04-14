@@ -117,7 +117,7 @@ end
 function XPVEClass:LoadWidgetCombo()
 
 	self.class_widget:subMenu("Combo Settings", "COMBO_SETTINGS")
-	self.class_widget["COMBO_SETTINGS"]:setIcon("XScriptsT", "\\Resources\\Icons\\Misc\\Stance.png")
+	self.class_widget["COMBO_SETTINGS"]:setIcon("XScripts", "\\Resources\\Icons\\Misc\\Stance.png")
 
 end
 
@@ -131,10 +131,10 @@ end
 function XPVEClass:LoadRoleMenu()
 
 	if self.is_melee_dps then
-		self.role_module = LoadModule("XScriptsT", "\\Jobs\\PVE\\Roles\\MeleeDPS")
+		self.role_module = LoadModule("XScripts", "\\Jobs\\PVE\\Roles\\MeleeDPS")
     	self.role_module:load(self.class_widget)
 	elseif self.is_ranged_dps then
-		self.role_module = LoadModule("XScriptsT", "\\Jobs\\PVE\\Roles\\RangedDPS")
+		self.role_module = LoadModule("XScripts", "\\Jobs\\PVE\\Roles\\RangedDPS")
     	self.role_module:load(self.class_widget)
 	end
 
