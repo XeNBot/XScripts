@@ -96,10 +96,6 @@ function XPVE:Tick()
 		self.paladin:Tick(self.log)
 	elseif player.classJob == 3 or player.classJob == 21 then
 		self.warrior:Tick(self.log)
-	elseif player.classJob == 5 or player.classJob == 23 then
-		self.bard:Tick(self.log)
-	elseif player.classJob == 6 or player.classJob == 24 then
-		self.whitemage:Tick()
 	elseif player.classJob == 7 or player.classJob == 25 then
 		self.blackmage:Tick(self.log)
 	elseif player.classJob == 22 then

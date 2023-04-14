@@ -5,20 +5,14 @@ function WhiteMage:initialize()
 
 	XPVEClass.initialize(self)
 
-	self.is_white_mage = function ()
-		return player ~= nil and (player.classJob == 6 or player.classJob == 24)
-	end
+	self:SetClassIds({6, 24})
+	self:LoadWidget("White Mage XPVE")
+	self:LoadWidgetCombo()
 
 	self.class_range          = 25
 	self.healing_manager      = LoadModule("XScripts", "/Utilities/HealingManager")
-
-    self.class_widget         = Menu("White Mage XPVE" , true)
-	self.class_widget.width   = 250
-	self.class_widget.visible = self.is_white_mage()
-
-	self.class_widget:subMenu("Combo Settings", "COMBO_SETTINGS")
-	self.class_widget["COMBO_SETTINGS"]:setIcon("XScripts", "\\Resources\\Icons\\Misc\\Stance.png")
-		self.class_widget["COMBO_SETTINGS"]:checkbox("Use Precense of Mind", "PRECENCE", true)
+    
+	self.class_widget["COMBO_SETTINGS"]:checkbox("Use Precense of Mind", "PRECENCE", true)
 	
 	self.actions = {
 
