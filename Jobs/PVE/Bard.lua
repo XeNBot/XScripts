@@ -12,6 +12,10 @@ function Bard:initialize()
 
 	self:LoadRoleMenu()
 	self:LoadWidgetCombo()
+	
+	self.class_widget["COMBO_SETTINGS"]:checkbox("Use Barrage", "BARRAGE", true)
+	self.class_widget["COMBO_SETTINGS"]:separator()
+	
 	self:LoadWidgetAoE()
 
 	self.actions = {
@@ -21,6 +25,7 @@ function Bard:initialize()
 		venomousbite  = Action(1, 100),
 		ragingstrikes = Action(1, 101),
 		quicknock     = Action(1, 106),
+		barrage       = Action(1, 107),
 		bloodletter   = Action(1, 110),
 		windbite      = Action(1, 113),
 		ballad        = Action(1, 114),
@@ -35,6 +40,7 @@ function Bard:initialize()
 		peloton       = Action(1, 7557),
 
 	}
+	
 
 end
 
@@ -47,7 +53,9 @@ function Bard:Tick()
 	if self:ValidTarget(target) then
 		if self:Weave(target) then return end
 
-		if self:CanUse("minuet", target) then
+		if self:CanUse("barrage") and self.class_widget["COMBO_SETTINGS"]["BARRAGE"].bool then
+			self:Use("barrage")
+		elseif self:CanUse("minuet", target) then
 			self:Use("minuet", target)
 		elseif player:hasStatus(865) and player.gauge.repertoire == 3 and self:CanUse("minuet", target) then
 			self.log:print("Using Perfect Pitch on " .. target.name)
