@@ -110,7 +110,7 @@ function XPVEClass:LoadWidget(name)
 
 	self.class_widget         = Menu(name , true)
 	self.class_widget.width   = 250
-	self.class_widget.visible = self.class_ids[player.classJob] ~= nil
+	self.class_widget.visible = player ~= nil and self.class_ids[player.classJob] ~= nil
 
 end
 
