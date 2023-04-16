@@ -30,7 +30,7 @@ function XPVP:initialize()
 	self.summoner    = LoadModule("XScripts", "\\Jobs\\PVP\\Summoner")
 	self.redmage     = LoadModule("XScripts", "\\Jobs\\PVP\\RedMage")
 	-- Common Actions
-	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common")
+	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common") 
 
 	-- Loads the menus of each Job
 	-- Healers
@@ -76,6 +76,9 @@ function XPVP:initialize()
 
 	end)
 
+	self.shot   = Action(1, 8)
+	self.attack = Action(1, 7)
+
 	self.log:print("XPVP Loaded!")
 
 end
@@ -108,7 +111,7 @@ function XPVP:Tick()
 	if player:hasStatus(3054) then return end
 	-- Invisible
 	if player:hasStatus(895) then return end
-
+	
 	-- Common Actions
 	if self.common:Tick(self.log) then return end
 
@@ -116,7 +119,7 @@ function XPVP:Tick()
 		self:SetTabTarget()
 	end
 
-
+	
 
 	if self.lockTarget ~= nil and not TargetManager.Target.valid or (TargetManager.Target.valid and TargetManager.Target.isDead) then
 		self.lockTarget = nil
@@ -168,19 +171,27 @@ function XPVP:Tick()
 end
 
 function XPVP:SetTabTarget()
-
+	
 	if TargetManager.Target.valid and self.lockTarget ~= TargetManager.Target then
 		self.lockTarget = TargetManager.Target
-		self.log:print("Locking to Target: " .. TargetManager.Target.name)
+		self.log:print("Locking to Target: " .. TargetManager.Target.name)		
 	end
 end
 
 
 function XPVP:TargetFilter(target)
+
+	local dist_pass = self:CanAttack(target)
+
 	if self.menu["TARGET"]["GUARD_CHECK"].bool then
-		return not target:hasStatus(3054)
+		return not target:hasStatus(3054) and dist_pass
 	end
-	return not target.ally
+
+	return not target.ally and dist_pass
+end
+
+function XPVP:CanAttack(target)
+	return self.attack:canUse(target) or self.shot:canUse(target)
 end
 
 function XPVP:GetTarget(range)
@@ -197,6 +208,7 @@ function XPVP:GetTarget(range)
 	if mapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
 		local target = TargetManager.Target
 		if target.valid and not target.ally then
+			print("Returning TargetManager.Target")
 			return target
 		end
 
@@ -207,12 +219,20 @@ function XPVP:GetTarget(range)
 	local target = nil
 
 	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil and not self.lockTarget:hasStatus(3054) then
+		--print("Returning Lock Target!")
 		return self.lockTarget
 	end
 
 	if self.menu["TARGET"]["MODE"].int == 0 then
-		return ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)
+		local target = ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)
+
+		if target.valid then
+			--print("Returning target : " .. target.name)
+		end
+
+		return target
 	else
+		--print("Returning Closest Enemy!")
 		return ObjectManager.GetClosestEnemy(self.targetFilter)
 
 	end
