@@ -110,8 +110,6 @@ function XPVE:Tick()
 		self.samurai:Tick()
 	elseif player.classJob == 35 then
 		self.redmage:Tick()
-	elseif player.classJob == 38 then
-		self.dancer:Tick()
 	elseif player.classJob == 39 then
 	    self.reaper:Tick(self.log)
 	elseif player.classJob == 40 then

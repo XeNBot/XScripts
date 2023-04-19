@@ -5,9 +5,12 @@ function Dancer:initialize()
 
 	XPVEClass.initialize(self)
 
-	self.class_name           = "Dancer"
-	self.class_name_short     = "DNC"
-	self.class_category       = "RANGE_DPS_P"
+	self:SetClassIds({38})
+	self:LoadWidget("Dancer XPVE")
+	self:LoadRoleMenu()
+	self:LoadWidgetCombo()
+	self:LoadWidgetAoE()
+			
 	self.class_range          = 25
 
 	self.actions = {
@@ -49,16 +52,18 @@ function Dancer:initialize()
 	self.has_silken_flow      = function() return player:hasStatus(2694) end
 
 	self:SetStepSwitch()
+end
 
-	Callbacks:Add(CALLBACK_ACTION_EFFECT, function(source, pos, action_id, target_id)
-		if source.id == player.id then
-	  		if action_id == self.actions.cascade.id then
-	  			self.last_dance_combo = 1
-	  		elseif action_id == self.actions.fountain.id then
-	  			self.last_dance_combo  = 2
-	  		end
-		end  
-	end)
+function Dancer:ActionEffect(source, pos, action_id, target_id)
+
+	if source.id == player.id then
+		if action_id == self.actions.cascade.id then
+			self.last_dance_combo = 1
+		elseif action_id == self.actions.fountain.id then
+			self.last_dance_combo  = 2
+		end
+	end
+
 end
 
 function Dancer:Tick()
@@ -68,104 +73,83 @@ function Dancer:Tick()
 	local target = self.get_target()
 	if not self:ValidTarget(target) then return end
 
-	local aoe = ObjectManager.BattleEnemiesAroundObject(target, 5, function(o) return o.isTargetable end) >= 2 and _G.PVE_AOE
-
 	if self.has_standard_step() or self.has_technical_step() then
 		return switch(player.gauge.currentStep, self.step_switch)
 	end
 
-	if self.actions.standard_step:canUse() then
-		self.log:print("Using Standard Step")
-		self.actions.standard_step:use()
-	elseif self.actions.technical_step:canUse() then
-		self.log:print("Using Technical Step")
-		self.actions.technical_step:use()
-	elseif not self.has_devilment() and self.actions.devilment:canUse() then
-		self.log:print("Using Devilent")
-		self.actions.devilment:use()
+	if self:CanUse("standard_step") then
+		self:Use("standard_step")
+	elseif self:CanUse("technical_step") then
+		self:Use("technical_step")
+	elseif not self.has_devilment() and self:CanUse("devilment") then
+		self:Use("devilment")
 	end
 	if self.has_silken_symmetry() then
-		return self:HandleSilkenSymmetry(target, aoe)
+		return self:HandleSilkenSymmetry(target)
 	end
 	if self.has_silken_flow() then
-		return self:HandleSilkenFlow(target, aoe)
+		return self:HandleSilkenFlow(target)
 	end
-	if self.actions.starfall_dance:canUse(target) then
-		self.log:print("Using Starfalll Dance on : " .. target.name)
-		self.actions.starfall_dance:use(target)
+	if self:CanUse("starfall_dance", target) then
+		self:Use("starfall_dance", target)
 	end
-	if self.actions.flourish:canUse() then
-		self.log:print("Using Flourish")
-		self.actions.flourish:use()
+	if self:CanUse("flourish") then
+		self:Use("flourish")
 	end
-	if self:CanUseFanDance(target, aoe) then
-		self:UseFanDance(target, aoe)
+	if self:CanUseFanDance(target) then
+		self:UseFanDance(target)
 	end
-	if self.actions.tillana:canUse() then
-		self.log:print("Using Tillana")
-		self.actions.tillana:use()
+	if self:CanUse("tillana") then
+		self:Use("tillana")
 	end
-	if self.actions.fan_dance_iv:canUse(target) then
-		self.log:print("Using Fan Dance IV on : " .. target.name)
-		self.actions.fan_dance_iv:use(target)
+	if self:CanUse("fan_dance_iv", target) then
+		self:Use("fan_dance_iv", target)
 	end
-
-	if self.last_dance_combo == 1 and self.actions.fountain:canUse(target) then
-		self.log:print("Using Fountain on : " .. target.name)
-		self.actions.fountain:use(target)
-	elseif self.actions.cascade:canUse(target) then
-		self.log:print("Using Cascade on : " .. target.name)
-		self.actions.cascade:use(target)
+	if self.last_dance_combo == 1 and self:CanUse("fountain", target) then
+		self:Use("fountain", target)
+	elseif self:CanUse("cascade", target) then
+		self:Use("cascade", target)
 	end
 end
 
-function Dancer:HandleSilkenFlow(target, aoe)
-	if aoe and target.pos:dist(player.pos) < 5 then
-		if self.actions.bloodshower:canUse(target) then
-			self.log:print("Using Bloodshower on : " .. target.name)
-			self.actions.bloodshower:use(target)
+function Dancer:HandleSilkenFlow(target)
+	if self.aoe and target.pos:dist(player.pos) < 5 then
+		if self:CanUse("bloodshower", target) then
+			self:Use("bloodshower", target)
 		end
 	elseif self.actions.fountainfall:canUse(target) then
-		self.log:print("Using Fountainfall on : " .. target.name)
-		self.actions.fountainfall:use(target)
+		self:Use("fountainfall", target)
 	end
 end
 
-function Dancer:HandleSilkenSymmetry(target, aoe)
-	if aoe and target.pos:dist(player.pos) < 5 then
-		if self.actions.rising_windmill:canUse(target) then
-			self.log:print("Using Rising Windmill on : " .. target.name)
-			self.actions.rising_windmill:use(target)
-		end
-	elseif self.actions.reverse_cascade:canUse(target) then
-		self.log:print("Using Reverse Cascade on : " .. target.name)
-		self.actions.reverse_cascade:use(target)
+function Dancer:HandleSilkenSymmetry(target)
+	if self.aoe and target.pos:dist(player.pos) < 5 and self:CanUse("rising_windmill", target) then
+		self:Use("rising_windmill", target)
+	elseif self:CanUse("reverse_cascade", target) then
+		self:Use("reverse_cascade", target)
 	end
 end
 
-function Dancer:UseFanDance(target, aoe)
+function Dancer:UseFanDance(target)
 
 	if player.classLevel >= 66 then
-		self.log:print("Using Fan Dance III")
-		self.actions.fan_dance_iii:use(target)
-	elseif aoe and target.pos:dist(player.pos) < 5 and player.classLevel >= 50 then
-		self.log:print("Using Fan Dance II")
-		self.actions.fan_dance_ii:use(target)
+		self:Use("fan_dance_iii", target)
+	elseif self.aoe and target.pos:dist(player.pos) < 5 and player.classLevel >= 50 then
+		self:Use("fan_dance_ii", target)
 	elseif player.classLevel >= 30 then
-		self.log:print("Using Fan Dance")
-		self.actions.fan_dance:use(target)
+		self:Use("fan_dance", target)
 	end
 
 end
 
-function Dancer:CanUseFanDance(target, aoe)
+function Dancer:CanUseFanDance(target)
 
 	if player.classLevel >= 66 then
-		return self.actions.fan_dance_iii:canUse(target)
-	elseif aoe and target.pos:dist(player.pos) < 5 and player.classLevel >= 50 then
-		return self.actions.fan_dance_ii:canUse(target)
+		return self:CanUse("fan_dance_iii", target)
+	elseif self.aoe and target.pos:dist(player.pos) < 5 and player.classLevel >= 50 then
+		return self:CanUse("fan_dance_ii", target)
 	elseif player.classLevel >= 30 then
-		return self.actions.fan_dance:canUse(target)
+		return self:CanUse("fan_dance", target)
 	end
 
 	return false
@@ -177,40 +161,30 @@ function Dancer:SetStepSwitch()
 	{
 		[0] = function()
 			-- Standard Finish
-			if self.has_standard_step() then
-				if self.actions.standard_finish:canUse() then
-					self.log:print("Using Standard Finish")
-					self.actions.standard_finish:use()
-				end
-			elseif self.has_technical_step() then
-				if self.actions.technical_finish:canUse() then
-					self.log:print("Using Technical Finish")
-					self.actions.technical_finish:use()
-				end
+			if self.has_standard_step() and self:CanUse("standard_finish") then
+				self:Use("standard_finish")
+			elseif self.has_technical_step() and self:CanUse("technical_finish") then
+				self:CanUse("technical_finish")
 			end
 		end,
 		[1] = function()
-			if self.actions.emboite:canUse() then
-				self.log:print("Using Emboite")
-				self.actions.emboite:use()
+			if self:CanUse("emboite") then
+				self:Use("emboite")
 			end
 		end,
 		[2] = function()
-			if self.actions.entrechat:canUse() then
-				self.log:print("Using Entrechat")
-				self.actions.entrechat:use()
+			if self:CanUse("entrechat") then
+				self:Use("entrechat")
 			end
 		end,
 		[3] = function()
-			if self.actions.jete:canUse() then
-				self.log:print("Using Jete")
-				self.actions.jete:use()
+			if self:CanUse("jete") then
+				self:Use("jete")
 			end
 		end,
 		[4] = function()
-			if self.actions.pirouette:canUse() then
-				self.log:print("Using Pirouette")
-				self.actions.pirouette:use()
+			if self:CanUse("pirouette") then
+				self:Use("pirouette")
 			end
 		end,
 	}
