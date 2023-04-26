@@ -34,7 +34,6 @@ function XPVE:initialize()
 	-- Menus
 	self.menu        = LoadModule("XScripts", "\\Menus\\XPVEMenu")
 
-	self.bard:Load(self.menu)
 	self.machinist:Load(self.menu)
 	self.dancer:Load(self)
 
@@ -51,10 +50,6 @@ function XPVE:initialize()
 	self.dragoon:Load(self.menu, self.log)
 
 	self.sage:Load(self.menu, self.log)
-	self.whitemage:Load(self)
-
-	self.gunbreaker:Load(self)
-
 	--------------------------------------------------------------------
 	-- Callbacks
 	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Tick() end)

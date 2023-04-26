@@ -11,10 +11,13 @@ function XPVEClass:initialize()
 	self.class_category      = "PVE_CLASS"
 	self.class_range         = 3
 
+	-- Class Information Variables
 	self.role_module         = nil
 	self.class_ids           = {}
+
 	self.is_melee_dps        = false
 	self.is_ranged_dps       = false
+	self.is_tank             = false
 
 
 	self.menu                = nil
@@ -101,6 +104,8 @@ function XPVEClass:SetClassIds(tbl)
 			self.is_melee_dps = true
 		elseif Game.IsRangedDPS(c) then
 			self.is_ranged_dps = true
+		elseif Game.IsTank(c) then
+			self.is_tank = true
 		end
 	end
 
@@ -117,7 +122,7 @@ end
 function XPVEClass:LoadWidgetCombo()
 
 	self.class_widget:subMenu("Combo Settings", "COMBO_SETTINGS")
-	self.class_widget["COMBO_SETTINGS"]:setIcon("XScripts", "\\Resources\\Icons\\Misc\\Stance.png")
+	self.class_widget["COMBO_SETTINGS"]:setIcon("XScriptsT", "\\Resources\\Icons\\Misc\\Stance.png")
 
 end
 
@@ -131,10 +136,13 @@ end
 function XPVEClass:LoadRoleMenu()
 
 	if self.is_melee_dps then
-		self.role_module = LoadModule("XScripts", "\\Jobs\\PVE\\Roles\\MeleeDPS")
+		self.role_module = LoadModule("XScriptsT", "\\Jobs\\PVE\\Roles\\MeleeDPS")
     	self.role_module:load(self.class_widget)
 	elseif self.is_ranged_dps then
-		self.role_module = LoadModule("XScripts", "\\Jobs\\PVE\\Roles\\RangedDPS")
+		self.role_module = LoadModule("XScriptsT", "\\Jobs\\PVE\\Roles\\RangedDPS")
+    	self.role_module:load(self.class_widget)
+	elseif self.is_tank then
+		self.role_module = LoadModule("XScriptsT", "\\Jobs\\PVE\\Roles\\Tank")
     	self.role_module:load(self.class_widget)
 	end
 
@@ -330,6 +338,10 @@ end
 
 function XPVEClass:LastActionIs(action)
 	return self.last_action == self.actions[action].id
+end
+
+function XPVEClass:ComboActionIs(action)
+	return ActionManager.ComboId == self.actions[action].id
 end
 
 return XPVEClass
