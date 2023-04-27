@@ -199,18 +199,17 @@ function XPVEClass:GetSwitchTable(actions, auto_continue)
 end
 
 function XPVEClass:GetExecuteFunc(action, step, max, rotation_index, auto_continue)
-	local target = action.canTargetEnemy and self.target or nil
-
 	return function()
 
 		if player.isCasting then return end
 
+		local target = action.canTargetEnemy and self.get_target() or nil
+	
 		if step == 1 then
 			self.last_rotation    = self.current_rotation
 			self.current_rotation = rotation_index
 		end
-
-		if target ~= nil and action:canUse(target) then
+		if target ~= nil and target.valid and action:canUse(target) then
 			action:use(target)
 			self.log:print(
 				"Using " .. ((target == nil and action.name)
