@@ -12,14 +12,22 @@ function Gunbreaker:initialize()
 
 	self.class_widget:subMenu("Gunbreaker Actions", "GUNBREAKER")
 		self.class_widget["GUNBREAKER"]:setIcon("XScripts", "\\Resources\\Icons\\Classes\\Gunbreaker.png")
-		self.class_widget["GUNBREAKER"]:checkbox("Use Royal Guard", "ROYAL_GUARD", true)
-			self.class_widget["GUNBREAKER"]["ROYAL_GUARD"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\royal_guard.png")		
 
 		self.class_widget["GUNBREAKER"]:subMenu("No Mercy Settings", "NO_MERCY")
-			self.class_widget["GUNBREAKER"]["NO_MERCY"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\no_mercy.png")			
+			self.class_widget["GUNBREAKER"]["NO_MERCY"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\no_mercy.png")
 			self.class_widget["GUNBREAKER"]["NO_MERCY"]:checkbox("Use No Mercy", "USE", true)
 			self.class_widget["GUNBREAKER"]["NO_MERCY"]:checkbox("Only Use at Max Cartridges", "USE_MAX", true)
-	
+
+		self.class_widget["GUNBREAKER"]:subMenu("Bloodfest Settings", "BLOODFEST")
+			self.class_widget["GUNBREAKER"]["BLOODFEST"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\bloodfest.png")
+			self.class_widget["GUNBREAKER"]["BLOODFEST"]:checkbox("Use Bloodfest", "USE", true)
+			self.class_widget["GUNBREAKER"]["BLOODFEST"]:slider("Max Cartridges", "MAX_CARTS", 0, 0, 3, 0)
+
+		self.class_widget["GUNBREAKER"]:checkbox("Use Royal Guard", "ROYAL_GUARD", true)
+			self.class_widget["GUNBREAKER"]["ROYAL_GUARD"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\royal_guard.png")
+
+
+
 	self:LoadRoleMenu()
 	self:LoadWidgetCombo()
 
@@ -59,13 +67,15 @@ function Gunbreaker:initialize()
 
 end
 
-function XPVEClass:ActionEffect(source, pos, action_id, target_id) 
+function XPVEClass:ActionEffect(source, pos, action_id, target_id)
 
 	if source.id == player.id then
 		if action_id == self.actions.gnashing_fang.id then
 			self.last_gcd = 1
 		elseif action_id == self.actions.savage_claw.id then
 			self.last_gcd = 2
+		elseif action_id == self.actions.danger_zone.id or action_id == self.actions.blasting_zone.id then
+			self.last_gcd = 3
 		elseif action_id == self.actions.wicked_talon.id then
 			self.last_gcd = 0
 		end
@@ -80,7 +90,9 @@ function Gunbreaker:Tick()
 	if self:ShouldRoyalGuard() then
 		self:Use("royal_guard")
 	end
-
+	if self:ShouldBloodfest(ammo) then
+		self:Use("bloodfest")
+	end
 	if self:ValidTarget(target) then
 		if self:HasNoMercy() and self:HandleMercyGCDS(target) then
 			return
@@ -123,6 +135,12 @@ end
 function Gunbreaker:HandleAmmo(target, ammo)
 	if not self.class_widget["GUNBREAKER"]["NO_MERCY"]["USE_MAX"].bool then
 		self:HandleMercyGCDS(target)
+	elseif not self:HasNoMercy() and ammo == self:GetMaxCarts() and self.actions.no_mercy.timerElapsed < 30 then
+		self:HandleMercyGCDS(target)
+	end
+
+	if not self:HasNoMercy() and ammo == self:GetMaxCarts() and self.actions.no_mercy.timerElapsed < 55 and self:CanUse("burst_strike", target) then
+		self:Use("burst_strike", target)
 	end
 end
 
@@ -164,7 +182,7 @@ function Gunbreaker:HasNoMercy()
 end
 
 function Gunbreaker:IsNoMercyEnabled(ammo)
-	
+
 	if self.class_widget["GUNBREAKER"]["NO_MERCY"]["USE_MAX"].bool and ammo < self:GetMaxCarts() then
 		return false
 	end
@@ -174,6 +192,11 @@ end
 function Gunbreaker:ShouldRoyalGuard()
 	return self.class_widget["GUNBREAKER"]["ROYAL_GUARD"].bool and not player:hasStatus(1833)
 			and self:CanUse("royal_guard")
+end
+
+function Gunbreaker:ShouldBloodfest(ammo)
+	return self.class_widget["GUNBREAKER"]["BLOODFEST"]["USE"].bool and self:CanUse("bloodfest")
+		and ammo <= self.class_widget["GUNBREAKER"]["BLOODFEST"]["MAX_CARTS"].int
 end
 
 function Gunbreaker:GetMaxCarts()
