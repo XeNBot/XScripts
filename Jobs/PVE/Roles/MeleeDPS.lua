@@ -23,7 +23,7 @@ function MeleeDPS:load(menu)
 
     for i, action in pairs(self.actions) do
         self.menu["ROLE_SETTINGS"]:subMenu( action.name .. " Settings", string.upper(i))
-        self.menu["ROLE_SETTINGS"][string.upper(i)]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\" .. i .. ".png")
+        self.menu["ROLE_SETTINGS"][string.upper(i)]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvE\\" .. i .. ".png")
         self.menu["ROLE_SETTINGS"][string.upper(i)]:checkbox("Use " .. action.name, "USE", false)
     end
 

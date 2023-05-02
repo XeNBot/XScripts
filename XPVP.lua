@@ -32,6 +32,9 @@ function XPVP:initialize()
 	-- Common Actions
 	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common") 
 
+	-- Temp Loading for new classes
+	self.bard:SetMainModule(self)
+
 	-- Loads the menus of each Job
 	-- Healers
 	self.scholar:Load(self.menu)
@@ -51,7 +54,6 @@ function XPVP:initialize()
 	-- Ranged Physical DPS
 	self.dancer:Load(self.menu)
 	self.machinist:Load(self.menu)
-	self.bard:Load(self.menu)
 	-- Ranged Magic DPS
 	self.blackmage:Load(self.menu)
 	self.summoner:Load(self.menu)
@@ -138,8 +140,6 @@ function XPVP:Tick()
 			self.warrior:Tick(self.log)
 		elseif player.classJob == 22 then
 			self.dragoon:Tick(self.getTarget, self.log)
-		elseif player.classJob == 23 then
-			self.bard:Tick(self.getTarget, self.log)
 		elseif player.classJob == 25 then
 			self.blackmage:Tick(self.getTarget, self.log)
 		elseif player.classJob == 27 then

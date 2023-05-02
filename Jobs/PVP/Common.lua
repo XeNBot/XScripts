@@ -3,16 +3,18 @@ local Common = Class("Common")
 function Common:initialize()
 
 	self.actions = {
-		
+
 		guard      = Action(1, 29054),
 		recuperate = Action(1, 29711),
 		purify     = Action(1, 29056),
 		sprint     = Action(1, 29057),
 
 		-- Samurai
-		mei         = Action(1, 29536),		
+		mei        = Action(1, 29536),
 		-- Reaper
-		arcane      = Action(1, 29552)
+		arcane     = Action(1, 29552),
+		-- Bard
+		paean      = Action(1, 29400)
 	}
 
 	self.purify_statusIds = {
@@ -39,8 +41,6 @@ function Common:initialize()
 		[29515] = {name = "EventTide", type = "POSCHECK"},
 		[29554] = {name = "Communio", type = "AOE", range = 5}
 
-
-
 	}
 
 	self.menu = nil
@@ -49,7 +49,7 @@ function Common:initialize()
 end
 
 function Common:Load(mainMenu)
-	
+
 	self.menu = mainMenu
 	self.menu["ACTIONS"]["COMMON"]:subMenu("Purify Settings", "PURIFY")
 		self.menu["ACTIONS"]["COMMON"]["PURIFY"]:checkbox("Use Purify",         "USE", true)
@@ -71,16 +71,16 @@ function Common:Load(mainMenu)
 		end
 
 	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Recuperate", "RECUPERATE", true)
-	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Sprint",     "SPRINT", true)	
+	self.menu["ACTIONS"]["COMMON"]:checkbox("Use Sprint",     "SPRINT", true)
 end
 
 function Common:GuardActionCheck(log)
 
 	if not self.actions.guard:canUse() then return end
-	
+
 	for i, enemy in ipairs(ObjectManager.GetEnemyPlayers(
 		function(enemy) return enemy.isCasting end)) do
-		
+
 		local action = self.guard_actions[enemy.castInfo.actionId]
 
 		if action ~= nil then
@@ -122,6 +122,9 @@ function Common:ShouldPurify(log)
 			if player.classJob == 34 and self.menu["ACTIONS"]["MELEE_DPS"]["SAM"]["MEI"].bool and self.actions.mei:canUse() then
 				self.actions.mei:use()
 				return false
+			elseif player.classJob == 23 and self.actions.paean:canUse() then
+				self.actions.paean:use()
+				return false
 			end
 			log:print("Purifying Status: " .. self.menu["ACTIONS"]["COMMON"]["PURIFY"][tostring(statusId)].str)
 			return true
@@ -131,7 +134,7 @@ function Common:ShouldPurify(log)
 end
 
 function Common:Tick(log)
-	
+
 	self:GuardActionCheck(log)
 
 	local actions = self.actions
@@ -145,7 +148,7 @@ function Common:Tick(log)
 	elseif menu["PURIFY"]["USE"].bool and self:ShouldPurify(log) and actions.purify:canUse() then
 		actions.purify:use()
 		return true
-	elseif player.classJob == 39 and self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]["ARCANE"].bool and (player.maxHealth - player.health) > 18000 and 
+	elseif player.classJob == 39 and self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]["ARCANE"].bool and (player.maxHealth - player.health) > 18000 and
 		self.actions.arcane:canUse() then
 		self.actions.arcane:use()
 		return true

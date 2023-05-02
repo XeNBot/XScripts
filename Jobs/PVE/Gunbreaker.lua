@@ -14,17 +14,17 @@ function Gunbreaker:initialize()
 		self.class_widget["GUNBREAKER"]:setIcon("XScripts", "\\Resources\\Icons\\Classes\\Gunbreaker.png")
 
 		self.class_widget["GUNBREAKER"]:subMenu("No Mercy Settings", "NO_MERCY")
-			self.class_widget["GUNBREAKER"]["NO_MERCY"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\no_mercy.png")
+			self.class_widget["GUNBREAKER"]["NO_MERCY"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvE\\no_mercy.png")
 			self.class_widget["GUNBREAKER"]["NO_MERCY"]:checkbox("Use No Mercy", "USE", true)
 			self.class_widget["GUNBREAKER"]["NO_MERCY"]:checkbox("Only Use at Max Cartridges", "USE_MAX", true)
 
 		self.class_widget["GUNBREAKER"]:subMenu("Bloodfest Settings", "BLOODFEST")
-			self.class_widget["GUNBREAKER"]["BLOODFEST"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\bloodfest.png")
+			self.class_widget["GUNBREAKER"]["BLOODFEST"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvE\\bloodfest.png")
 			self.class_widget["GUNBREAKER"]["BLOODFEST"]:checkbox("Use Bloodfest", "USE", true)
 			self.class_widget["GUNBREAKER"]["BLOODFEST"]:slider("Max Cartridges", "MAX_CARTS", 0, 0, 3, 0)
 
 		self.class_widget["GUNBREAKER"]:checkbox("Use Royal Guard", "ROYAL_GUARD", true)
-			self.class_widget["GUNBREAKER"]["ROYAL_GUARD"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\royal_guard.png")
+			self.class_widget["GUNBREAKER"]["ROYAL_GUARD"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvE\\royal_guard.png")
 
 
 

@@ -65,7 +65,7 @@ function HealingManager:AddActionTable(tbl)
 
 		self.menu["HEAL_MNG"]["ACTIONS"]:subMenu(action.name .. " Settings", action.name)
 		local action_icon = string.lower(action.name):gsub("%s+", "_")
-		self.menu["HEAL_MNG"]["ACTIONS"][action.name]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\" .. action_icon .. ".png")
+		self.menu["HEAL_MNG"]["ACTIONS"][action.name]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvE\\" .. action_icon .. ".png")
 		self.menu["HEAL_MNG"]["ACTIONS"][action.name]:slider("Maximum Waste Percent", "MAX_WASTE", 1, 0, 100, 10)
 		self.menu["HEAL_MNG"]["ACTIONS"][action.name]:slider("Minimum MP Percent",    "MIN_MP", 1, 0, 100, 0)
 	end
@@ -78,7 +78,7 @@ function HealingManager:AddReviveAction(action)
 
 	if self.menu ~= nil and self.menu["REVIVE_MNG"] == nil then
 		self.menu:subMenu("Revive Manager", "REVIVE_MNG")
-		self.menu["REVIVE_MNG"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\raise.png")
+		self.menu["REVIVE_MNG"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvE\\raise.png")
 
 		self.menu["REVIVE_MNG"]:label("-=[ Revive Manager ]=-", "R_MENU_LABEL", true) self.menu["REVIVE_MNG"]:separator()
 
@@ -99,7 +99,7 @@ end
 function HealingManager:LoadEsunaManager()
 
 	self.menu:subMenu("Esuna Manager", "ESUNA_MNG")
-	self.menu["ESUNA_MNG"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\esuna.png")
+	self.menu["ESUNA_MNG"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvE\\esuna.png")
 
 	self.menu["ESUNA_MNG"]:label("-=[ Esuna Manager ]=-", "E_MENU_LABEL", true) self.menu["ESUNA_MNG"]:separator()
 
