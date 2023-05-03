@@ -4,42 +4,46 @@ function Summoner:initialize()
 
 	self.actions = {
 
-		summon      = Action(1, 25798),
-		ruiniv      = Action(1, 7426),
-		ruinii      = Action(1, 172),
-		outburst    = Action(1, 16511),
-		gemshine    = Action(1, 25883),
-		energydrain = Action(1, 16508),
-		painflare   = Action(1, 3578),
-		fester      = Action(1, 181),
-		searing     = Action(1, 25801),
+		summon         = Action(1, 25798),
+		ruin           = Action(1, 163),
+		ruiniv         = Action(1, 7426),
+		ruinii         = Action(1, 172),
+		outburst       = Action(1, 16511),
+		gemshine       = Action(1, 25883),
+		energydrain    = Action(1, 16508),
+		painflare      = Action(1, 3578),
+		fester         = Action(1, 181),
 
-		deathflare  = Action(1, 3582),
-		rekindle    = Action(1, 25830),
-		purgatory   = Action(1, 16515),
-		astralflare = Action(1, 25821),
-		fountain    = Action(1, 16514),
-		astralimp   = Action(1, 25820),
+		deathflare     = Action(1, 3582),
+		rekindle       = Action(1, 25830),
+		purgatory      = Action(1, 16515),
+		astralflare    = Action(1, 25821),
+		fountain       = Action(1, 16514),
+		astralimp      = Action(1, 25820),
+		aethercharge   = Action(1, 25800),
+		searing        = Action(1, 25801),
+		summon_ruby    = Action(1, 25802),
+		summon_topaz   = Action(1, 25803),
+		summon_emerald = Action(1, 25803),
+		ifrit          = Action(1, 25805),
+		titan          = Action(1, 25806),
+		garuda         = Action(1, 25807),
+		bahamut        = Action(1, 7427),
+		phoenix        = Action(1, 25831),
 
-		ifrit       = Action(1, 25805),
-		titan       = Action(1, 25806),
-		garuda      = Action(1, 25807),
-		bahamut     = Action(1, 7427),
-		phoenix     = Action(1, 25831),
+		ruby           = Action(1, 25823),
+		rubyaoe        = Action(1, 25832),
+		topaz          = Action(1, 25824),
+		topazaoe       = Action(1, 25833),
+		emerald        = Action(1, 25825),
+		emeraldaoe     = Action(1, 25834),
+		cyclone        = Action(1, 25835),
+		mbuster        = Action(1, 25836),
+		slipstream     = Action(1, 25837),
 
-		ruby        = Action(1, 25823),
-		rubyaoe     = Action(1, 25832),
-		topaz       = Action(1, 25824),
-		topazaoe    = Action(1, 25833),
-		emerald     = Action(1, 25825),
-		emeraldaoe  = Action(1, 25834),
-		cyclone     = Action(1, 25835),
-		mbuster     = Action(1, 25836),
-		slipstream  = Action(1, 25837),
-
-		aegis       = Action(1, 25799),
+		aegis          = Action(1, 25799),
 		
-		swiftcast   = Action(1, 7561),
+		swiftcast      = Action(1, 7561),
 
 	}
 
@@ -63,10 +67,8 @@ end
 function Summoner:Tick(log)
 
 	local menu        = self.menu["ACTIONS"]["RANGE_DPS_M"]["SMN"]
-	local actions     = self.actions
 
 	local target = TargetManager.Target
-	print(player.hasSummon)
 	if not player.hasSummon and self.actions.summon:canUse() then
 		self.actions.summon:use()
 	end
@@ -158,12 +160,11 @@ function Summoner:PrimalReady()
 	return player.gauge.ifritReady or player.gauge.garudaReady or player.gauge.titanReady
 end
 
-function Summoner:CheckPrimals(aoe, attuned, target, log)
+function Summoner:CheckPrimals(aoe, attuned, target, log)	
 	
 	if attuned then
 	
-		if aoe then
-		
+		if aoe then		
 			if self.actions.mbuster:canUse(target) then
 				log:print("Using Mountain Buster on " .. target.name)
 				self.actions.mbuster:use(target)
@@ -224,6 +225,15 @@ function Summoner:CheckPrimals(aoe, attuned, target, log)
 		elseif player.gauge.titanReady and self.actions.titan:canUse(target) then
 			log:print("Summoning Titan on " .. target.name)
 			self.actions.titan:use(target)
+		elseif player.gauge.garudaReady and self.actions.summon_emerald:canUse(target) then
+			log:print("Summoning Emerald on " .. target.name)
+			self.actions.summon_emerald:use(target)	
+		elseif player.gauge.ifritReady and self.actions.summon_ruby:canUse(target) then
+			log:print("Summoning Ruby on " .. target.name)
+			self.actions.summon_ruby:use(target)			
+		elseif player.gauge.titanReady and self.actions.summon_topaz:canUse(target) then
+			log:print("Summoning Topaz on " .. target.name)
+			self.actions.summon_topaz:use(target)	
 		end
 
 	end
@@ -250,19 +260,24 @@ end
 function Summoner:LowLevel(aoe, target, log)
 
 	if self.actions.gemshine:canUse(target) then
-		log:print("Using Gemshine on" .. target.name)
+		log:print("Using Gemshine on " .. target.name)
 		self.actions.gemshine:use(target)
 	end
-	if aoe then
-		if self.actions.outburst:canUse(target) then
-			log:print("Using Outburst on" .. target.name)
-			self.actions.outburst:use(target)
-		end
+	if self.actions.aethercharge:canUse() then
+		log:print("Using Aethercharge")
+		self.actions.aethercharge:use()
+	end
+	if aoe and  self.actions.outburst:canUse(target) then
+		log:print("Using Outburst on " .. target.name)
+		self.actions.outburst:use(target)
 	else
 		if self.actions.ruinii:canUse(target) then
-			log:print("Using Ruin II on" .. target.name)
+			log:print("Using Ruin II on " .. target.name)
 			self.actions.ruinii:use(target)
-		end		
+		elseif self.actions.ruin:canUse(target) then
+			log:print("Using Ruin on " .. target.name)
+			self.actions.ruin:use(target)
+		end
 	end
 	
 end
