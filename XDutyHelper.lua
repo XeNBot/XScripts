@@ -41,7 +41,7 @@ function XDutyRunner:initialize()
 		{
 			
 			name          = "Sastasha",
-			tab_index     = 0,
+			tab_index     = 1,
 			mission_index = 1,
 			module        = LoadModule("XScripts", "/Missions/Sastasha"),
 			map_id        = 31,
@@ -50,7 +50,7 @@ function XDutyRunner:initialize()
 		{
 
 			name          = "The Bowl of Embers",
-			tab_index     = 0,
+			tab_index     = 1,
 			mission_index = 4,
 			module        = LoadModule("XScripts", "/Missions/BowlOfEmbers"),
 			map_id        = 35,
@@ -58,7 +58,7 @@ function XDutyRunner:initialize()
 		},
 		{
 			name          = "Thousand Maws of Toto-Rak",
-			tab_index     = 0,
+			tab_index     = 1,
 			mission_index = 5,
 			module        = LoadModule("XScripts", "/Missions/TotoRak"),
 			map_id        = 9,
@@ -67,7 +67,7 @@ function XDutyRunner:initialize()
 		{
 			
 			name          = "Brayflox's Longstop",
-			tab_index     = 0,
+			tab_index     = 1,
 			mission_index = 7,
 			module        = LoadModule("XScripts", "/Missions/Brayflox"),
 			map_id        = 45,
@@ -76,7 +76,7 @@ function XDutyRunner:initialize()
 		{
 			
 			name          = "The Stone Vigil",
-			tab_index     = 0,
+			tab_index     = 1,
 			mission_index = 9,
 			module        = LoadModule("XScripts", "/Missions/StoneVigil"),
 			map_id        = 37,
@@ -85,7 +85,7 @@ function XDutyRunner:initialize()
 		{
 
 			name          = "Castrum Meridianum",
-			tab_index     = 0,
+			tab_index     = 1,
 			mission_index = 11,
 			module        = LoadModule("XScripts", "/Missions/CastrumMeridianum"),
 			map_id        = 47,
@@ -94,7 +94,7 @@ function XDutyRunner:initialize()
 		{
 
 			name          = "Snowcloak",
-			tab_index     = 0,
+			tab_index     = 1,
 			mission_index = 14,
 			module        = LoadModule("XScripts", "/Missions/Snowcloak"),
 			map_id        = 174,
