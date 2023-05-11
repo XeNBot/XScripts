@@ -207,8 +207,7 @@ function XPVP:GetTarget(range)
 
 	if mapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
 		local target = TargetManager.Target
-		if target.valid and not target.ally then
-			print("Returning TargetManager.Target")
+		if target.valid then
 			return target
 		end
 
