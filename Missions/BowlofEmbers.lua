@@ -1,16 +1,28 @@
 local Mission  = LoadModule("XScripts", "/Missions/Mission")
+local BowlofEmbers = Class("BowlofEmbers", Mission)
 
-local BowlOfEmbers = Class("BowlOfEmbers", Mission)
+function BowlofEmbers:initialize()
 
-function BowlOfEmbers:CustomTarget(range)
-	
-	local Infernal_nail = ObjectManager.BattleObject( function(obj) return (obj.npcId == 1186) and obj.isTargetable and not obj.isDead and obj.pos:dist(player.pos) < range end )
-	if Infernal_nail.valid then
-		TargetManager.SetTarget(Infernal_nail)
-		return true
-	end
+	Mission.initialize(self)
+    
+	self.battle_fov    = 50
 
-	return false
+    self.infernal_nail_filter = function (obj)
+        local infernal_nail = ObjectManager.EventObject(function (obj)
+            return obj.isTargetable and obj.dataId == 208
+        end)
+
+        if infernal_nail.valid then
+           return false
+        end
+
+        return true
+    end
+    -- Doesn't target ifrit if infernal nail is out
+    self:AddBattleFilter(207,  self.infernal_nail_filter)
+
+	self.destination   = Vector3(14.28,0,0.1)
+    
 end
 
-return BowlOfEmbers:new()
+return BowlofEmbers:new()

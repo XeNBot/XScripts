@@ -10,9 +10,6 @@ function XDutyRunner:initialize()
 	self.last_enter_duty = 0
 	self.last_shortcut   = 0
 	self.last_exit       = 0
-	
-	-- Route
-	self.route           = Route()
 
 	-- Stats
 	self.stats = {
@@ -21,95 +18,110 @@ function XDutyRunner:initialize()
 		times_died        = 0
 	}
 
-	--[[ ==== Grid ==== ]]--
-	self.grid          = LoadModule("XScripts", "/Waypoints/DutyGrid")
 	--[[ ==== Interactables === ]]--
 	self.interactables = LoadModule("XScripts", "/Enums/Interactables")
 	--[[ ==== Log === ]]--
 	self.log           = LoadModule("XScripts", "/Utilities/Log")
-	--[[ ==== BattleNPC Filter === ]]--
-	self.b_filter = {
-		[108]   = true,
-		[1298]  = true,
-		[1299]  = true,
-		[1300]  = true,
-		[1486]  = true,
-		[10484] = true,
-	}
 	--[[ ==== Missions Table ==== ]]--
-	self.missions = {		
+	self.missions = {
+		--[[{
+
+			name           = "Sastasha",
+			tab_index      = 1,
+			mission_index  = 1,
+			module         = LoadModule("XScripts", "/Missions/Sastasha"),
+			map_ids        = {[31] = true},
+			level          = 15,
+		},]]--
 		{
-			
-			name          = "Sastasha",
-			tab_index     = 1,
-			mission_index = 1,
-			module        = LoadModule("XScripts", "/Missions/Sastasha"),
-			map_id        = 31,
-			level         = 15,
+
+			name           = "Deepcroft",
+			tab_index      = 1,
+			mission_index  = 2,
+			module         = LoadModule("XScripts", "/Missions/Deepcroft"),
+			map_ids        = {[8] = true},
+			level          = 16,
 		},
 		{
 
-			name          = "The Bowl of Embers",
-			tab_index     = 1,
-			mission_index = 4,
-			module        = LoadModule("XScripts", "/Missions/BowlOfEmbers"),
-			map_id        = 35,
-			level         = 20,
+			name           = "The Bowl of Embers",
+			tab_index      = 1,
+			mission_index  = 4,
+			module         = LoadModule("XScripts", "/Missions/BowlofEmbers"),
+			map_ids        = {[35] = true},
+			level          = 20,
 		},
 		{
-			name          = "Thousand Maws of Toto-Rak",
-			tab_index     = 1,
-			mission_index = 5,
-			module        = LoadModule("XScripts", "/Missions/TotoRak"),
-			map_id        = 9,
-			level         = 24,
+			name           = "The Thousand Maws of Toto-Rak",
+			tab_index      = 1,
+			mission_index  = 5,
+			module         = LoadModule("XScripts", "/Missions/TotoRak"),
+			map_ids        = {[9] = true},
+			level          = 24,
 		},
+		--[[{
+			name           = "Haukke Manor",
+			tab_index      = 1,
+			mission_index  = 6,
+			module         = LoadModule("XScripts", "/Missions/HaukkeManor"),
+			map_ids        = {[48] = true},
+			level          = 28,
+		},]]--
 		{
-			
-			name          = "Brayflox's Longstop",
-			tab_index     = 1,
-			mission_index = 7,
-			module        = LoadModule("XScripts", "/Missions/Brayflox"),
-			map_id        = 45,
-			level         = 32,
+
+			name           = "Brayflox's Longstop",
+			tab_index      = 1,
+			mission_index  = 7,
+			module         = LoadModule("XScripts", "/Missions/Brayflox"),
+			map_ids        = {[45] = true},
+			level          = 32,
 		},
-		{
-			
-			name          = "The Stone Vigil",
-			tab_index     = 1,
-			mission_index = 9,
-			module        = LoadModule("XScripts", "/Missions/StoneVigil"),
-			map_id        = 37,
-			level         = 41,
+		--[[[{
+
+			name           = "The Stone Vigil",
+			tab_index      = 1,
+			mission_index  = 9,
+			module         = LoadModule("XScripts", "/Missions/StoneVigil"),
+			map_ids        = {[37] = true},
+			level          = 41,
 		},
 		{
 
-			name          = "Castrum Meridianum",
-			tab_index     = 1,
-			mission_index = 11,
-			module        = LoadModule("XScripts", "/Missions/CastrumMeridianum"),
-			map_id        = 47,
-			level         = 50,
+			name           = "Castrum Meridianum",
+			tab_index      = 1,
+			mission_index  = 11,
+			module         = LoadModule("XScripts", "/Missions/CastrumMeridianum"),
+			map_ids        = {[47] = true},
+			level          = 50,
 		},
 		{
 
-			name          = "Snowcloak",
-			tab_index     = 1,
-			mission_index = 14,
-			module        = LoadModule("XScripts", "/Missions/Snowcloak"),
-			map_id        = 174,
-			level         = 50,
+			name           = "Snowcloak",
+			tab_index      = 1,
+			mission_index  = 14,
+			module         = LoadModule("XScripts", "/Missions/Snowcloak"),
+			map_ids        = {[201] = true},
+			level          = 50,
 		},
+		{
+
+			name           = "The Aetherochemical Research Facility",
+			tab_index      = 2,
+			mission_index  = 5,
+			module         = LoadModule("XScripts", "/Missions/Aetherochemical"),
+			map_ids        = {[231] = true, [232] = true, [233] = true, [234] = true},
+			level          = 60,
+		},]]--
 	}
 
 	for i, mission in ipairs(self.missions) do
-		if mission.module ~= nil then 
+		if mission.module ~= nil then
 			mission.module:SetMainModule(self)
-		else 
+		else
 			print("Failed to set main module in " .. mission.name)
 		end
 	end
-	
+
 	-- Sets up required callbacks
 	self:setupCallbacks()
 	-- Initializes Menu
@@ -124,123 +136,87 @@ function XDutyRunner:Tick()
 
 	local map_id = AgentManager.GetAgent("Map").currentMapId
 
-	if self:CanNotTick(map_id) then return end
-	
+	if self:CanNotTick() then return end
+
 	if self.current_mission == nil then
 		self.current_mission = self.menu["AUTO_PICK"].bool and self:BestDuty() or self.missions[self.menu["MISSION_ID"].int + 1]
 	end
 
 	if self.current_mission == nil then return end
-	
-	
-	if map_id ~= self.current_mission.map_id then
-		TaskManager:EnterDutySupport(
-			self.current_mission.tab_index, 
-			self.current_mission.mission_index,
-			self.callbacks.EnterDutySupport)
+
+	if not self.current_mission.map_ids[map_id] then
+		if not TaskManager:IsBusy() then
+			TaskManager:EnterDutySupport(
+				self.current_mission.tab_index,
+				self.current_mission.mission_index,
+				self.callbacks.EnterMission)
+		end
 	else
-		if self:HandleInteractions() then return end
 		self.current_mission.module:Tick()
 	end
 
 end
 
-function XDutyRunner:CanNotTick(map_id)
-	return 
+function XDutyRunner:CanNotTick()
+	return
 		_G.Evading or
 		not self.started or
-		player.classLevel < 15 or 
+		player.classLevel < 15 or
 		(os.clock() - self.last_enter_duty) < 8 or
 		(os.clock() - self.last_shortcut) < 8 or
-		(os.clock() - self.last_exit) < 8 or
-		self.grid[tostring(map_id)] == nil and TaskManager:IsBusy()
+		(os.clock() - self.last_exit) < 8
 end
 
 function XDutyRunner:BestDuty()
 
-	if player.classLevel < 24 then
-		return self.missions[1]
-	elseif player.classLevel < 32 then
-		return self.missions[3]
-	elseif player.classLevel < 41 then
-		return self.missions[4]
-	elseif player.classLevel < 50 then
-		return self.missions[5]
-	else
-		return self.missions[6]
+	local highest_level = 0
+	local result = nil
+
+	for i, mission in ipairs(self.missions) do
+		if mission.level < player.classLevel and mission.level > highest_level then
+			highest_level = mission.level
+			result = mission
+		end
 	end
 
+	return result
 end
+
 
 function XDutyRunner:Draw()
-	local maxDrawDistance = self.menu["DRAW_SETTINGS"]["MAX_DRAW_DISTANCE"].int
+	
+	if self.current_mission == nil then return end
 
-	if self.menu["DRAW_SETTINGS"]["DRAW_WAYPOINTS"].bool then
-		self:DrawNodes(maxDrawDistance)
-	end	
-end
+	if self.is_trial then
+		Graphics.DrawLine3D(player.pos, self.current_mission.module.destination, Colors.Yellow)		
+	elseif self.current_mission.module.current_nav ~= nil then
 
-function XDutyRunner:DrawNodes(maxDistance)
+		local last_pos = nil
+		local end_pos  = self.current_mission.module.current_nav.waypoints[#self.current_mission.module.current_nav.waypoints]
 
-	local currentMapId = tostring(AgentManager.GetAgent("Map").currentMapId)
-	if self.grid[currentMapId] ~= nil and self.grid[currentMapId].nodes ~= nil then
-		for i, waypoint in ipairs(self.grid[currentMapId].nodes.waypoints) do
-			if waypoint.pos:dist(player.pos) < maxDistance then
-				Graphics.DrawCircle3D(waypoint.pos, 20, 1, Colors.Green)
-				if self.menu["DRAW_SETTINGS"]["DEBUG_INFO"].bool then
-					Graphics.DrawText3D(waypoint.pos, "[" ..tostring(math.floor(player.pos:dist(waypoint.pos))).."]("..tostring(i)..")", 11, RGBA(255, 0, 0, 255))
-					if waypoint.pos:dist(player.pos) < 5 and #waypoint.links > 0 then
-						for i, link in ipairs(waypoint.links) do
-							Graphics.DrawLine3D(waypoint.pos, link.pos, Colors.Blue)
-						end
-					end
-				end
+		for i, pos in ipairs(self.current_mission.module.current_nav.waypoints) do
+			if i ~= 1 then
+				Graphics.DrawCircle3D(pos, 4, 0.25, Colors.Blue)
 			end
+			if last_pos ~= nil then
+				Graphics.DrawLine3D(last_pos, pos, Colors.Yellow)
+			end
+			last_pos = pos
+		end
+		if last_pos ~= nil and self.end_pos ~= Vector3.Zero then
+			Graphics.DrawLine3D(last_pos, end_pos, Colors.Yellow)
 		end
 	end
 end
 
-function XDutyRunner:HandleInteractions()
-	
-	local treasure = ObjectManager.TreasureObject(function(obj) return obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
-	if treasure.valid then
-		player:rotateTo(treasure.pos)
-		TaskManager:Interact(treasure)	
-		return true
-	end
-	local shortcut = ObjectManager.EventObject(function(obj) return self.interactables.shortcuts[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
-	if shortcut.valid then
-		player:rotateTo(shortcut.pos)
-		TaskManager:Interact(shortcut, self.callbacks.Shortcut)
-		return true
-	end	
-
-	local gate = ObjectManager.EventObject(function(obj) return self.interactables.gates[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
-	if gate.valid then
-		player:rotateTo(gate.pos)
-		TaskManager:Interact(gate)
-		return true
-	end	
-
-	local door = ObjectManager.EventObject(function(obj) return self.interactables.doors[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3 and obj.isTargetable end)
-	if door.valid then
-		player:rotateTo(door.pos)
-		TaskManager:Interact(door)
-		return true
-	end	
-
-	return false
-end
-
 function XDutyRunner:setupCallbacks()
-	
+
 	self.callbacks = {
 
 		Tick          = function () return self:Tick() end,
-		Draw          = function () return self:Draw() end,		
+		Draw          = function () return self:Draw() end,
 		Shortcut = function ()
-			self.route         = Route()
-			self.last_shortcut = os.clock()			
+			self.last_shortcut = os.clock()
 			self.log:print("Using Shortcut")
 		end,
 		ToggleStartBtn = function()
@@ -249,28 +225,21 @@ function XDutyRunner:setupCallbacks()
 				self.started = true
 			else
 				self.menu["BTN_START"].str = "Start"
-				if TaskManager:IsBusy() then 
-					TaskManager:Stop() 
+				if TaskManager:IsBusy() then
+					TaskManager:Stop()
 				end
 				self.started = false
 			end
 		end,
-		EnterDutySupport = function()
+		EnterMission = function()
 			self.last_enter_duty                = os.clock()
 			self.stats.missions_started         = self.stats.missions_started + 1
-			self.widget["MISSIONS_ENTERED"].str = "Missions Entered: " .. tostring(self.stats.missions_started)			
-			self.route                          = Route()
-			self.log:print("Entered Mission: " .. self.current_mission.name)	
+			self.widget["MISSIONS_ENTERED"].str = "Missions Entered: " .. tostring(self.stats.missions_started)
+			self.log:print("Entered Mission: " .. self.current_mission.name)
 		end,
-		WalkToWaypoint = function (waypoint)
-			if (self.route.index < #self.route.waypoints) then
-				self.route.index = self.route.index + 1
-			end			
-		end,
-		ExitSquadron = function ()
+		ExitMission = function ()
 			self.stats.missions_finished          = self.stats.missions_finished + 1
 			self.widget["MISSIONS_FINISHED"].str  = "Missions Finished: " .. tostring(self.stats.missions_finished)
-			self.route                            = Route()
 			self.log:print("Finished Mission: " .. self.currentMission.name)
 			self.current_mission                  = nil
 		end,
@@ -281,7 +250,7 @@ function XDutyRunner:setupCallbacks()
 end
 
 function XDutyRunner:initializeMenu()
-	
+
 	self.menu = Menu("XDutyRunner")
 	self.menu:label("~=[ XDutyRunner Ver 1.0 ]=~") self.menu:separator() self.menu:space()
 
@@ -296,7 +265,7 @@ function XDutyRunner:initializeMenu()
 
 	self.menu:label("~=[ Other Settings ]=~") self.menu:space() self.menu:separator()
 		self.menu:subMenu("Draw Settings", "DRAW_SETTINGS")
-			self.menu["DRAW_SETTINGS"]:checkbox("Draw Waypoints", "DRAW_WAYPOINTS", false) 
+			self.menu["DRAW_SETTINGS"]:checkbox("Draw Waypoints", "DRAW_WAYPOINTS", false)
 			self.menu["DRAW_SETTINGS"]:number("Max Draw Distance", "MAX_DRAW_DISTANCE", 50)
 			self.menu["DRAW_SETTINGS"]:checkbox("Draw Debug Info", "DEBUG_INFO", false)
 
@@ -308,7 +277,7 @@ function XDutyRunner:initializeMenu()
 
 	self.widget = Menu("XDutyRunner Info", true)
 	self.widget:label("~=[ Information ]=~") self.menu:separator() self.menu:space()
-	self.widget:label("Missions Entered: 0",  "MISSIONS_ENTERED") 
+	self.widget:label("Missions Entered: 0",  "MISSIONS_ENTERED")
 	self.widget:label("Missions Finished: 0", "MISSIONS_FINISHED")
 	self.widget:label("Times We've Died: 0",  "TIMES_DIED")
 

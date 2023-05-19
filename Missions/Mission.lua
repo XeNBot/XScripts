@@ -1,176 +1,273 @@
 local Mission = Class("Mission")
 
 function Mission:initialize()
-	-- XSquadron Module
-	self.mainModule     = nil
-	-- deathWatch 
-	self.died           = false
-	-- LoS
-	self.last_los       = 0
+	-- Main Module	
+	self.main_module            = nil
+
+	-- Death Watch
+	self.died                   = false
+
+	-- Is Trial Mission
+	self.is_trial               = false
+
+	-- Objects
+	self.event_objects          = {}
+	self.event_npc_objects      = {}
+	self.priority_event_objects = {}
+
+	-- filters
+	self.event_filters          = {}
+	self.event_npc_filters      = {}
+	self.battle_filters         = {}
+
+	-- Current Navigation
+	self.current_nav            = nil
+	self.nav_type               = 0
+
+	NAV_TYPE_NONE               = 0
+	NAV_TYPE_DESTINATION        = 1
+	NAV_TYPE_MOB                = 2
+	NAV_TYPE_EVENT              = 3
+
 	-- Field of View
-	self.fov            = 20
-	-- Custom Exit Callbacks
-	self.exit_callbacks = {}
-	-- Boss Table
-	self.bosses         = {}
-	-- Walking to Safety?
-	self.safe_walking   = false
-	-- Melee Walk to mob
-	self.mob_walking    = false	
+		-- FoV for battle monsters
+	self.battle_fov             = 10
+		-- FoV for event objects
+	self.event_fov              = 30
+		-- FoV for treasure objects
+	self.treasure_fov           = 30
+		-- FoV for event npc objects
+	self.event_npc_fov          = 99
+		-- FoV for LoS of Ranged Champions
+	self.los_fov                = 8
+
+	-- Mission Goal
+	self.destination           = nil
+	self.map_id                = 0
+
 end
-
---[[ Virtual Functions for Child Objects ]]--		
--- Custom Object Interaction
-function Mission:CustomInteract() return false end
--- Custom Targetting
-function Mission:CustomTarget(range) return false end
-
 
 function Mission:SetMainModule(mod)
-	
-	self.mainModule = mod
 
-end
+	self.main_module = mod
 
-function Mission:AddExitCallback(callback)
-	if callback ~= nil and type(callback) == "function" then
-		table.insert(self.exit_callbacks, callback)
-	end
 end
 
 function Mission:Tick()
+
+	if self:HandleInteractions() then return end
+
 	self:DeathWatch()
 
-	if player.isMelee then
-		self.fov = 15
-	end
+	self.map_id = AgentManager.GetAgent("Map").currentMapId
 	
-	local currentMapId = AgentManager.GetAgent("Map").currentMapId
-	local nodes        = self.mainModule.grid[tostring(currentMapId)].nodes
-	local waypoints    = nodes.waypoints
-	local goal         = waypoints[#waypoints].pos
-
-	if self:CustomInteract() then return end
-
-	local target = TargetManager.Target
-	
-	local should_target = os.clock() - self.last_los > 2
-
-	local objects = ObjectManager.Battle(function(obj)
-
-		if not player.isMelee then
-			return 
-				self.mainModule.b_filter[obj.npcId] ~= true and
-				obj.isTargetable and not obj.isDead and
-				obj.pos:dist(player.pos) < self.fov and
-				ActionManager.ActionInRange(self:GetRangeCheckAction(), obj, player)
-		end
-		return 
-			self.mainModule.b_filter[obj.npcId] ~= true and
-			obj.isTargetable and not obj.isDead and
-			obj.pos:dist(player.pos) < self.fov
-		
+	local priority_event_objects = ObjectManager.EventObjects(function (obj)
+		return obj.pos:dist(player.pos) < self.event_fov and obj.isTargetable and	self.priority_event_objects[obj.dataId] ~= nil
 	end)
-	
-	if target.valid and not player.isMelee and not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
-		self.last_los = os.clock()
-		TargetManager.SetTarget(nil)
+	local mob_objects = ObjectManager.Battle(function(obj)
+		local data_id = obj.dataId
+		if self.battle_filters[data_id] ~= nil and not self.battle_filters[data_id](obj) then
+			return false
+		end
+		return not obj.ally and obj.isTargetable and not obj.isDead and obj.pos:dist(player.pos) < self.battle_fov
+	end)
+	local event_objects = ObjectManager.EventObjects(function (obj)
+		local data_id = obj.dataId
+		if self.event_filters[data_id] ~= nil and not self.event_filters[data_id](obj) then
+			return false
+		end
+		return obj.pos:dist(player.pos) < self.event_fov and obj.isTargetable and (
+			self.event_objects[obj.dataId] ~= nil or
+			self.main_module.interactables.shortcuts[obj.npcId] ~= nil or
+			self.main_module.interactables.gates[obj.npcId] ~= nil or
+			self.main_module.interactables.doors[obj.npcId] ~= nil)
+	end)
+	local treasure_objects  = ObjectManager.TreasureObjects(function(obj) return InventoryManager.HasInventorySpace and obj.isTargetable and obj.pos:dist(player.pos) < self.treasure_fov end)
+	local event_npc_objects = ObjectManager.EventNpcObjects(function(obj) 
+		local data_id = obj.dataId
+		if self.event_npc_filters[data_id] ~= nil and not self.event_npc_filters[data_id](obj) then
+			return false
+		end
+		return obj.isTargetable and obj.pos:dist(player.pos) < self.event_npc_fov 
+	end)
+
+	if #priority_event_objects > 0 then
+		--print("Handling Mobs")
+		return self:HandleObjects(priority_event_objects)
 	end
-
-	if #objects > 0 and should_target then
-		if TaskManager:IsBusy() and not self.safe_walking and not self.mob_walking then TaskManager:Stop() end
-
-		self:HandleMobs(self.fov, objects)
-	elseif not TaskManager:IsBusy() then
-		if player.pos:dist(goal) > 3 then
-			if not self.mainModule.route.finished and not self.mainModule.route.started then
-				self.mainModule.route:buildc(nodes, goal)
-			else
-				TaskManager:WalkToWaypoint(self.mainModule.route.waypoints[self.mainModule.route.index], function(waypoint) self.mainModule.callbacks.WalkToWaypoint(waypoint) end)
-			end
+	if #mob_objects > 0 then
+		--print("Handling Mobs")
+		return self:HandleMobs(mob_objects)
+	end
+	if #treasure_objects > 0 then
+		--print("Handling Treasures")
+		return self:HandleObjects(treasure_objects)
+	end
+	if #event_npc_objects > 0 then
+		--print("Handling Objects")
+		return self:HandleObjects(event_npc_objects)
+	end
+	if #event_objects > 0 then
+		--print("Handling Objects")
+		return self:HandleObjects(event_objects)
+	end
+	if not TaskManager:IsBusy() and self.destination ~= nil and not self:ValidTarget(TargetManager.Target) then
+		if player.pos:dist(self.destination) > 3 then
+			self:StartNav(self.destination, NAV_TYPE_DESTINATION)
 		else
 			self:Exit()
 		end
 	end
-
 end
 
-function Mission:HandleMobs(range, objects)
+function Mission:HandleMobs(objects)
 
-	if self:CustomTarget(range) then return end
+	local closest_obj = self:ClosestObject(objects)
 
-	local target = TargetManager.Target
-	
-	if player.isMelee then
+	if not closest_obj.valid then return end
 
-		local closest_obj = self:ClosestObject(objects)
+	local closest_dist = closest_obj.pos:dist(player.pos)
 
-		if closest_obj.valid and closest_obj.kind == 2 and closest_obj.subKind == 5 then
-
-			if ActionManager.ActionInRange(self:GetRangeCheckAction(), closest_obj, player) then
-				TargetManager.SetTarget(closest_obj)
-			else
-				if TaskManager:IsBusy() and not self.mob_walking then
-					TaskManager:Stop()
-				end
-
-				self.mob_walking = true
-
-				TaskManager:WalkToWaypoint(
-					Waypoint(closest_obj.pos),
-					function(waypoint) self.mob_walking = false end,
-					true
-				)
+	if player.isMelee and closest_dist > 3.5 then
+		if TaskManager:IsBusy() then
+			if self.nav_type ~= NAV_TYPE_MOB then
+				print("Changing Navigation to Mob")
+				self:ResetNav()
 			end
-				
-		end		
+			local target = TargetManager.Target
+			if target.valid and target.pos:dist(player.pos) > ( closest_dist + 2 ) then
+				self:ResetNav()
+			end
+		else
+			print("Navigating to closest obj : " .. closest_obj.name)
+			self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
+			TargetManager.Target = closest_obj
+		end
+	elseif not player.isMelee and closest_dist > self.los_fov then
+		if TaskManager:IsBusy() and (self.nav_type ~= NAV_TYPE_MOB or
+			(TargetManager.Target.valid and TargetManager.Target.pos:dist(player.pos) >  ( closest_dist + 1.5 ))) then
+			self:ResetNav()
+		elseif not TaskManager:IsBusy() then
+			self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
+			TargetManager.Target = closest_obj
+		end
+	elseif not self:ValidTarget(TargetManager.Target) then
+		self.main_module.log:print("Set new Target: " .. closest_obj.name)
+		Keyboard.SendKey(38)
+		TargetManager.SetTarget(closest_obj)
+	end
 
-	else
-		if not target.valid or target.kind ~= 2 or target.subKind ~= 5 or not ActionManager.ActionInRange(self:GetRangeCheckAction(), target, player) then
+end
 
-			for i, obj in ipairs(objects) do
-				self.mainModule.log:print("Set new Target: " .. obj.name)
-				Keyboard.SendKey(38)
-				TargetManager.SetTarget(obj)
-				break
-			end	
+function Mission:HandleObjects(objects)
+
+	local closest_object = self:ClosestObject(objects)
+	if closest_object ~= nil and closest_object.valid then
+		local closest_dist  = closest_object.pos:dist(player.pos)
+		if closest_object.pos:dist(player.pos) > 3.5 then
+			if TaskManager:IsBusy() then
+				if (self.nav_type == NAV_TYPE_EVENT and TargetManager.Target.valid and TargetManager.Target.id ~= closest_object.id) or
+				   (self.nav_type == NAV_TYPE_DESTINATION or self.nav_type == NAV_TYPE_NONE) then
+					self:ResetNav()
+				end
+				local target = TargetManager.Target
+				if target.valid and target.pos:dist(player.pos) > ( closest_dist + 2 ) then
+					self:ResetNav()
+				end
+			elseif not TaskManager:IsBusy() then
+				self:StartNav(closest_object.pos, NAV_TYPE_EVENT)
+				TargetManager.Target = closest_object
+			end
+		else 
+			player:rotateTo(closest_object.pos)
+			TaskManager:Interact(closest_object)
 		end
 	end
 
-	local bosses_around = ObjectManager.Battle(function(obj) return obj.yalmX < self.fov and self.bosses[obj.npcId] end)
+end
 
-	if #bosses_around > 0 then
-		self:HandleBoss()
+function Mission:AddBattleFilter(id, func)
+	self.battle_filters[id] = func
+end
+
+function Mission:AddEventFilter(id, func)
+	self.event_filters[id] = func
+end
+
+function Mission:AddEventNpcFilter(id, func)
+	self.event_npc_filters[id] = func
+end
+
+function Mission:StartNav(pos, nav_type)
+	if self.current_nav == nil then
+		self.current_nav = Navigation(player.pos, pos)
+	else
+		if #self.current_nav.waypoints > 0 then
+			self.nav_type = nav_type
+			TaskManager:Navigate(self.current_nav, function () self:ResetNav() end)
+		else
+			print("Bad Navigation Received, Resetting")
+			self.current_nav = nil
+		end
 	end
 end
 
-function Mission:HandleBoss()
-	
-	local npc_players = ObjectManager.NPCPlayers()
-	local walk_object = nil
+function Mission:ResetNav()
+	TaskManager:Stop()
+	self.current_nav = nil
+	self.nav_type    = NAV_TYPE_NONE
+	TargetManager.SetTarget()
+end
 
-	for i, obj in ipairs(npc_players) do
-		
-		if player.isHealer and obj.isRange and obj.isDPS then
-			walk_object = obj
-			break
-		end
+function Mission:ExitCallback() end
 
+function Mission:HandleInteractions()
+	local treasure = ObjectManager.TreasureObject(function(obj) return
+		InventoryManager.HasInventorySpace and obj.pos:dist(player.pos) < 3.5 and obj.isTargetable end)
+	if treasure.valid then
+		player:rotateTo(treasure.pos)
+		TaskManager:Interact(treasure)
+		return true
 	end
-	if walk_object ~= nil and walk_object.yalmX > 2 and not self.safe_walking then
-		if TaskManager:IsBusy() then 
-			TaskManager:Stop()	
-		end
-		
-		self.safe_walking = true		
-
-		TaskManager:WalkToWaypoint(
-			Waypoint(walk_object.pos),
-			function(waypoint) self.safe_walking = false end,
-			true
-		)		
+	local shortcut = ObjectManager.EventObject(function(obj) return self.main_module.interactables.shortcuts[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3.5 and obj.isTargetable end)
+	if shortcut.valid then
+		player:rotateTo(shortcut.pos)
+		TaskManager:Interact(shortcut, self.main_module.callbacks.Shortcut)
+		return true
 	end
 
+	local gate = ObjectManager.EventObject(function(obj) return self.main_module.interactables.gates[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3.5 and obj.isTargetable end)
+	if gate.valid then
+		player:rotateTo(gate.pos)
+		TaskManager:Interact(gate)
+		return true
+	end
+
+	local door = ObjectManager.EventObject(function(obj) return self.main_module.interactables.doors[obj.npcId] ~= nil and obj.pos:dist(player.pos) < 3.5 and obj.isTargetable end)
+	if door.valid then
+		player:rotateTo(door.pos)
+		TaskManager:Interact(door)
+		return true
+	end
+
+	return false
+end
+
+function Mission:Exit()
+	local exit = ObjectManager.EventObject( function(obj)
+		return self.main_module.interactables.exits[obj.npcId] ~= nil and self.main_module.callbacks.InteractFilter(obj)
+	end)
+	if exit.valid then
+		TaskManager:Interact(exit, function ()
+			self.main_module.callbacks.ExitMission()
+			self:ExitCallback()
+		end)
+		self.main_module.last_exit = os.clock()
+	end
+end
+
+function Mission:ValidTarget(target)
+	return target.valid and target.kind == 2 and target.subKind == 5 and target.isTargetable and not target.ally
 end
 
 function Mission:ClosestObject(obj_list)
@@ -178,45 +275,14 @@ function Mission:ClosestObject(obj_list)
 	local closest_dist = 1000
 
 	for i, obj in ipairs(obj_list) do
-		if obj.yalmX < closest_dist then
+		local dist = obj.pos:dist(player.pos)
+		if dist < closest_dist then
 			closest = obj
-			closest_dist = obj.yalmX
+			closest_dist = dist
 		end
 	end
 
 	return closest
-end
-
-function Mission:GetRangeCheckAction()
-	
-	if player.classJob == 1 or  player.classJob == 19 then
-		return 7533
-	elseif player.classJob == 3 or player.classJob == 21 then
-		return 7
-	elseif player.classJob == 5 or player.classJob == 23 then
-		return 8
-	elseif player.classJob == 6 or player.classJob == 24 then
-		return 119
-	elseif player.classJob == 7 or player.classJob == 25 then
-		return 142
-	elseif player.classJob == 22 then
-		return 7
-	elseif player.classJob == 26 or player.classJob == 27 then
-		return 163
-	elseif player.classJob == 29 or player.classJob == 30 then
-		return 7
-	elseif player.classJob == 31 then
-		return 8
-	elseif player.classJob == 34 then
-		return 7
-	elseif player.classJob == 35 then
-		return 7503
-	elseif player.classJob == 39 then
-	    return 7
-	elseif player.classJob == 40 then
-	    return 24283
-	end
-
 end
 
 function Mission:DeathWatch()
@@ -226,26 +292,11 @@ function Mission:DeathWatch()
 	elseif self.died and player.health > 0 then
 		TaskManager:Stop()
 		self.died = false
-		self.mainModule.route = Route()
-		self.mainModule.stats.times_died = self.mainModule.stats.times_died + 1
-		self.mainModule.log:print("Oh noes we died! reviving....")
-		self.mainModule.widget["TIMES_DIED"].str = "Times We've Died: " .. tostring(self.mainModule.stats.times_died)
+		self.main_module.stats.times_died = self.main_module.stats.times_died + 1
+		self.main_module.log:print("Oh noes we died! reviving....")
+		self.main_module.widget["TIMES_DIED"].str = "Times We've Died: " .. tostring(self.main_module.stats.times_died)
 	end
 end
 
-function Mission:Exit()
-	local exit = ObjectManager.EventObject( function(obj)
-		return self.mainModule.interactables.exits[obj.npcId] ~= nil and self.mainModule.callbacks.InteractFilter(obj) 
-	end)
-	if exit.valid then
-		TaskManager:Interact(exit, self.mainModule.callbacks.ExitSquadron)
-		self.mainModule.last_exit = os.clock()
-
-		for i, callback in ipairs(self.exit_callbacks) do
-			callback()
-		end
-
-	end
-end
 
 return Mission
