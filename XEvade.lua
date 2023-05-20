@@ -4,8 +4,9 @@ local _VERSION = 1.1
 function XEvade:initialize()
 
 	-- Global Variables
-	_G.EvadeOn = true
-	_G.Evading = false
+	_G.EvadeOn      = true
+	_G.Evading      = false
+	_G.Evade_Action = nil
 
 	-- Script Variables
 	self.current_actions = {}
@@ -49,7 +50,7 @@ function XEvade:initializeMenu()
 		
 		self.menu:subMenu("Settings", "SETTINGS")
 			self.menu["SETTINGS"]:slider("Dodge Precision", "PRECISION", 1, 2, 100, 10)
-			self.menu["SETTINGS"]:sliderF("Extra Hitbox", "EXTRA_HITBOX", 0.5, 0, 10, 1)
+			self.menu["SETTINGS"]:sliderF("Extra Hitbox", "EXTRA_HITBOX", 0.1, 0, 10, 1.5)
 
 		self.menu:checkbox("Enable XEvade", "ENABLED", true)
 		self.menu:hotkey("Enable / Disable Key", "ENABLE_KEY", 77)
@@ -61,11 +62,12 @@ function XEvade:Tick()
 
 	_G.EvadeOn = self.menu["ENABLED"].bool
 
+	--[[if _G.Evading and not _G.Evade_Action.draw_obj:is_point_inside(player.pos) then
+		self:Stop()
+	end]]--
+
 	if self.menu["STOP_KEY"].keyDown and _G.Evading then
-		self.evade_pos    = nil
-		self.evade_source = nil
-		_G.Evading        = false
-		TaskManager:Stop()
+		self:Stop()
 	end
 
 	for hash, info in pairs(self.current_actions) do
@@ -81,6 +83,7 @@ function XEvade:Tick()
 			self.current_actions[info.hash] = nil
 			table.remove(self.current_actions, hash)
 		elseif info.draw_obj ~= nil and self:CanDodge(info) then	
+			print("Trying to Dodge Action")
 			if TaskManager:IsBusy() then
 				TaskManager:Stop()
 			end
@@ -90,9 +93,7 @@ function XEvade:Tick()
 
 	if _G.Evading and self.evade_pos ~= nil then
 		if not self.evade_source.isCasting then
-			self.evade_pos    = nil
-			self.evade_source = nil
-			_G.Evading        = false		
+			self:Stop()
 		end		
 	end
 
@@ -159,10 +160,12 @@ function XEvade:DodgeAction(info)
 	
 	_G.Evading        = true
 
+	_G.Evade_Action   = info
+
 	self.evade_pos    = dodge_pos
 	self.evade_source = info.source	
 
-	TaskManager:Walk(dodge_pos, function(pos) self:OnEvade() end, true)
+	TaskManager:Walk(dodge_pos, function(pos) self:OnStop() end, true)
 end
 
 function XEvade:GetDrawObject(info)
@@ -272,12 +275,17 @@ function XEvade:CalculateDodgePos(info)
 	return best_pos
 end
 
-function XEvade:OnEvade()
-	
-	_G.Evading = false
+function XEvade:Stop()
+	_G.Evading      = false
+	_G.Evade_Action = nil
 
 	self.evade_pos    = nil
 	self.evade_source = nil
+	
+
+	if TaskManager:IsBusy() then
+		TaskManager:Stop()
+	end
 end
 
 function XEvade:ObjectFilter(obj)
