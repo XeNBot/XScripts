@@ -265,7 +265,7 @@ function XEvade:CalculateDodgePos(info)
 	if #safe_points > 0 then
 		for i, p in ipairs(safe_points) do
 			local dist = player.pos:dist(p)
-			if not draw_obj:is_point_inside(p) and dist < best_dist then
+			if Navigation.Raycast(player.pos, p) == Vector3.Zero and not draw_obj:is_point_inside(p) and dist < best_dist then
 				best_pos  = p
 				best_dist = dist
 			end
