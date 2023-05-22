@@ -39,7 +39,7 @@ function Mission:initialize()
 		-- FoV for event npc objects
 	self.event_npc_fov          = 99
 		-- FoV for LoS of Ranged Champions
-	self.los_fov                = 8
+	self.los_fov                = 15
 
 	-- Mission Goal
 	self.destination           = nil
@@ -60,12 +60,15 @@ function Mission:Tick()
 	self:DeathWatch()
 
 	self.map_id = AgentManager.GetAgent("Map").currentMapId
-	
+
 	local priority_event_objects = ObjectManager.EventObjects(function (obj)
 		return obj.pos:dist(player.pos) < self.event_fov and obj.isTargetable and	self.priority_event_objects[obj.dataId] ~= nil
 	end)
 	local mob_objects = ObjectManager.Battle(function(obj)
 		local data_id = obj.dataId
+		if Navigation.Raycast(player.pos, obj.pos) ~= Vector3.Zero then
+			return false
+		end
 		if self.battle_filters[data_id] ~= nil and not self.battle_filters[data_id](obj) then
 			return false
 		end
@@ -83,12 +86,12 @@ function Mission:Tick()
 			self.main_module.interactables.doors[obj.npcId] ~= nil)
 	end)
 	local treasure_objects  = ObjectManager.TreasureObjects(function(obj) return InventoryManager.HasInventorySpace and obj.isTargetable and obj.pos:dist(player.pos) < self.treasure_fov end)
-	local event_npc_objects = ObjectManager.EventNpcObjects(function(obj) 
+	local event_npc_objects = ObjectManager.EventNpcObjects(function(obj)
 		local data_id = obj.dataId
 		if self.event_npc_filters[data_id] ~= nil and not self.event_npc_filters[data_id](obj) then
 			return false
 		end
-		return obj.isTargetable and obj.pos:dist(player.pos) < self.event_npc_fov 
+		return obj.isTargetable and obj.pos:dist(player.pos) < self.event_npc_fov
 	end)
 
 	if #priority_event_objects > 0 then
@@ -128,33 +131,51 @@ function Mission:HandleMobs(objects)
 
 	local closest_dist = closest_obj.pos:dist(player.pos)
 
-	if player.isMelee and closest_dist > 3.5 then
-		if TaskManager:IsBusy() then
-			if self.nav_type ~= NAV_TYPE_MOB then
-				print("Changing Navigation to Mob")
+
+	if not player.isMelee then
+
+		if closest_dist <= self.los_fov then
+			if TaskManager:IsBusy() then
 				self:ResetNav()
 			end
-			local target = TargetManager.Target
-			if target.valid and target.pos:dist(player.pos) > ( closest_dist + 2 ) then
-				self:ResetNav()
-			end
+			TargetManager.Target = closest_obj
 		else
-			print("Navigating to closest obj : " .. closest_obj.name)
-			self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
-			TargetManager.Target = closest_obj
+			if TaskManager:IsBusy() then
+				if self.nav_type ~= NAV_TYPE_MOB then
+					print("Changing Navigation to Mob")
+					self:ResetNav()
+				end
+				local target = TargetManager.Target
+				if target.valid and target.pos:dist(player.pos) > ( closest_dist + 2 ) then
+					self:ResetNav()
+				end
+			else
+				print("Navigating to closest obj : " .. closest_obj.name)
+				self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
+				TargetManager.Target = closest_obj
+			end
 		end
-	elseif not player.isMelee and closest_dist > self.los_fov then
-		if TaskManager:IsBusy() and (self.nav_type ~= NAV_TYPE_MOB or
-			(TargetManager.Target.valid and TargetManager.Target.pos:dist(player.pos) >  ( closest_dist + 1.5 ))) then
-			self:ResetNav()
-		elseif not TaskManager:IsBusy() then
-			self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
-			TargetManager.Target = closest_obj
+	else
+		if closest_dist > 3.5 then
+			if TaskManager:IsBusy() then
+				if self.nav_type ~= NAV_TYPE_MOB then
+					print("Changing Navigation to Mob")
+					self:ResetNav()
+				end
+				local target = TargetManager.Target
+				if target.valid and target.pos:dist(player.pos) > ( closest_dist + 2 ) then
+					self:ResetNav()
+				end
+			else
+				print("Navigating to closest obj : " .. closest_obj.name)
+				self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
+				TargetManager.Target = closest_obj
+			end
+		elseif not self:ValidTarget(TargetManager.Target) then
+			self.main_module.log:print("Set new Target: " .. closest_obj.name)
+			Keyboard.SendKey(38)
+			TargetManager.SetTarget(closest_obj)
 		end
-	elseif not self:ValidTarget(TargetManager.Target) then
-		self.main_module.log:print("Set new Target: " .. closest_obj.name)
-		Keyboard.SendKey(38)
-		TargetManager.SetTarget(closest_obj)
 	end
 
 end
@@ -178,7 +199,7 @@ function Mission:HandleObjects(objects)
 				self:StartNav(closest_object.pos, NAV_TYPE_EVENT)
 				TargetManager.Target = closest_object
 			end
-		else 
+		else
 			player:rotateTo(closest_object.pos)
 			TaskManager:Interact(closest_object)
 		end
