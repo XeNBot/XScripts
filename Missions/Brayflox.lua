@@ -27,6 +27,7 @@ function Brayflox:initialize()
 
 	self:AddEventFilter(2001462, function () return self.found_key and not self.opened_door end)
 	self:AddEventNpcFilter(1004346, function () return not self.found_key and not self.opened_door end)
+	self:SetExitCallback(function () self:ExitCallback() end)
 
 end
 
@@ -43,7 +44,6 @@ function Brayflox:Tick()
 end
 
 function Brayflox:ExitCallback()
-	print("Exit Callback!")
 	self.found_key   = false
 	self.opened_door = false
 	self.destination = Vector3(-11.08,35.5,-233.82)

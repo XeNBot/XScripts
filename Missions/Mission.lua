@@ -45,6 +45,9 @@ function Mission:initialize()
 	self.destination           = nil
 	self.map_id                = 0
 
+	-- Callbacks
+	self.exit_callback        = nil
+
 end
 
 function Mission:SetMainModule(mod)
@@ -62,7 +65,7 @@ function Mission:Tick()
 	self.map_id = AgentManager.GetAgent("Map").currentMapId
 
 	local priority_event_objects = ObjectManager.EventObjects(function (obj)
-		return obj.pos:dist(player.pos) < self.event_fov and obj.isTargetable and	self.priority_event_objects[obj.dataId] ~= nil
+		return obj.pos:dist(player.pos) < self.event_fov and obj.isTargetable and self.priority_event_objects[obj.dataId] ~= nil
 	end)
 	local mob_objects = ObjectManager.Battle(function(obj)
 		local data_id = obj.dataId
@@ -173,7 +176,6 @@ function Mission:HandleMobs(objects)
 			end
 		elseif not self:ValidTarget(TargetManager.Target) then
 			self.main_module.log:print("Set new Target: " .. closest_obj.name)
-			Keyboard.SendKey(38)
 			TargetManager.SetTarget(closest_obj)
 		end
 	end
@@ -207,6 +209,10 @@ function Mission:HandleObjects(objects)
 
 end
 
+function Mission:SetExitCallback(func)
+	self.exit_callback = func
+end
+
 function Mission:AddBattleFilter(id, func)
 	self.battle_filters[id] = func
 end
@@ -238,9 +244,8 @@ function Mission:ResetNav()
 	self.current_nav = nil
 	self.nav_type    = NAV_TYPE_NONE
 	TargetManager.SetTarget()
+	Keyboard.SendKey(38)
 end
-
-function Mission:ExitCallback() end
 
 function Mission:HandleInteractions()
 	local treasure = ObjectManager.TreasureObject(function(obj) return
@@ -280,8 +285,10 @@ function Mission:Exit()
 	end)
 	if exit.valid then
 		TaskManager:Interact(exit, function ()
+			if self.exit_callback ~= nil then
+				self.exit_callback()
+			end
 			self.main_module.callbacks.ExitMission()
-			self:ExitCallback()
 		end)
 		self.main_module.last_exit = os.clock()
 	end

@@ -76,6 +76,15 @@ function XDutyRunner:initialize()
 			map_ids        = {[45] = true},
 			level          = 32,
 		},
+		{
+
+			name           = "The Navel",
+			tab_index      = 1,
+			mission_index  = 8,
+			module         = LoadModule("XScripts", "/Missions/TheNavel"),
+			map_ids        = {[33] = true},
+			level          = 34,
+		},
 		--[[[{
 
 			name           = "The Stone Vigil",

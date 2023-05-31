@@ -6,6 +6,7 @@ function BowlofEmbers:initialize()
 	Mission.initialize(self)
     
 	self.battle_fov    = 50
+    self.is_trial      = true
 
     self.infernal_nail_filter = function (obj)
         local infernal_nail = ObjectManager.EventObject(function (obj)
