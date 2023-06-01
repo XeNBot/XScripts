@@ -34,6 +34,7 @@ function XPVP:initialize()
 
 	-- Temp Loading for new classes
 	self.bard:SetMainModule(self)
+	self.reaper:SetMainModule(self)
 
 	-- Loads the menus of each Job
 	-- Healers
@@ -50,7 +51,7 @@ function XPVP:initialize()
 	self.dragoon:Load(self.menu)
 	self.ninja:Load(self.menu)
 	self.samurai:Load(self.menu)
-	self.reaper:Load(self.menu)
+
 	-- Ranged Physical DPS
 	self.dancer:Load(self.menu)
 	self.machinist:Load(self.menu)
@@ -162,8 +163,6 @@ function XPVP:Tick()
 			self.gunbreaker:Tick(self.getTarget, self.log)
 		elseif player.classJob == 38 then
 			self.dancer:Tick(self.getTarget, self.log)
-		elseif player.classJob == 39 then
-			self.reaper:Tick(self.getTarget, self.log)
 		elseif player.classJob == 40 then
 			self.sage:Tick(self.getTarget, self.log)
 		end
