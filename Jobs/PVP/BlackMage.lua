@@ -51,7 +51,7 @@ function BlackMage:Tick(getTarget, log)
 	
 	local target = getTarget(25)
 
-	if target.valid then
+	if target ~= nil and target.valid then
 
 		local warmth = target:getStatus(3216)
 		local freeze = target:getStatus(3217)
