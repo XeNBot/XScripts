@@ -148,7 +148,7 @@ function Common:Tick(log)
 	elseif menu["PURIFY"]["USE"].bool and self:ShouldPurify(log) and actions.purify:canUse() then
 		actions.purify:use()
 		return true
-	elseif player.classJob == 39 and self.menu["ACTIONS"]["MELEE_DPS"]["RPR"]["ARCANE"].bool and (player.maxHealth - player.health) > 18000 and
+	elseif player.classJob == 39 and (player.maxHealth - player.health) > 18000 and
 		self.actions.arcane:canUse() then
 		self.actions.arcane:use()
 		return true
