@@ -33,7 +33,7 @@ function Mission:initialize()
 		-- FoV for battle monsters
 	self.battle_fov             = 10
 		-- FoV for event objects
-	self.event_fov              = 30
+	self.event_fov              = 45
 		-- FoV for treasure objects
 	self.treasure_fov           = 30
 		-- FoV for event npc objects
@@ -50,11 +50,15 @@ function Mission:initialize()
 
 end
 
+function Mission:ExitCallback() end
+
 function Mission:SetMainModule(mod)
 
 	self.main_module = mod
 
 end
+
+
 
 function Mission:Tick()
 
@@ -78,6 +82,9 @@ function Mission:Tick()
 		return not obj.ally and obj.isTargetable and not obj.isDead and obj.pos:dist(player.pos) < self.battle_fov
 	end)
 	local event_objects = ObjectManager.EventObjects(function (obj)
+		if self.main_module.interactables.exits[obj.npcId] ~= nil then
+			return true
+		end
 		local data_id = obj.dataId
 		if self.event_filters[data_id] ~= nil and not self.event_filters[data_id](obj) then
 			return false
@@ -137,7 +144,7 @@ function Mission:HandleMobs(objects)
 
 	if not player.isMelee then
 
-		if closest_dist <= self.los_fov then
+		if closest_dist <= 15 then
 			if TaskManager:IsBusy() then
 				self:ResetNav()
 			end
@@ -161,7 +168,7 @@ function Mission:HandleMobs(objects)
 	else
 		if closest_dist > 3.5 then
 			if TaskManager:IsBusy() then
-				if self.nav_type ~= NAV_TYPE_MOB then
+				if self.nav_type ~= NAV_TYPE_MOB or TargetManager.Target.id ~= closest_obj.id then
 					print("Changing Navigation to Mob")
 					self:ResetNav()
 				end
@@ -170,13 +177,21 @@ function Mission:HandleMobs(objects)
 					self:ResetNav()
 				end
 			else
+				if TaskManager:IsBusy() then
+					self:ResetNav()
+				end
 				print("Navigating to closest obj : " .. closest_obj.name)
 				self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
 				TargetManager.Target = closest_obj
 			end
-		elseif not self:ValidTarget(TargetManager.Target) then
-			self.main_module.log:print("Set new Target: " .. closest_obj.name)
-			TargetManager.SetTarget(closest_obj)
+		else
+			if TaskManager:IsBusy() then
+				self:ResetNav()
+			end
+			if not self:ValidTarget(TargetManager.Target) or TargetManager.Target.id ~= closest_obj.id then
+				self.main_module.log:print("Set new Target: " .. closest_obj.name)
+				TargetManager.Target = closest_obj
+			end
 		end
 	end
 
@@ -285,9 +300,7 @@ function Mission:Exit()
 	end)
 	if exit.valid then
 		TaskManager:Interact(exit, function ()
-			if self.exit_callback ~= nil then
-				self.exit_callback()
-			end
+			self:ExitCallback()
 			self.main_module.callbacks.ExitMission()
 		end)
 		self.main_module.last_exit = os.clock()

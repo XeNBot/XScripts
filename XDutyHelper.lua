@@ -24,15 +24,6 @@ function XDutyRunner:initialize()
 	self.log           = LoadModule("XScripts", "/Utilities/Log")
 	--[[ ==== Missions Table ==== ]]--
 	self.missions = {
-		--[[{
-
-			name           = "Sastasha",
-			tab_index      = 1,
-			mission_index  = 1,
-			module         = LoadModule("XScripts", "/Missions/Sastasha"),
-			map_ids        = {[31] = true},
-			level          = 15,
-		},]]--
 		{
 
 			name           = "Deepcroft",
@@ -59,14 +50,6 @@ function XDutyRunner:initialize()
 			map_ids        = {[9] = true},
 			level          = 24,
 		},
-		--[[{
-			name           = "Haukke Manor",
-			tab_index      = 1,
-			mission_index  = 6,
-			module         = LoadModule("XScripts", "/Missions/HaukkeManor"),
-			map_ids        = {[48] = true},
-			level          = 28,
-		},]]--
 		{
 
 			name           = "Brayflox's Longstop",
@@ -85,7 +68,7 @@ function XDutyRunner:initialize()
 			map_ids        = {[33] = true},
 			level          = 34,
 		},
-		--[[[{
+		{
 
 			name           = "The Stone Vigil",
 			tab_index      = 1,
@@ -96,12 +79,12 @@ function XDutyRunner:initialize()
 		},
 		{
 
-			name           = "Castrum Meridianum",
+			name           = "The Howling Eye",
 			tab_index      = 1,
-			mission_index  = 11,
-			module         = LoadModule("XScripts", "/Missions/CastrumMeridianum"),
-			map_ids        = {[47] = true},
-			level          = 50,
+			mission_index  = 10,
+			module         = LoadModule("XScripts", "/Missions/TheHowlingEye"),
+			map_ids        = {[39] = true},
+			level          = 44,
 		},
 		{
 
@@ -109,18 +92,9 @@ function XDutyRunner:initialize()
 			tab_index      = 1,
 			mission_index  = 14,
 			module         = LoadModule("XScripts", "/Missions/Snowcloak"),
-			map_ids        = {[201] = true},
+			map_ids        = {[174] = true},
 			level          = 50,
 		},
-		{
-
-			name           = "The Aetherochemical Research Facility",
-			tab_index      = 2,
-			mission_index  = 5,
-			module         = LoadModule("XScripts", "/Missions/Aetherochemical"),
-			map_ids        = {[231] = true, [232] = true, [233] = true, [234] = true},
-			level          = 60,
-		},]]--
 	}
 
 	for i, mission in ipairs(self.missions) do
