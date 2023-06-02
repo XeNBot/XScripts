@@ -196,7 +196,8 @@ end
 function XPVP:GetTarget(range)
 	-- PVP Training Map
 
-	local mapId = 0
+	local mapId  = 0
+	local target = TargetManager.Target
 
 	local agentMap = AgentManager.GetAgent("Map")
 
@@ -205,16 +206,8 @@ function XPVP:GetTarget(range)
 	end
 
 	if mapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
-		local target = TargetManager.Target
-		if target.valid then
-			return target
-		end
-
-		return nil
-
+		return target
 	end
-
-	local target = nil
 
 	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil and not self.lockTarget:hasStatus(3054) then
 		--print("Returning Lock Target!")
@@ -222,15 +215,10 @@ function XPVP:GetTarget(range)
 	end
 
 	if self.menu["TARGET"]["MODE"].int == 0 then
-		local target = ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)
-
-		if target.valid then
-			--print("Returning target : " .. target.name)
-		end
+		target = ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)
 
 		return target
 	else
-		--print("Returning Closest Enemy!")
 		return ObjectManager.GetClosestEnemy(self.targetFilter)
 
 	end
