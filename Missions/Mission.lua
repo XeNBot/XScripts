@@ -4,6 +4,15 @@ function Mission:initialize()
 	-- Main Module	
 	self.main_module            = nil
 
+	-- Mission Map Ids
+	self.maps                   = {}
+	-- Current MapId
+	self.map_id                 = 0
+	-- Started Mission
+	self.started                = false
+	-- Mission Goal
+	self.destination            = nil
+
 	-- Death Watch
 	self.died                   = false
 
@@ -41,32 +50,70 @@ function Mission:initialize()
 		-- FoV for LoS of Ranged Champions
 	self.los_fov                = 15
 
-	-- Mission Goal
-	self.destination           = nil
-	self.map_id                = 0
-
 	-- Callbacks
-	self.exit_callback        = nil
+	self.exit_callback          = nil
+	self.performed_exit         = false
+
+	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Ticker() end)
+	Callbacks:Add(CALLBACK_PLAYER_DRAW, function() self:Drawer() end)
 
 end
 
 function Mission:ExitCallback() end
 
 function Mission:SetMainModule(mod)
-
 	self.main_module = mod
-
 end
 
-
-
-function Mission:Tick()
-
-	if self:HandleInteractions() then return end
-
-	self:DeathWatch()
-
+function Mission:Ticker()
 	self.map_id = AgentManager.GetAgent("Map").currentMapId
+	
+	if self:IsInMission() and self:CanTick() then
+		if not self.started then
+			self.started        = true
+			self.performed_exit = false
+		end
+		self:BeforeTick()
+		self:MainTick()
+		self:Tick()
+	elseif self.started and not self.performed_exit and not self:IsInMission() then
+		self:ExitCallback()
+		self.main_module.callbacks.ExitMission()
+		self.started        = false
+		self.performed_exit = true
+	end
+end
+
+function Mission:Drawer()
+	if self:IsInMission() and self.current_nav ~= nil then 
+		local last_pos = nil
+		local end_pos  = self.current_nav.waypoints[#self.current_nav.waypoints]
+
+		for i, pos in ipairs(self.current_nav.waypoints) do
+			if i ~= 1 then
+				Graphics.DrawCircle3D(pos, 4, 0.25, Colors.Blue)
+			end
+			if last_pos ~= nil then
+				Graphics.DrawLine3D(last_pos, pos, Colors.Yellow)
+			end
+			last_pos = pos
+		end
+		if last_pos ~= nil and self.end_pos ~= Vector3.Zero then
+			Graphics.DrawLine3D(last_pos, end_pos, Colors.Yellow)
+		end
+
+		self:Draw()
+	end
+end
+
+function Mission:Draw() end
+function Mission:Tick() end
+function Mission:BeforeTick() end
+
+function Mission:MainTick()
+	if self:HandleInteractions() then return end
+	
+	self:DeathWatch()
 
 	local priority_event_objects = ObjectManager.EventObjects(function (obj)
 		return obj.pos:dist(player.pos) < self.event_fov and obj.isTargetable and self.priority_event_objects[obj.dataId] ~= nil
@@ -82,7 +129,7 @@ function Mission:Tick()
 		return not obj.ally and obj.isTargetable and not obj.isDead and obj.pos:dist(player.pos) < self.battle_fov
 	end)
 	local event_objects = ObjectManager.EventObjects(function (obj)
-		if self.main_module.interactables.exits[obj.npcId] ~= nil then
+		if self.main_module.interactables.exits[obj.npcId] ~= nil and obj.isTargetable then
 			return true
 		end
 		local data_id = obj.dataId
@@ -205,7 +252,7 @@ function Mission:HandleObjects(objects)
 		if closest_object.pos:dist(player.pos) > 3.5 then
 			if TaskManager:IsBusy() then
 				if (self.nav_type == NAV_TYPE_EVENT and TargetManager.Target.valid and TargetManager.Target.id ~= closest_object.id) or
-				   (self.nav_type == NAV_TYPE_DESTINATION or self.nav_type == NAV_TYPE_NONE) then
+				   self.nav_type == NAV_TYPE_DESTINATION or self.nav_type == NAV_TYPE_NONE then
 					self:ResetNav()
 				end
 				local target = TargetManager.Target
@@ -213,6 +260,7 @@ function Mission:HandleObjects(objects)
 					self:ResetNav()
 				end
 			elseif not TaskManager:IsBusy() then
+				print("Navigating to closest obj : " .. closest_object.name)
 				self:StartNav(closest_object.pos, NAV_TYPE_EVENT)
 				TargetManager.Target = closest_object
 			end
@@ -222,6 +270,18 @@ function Mission:HandleObjects(objects)
 		end
 	end
 
+end
+
+function Mission:SetMaps(maps_tbl)
+	self.maps = maps_tbl
+end
+
+function Mission:CanTick()
+	return _G.XDUTY_HELPER ~= nil and not _G.XDUTY_HELPER:CanNotTick()
+end
+
+function Mission:IsInMission()
+	return self.maps[self.map_id] ~= nil
 end
 
 function Mission:SetExitCallback(func)
@@ -299,10 +359,7 @@ function Mission:Exit()
 		return self.main_module.interactables.exits[obj.npcId] ~= nil and self.main_module.callbacks.InteractFilter(obj)
 	end)
 	if exit.valid then
-		TaskManager:Interact(exit, function ()
-			self:ExitCallback()
-			self.main_module.callbacks.ExitMission()
-		end)
+		TaskManager:Interact(exit)
 		self.main_module.last_exit = os.clock()
 	end
 end

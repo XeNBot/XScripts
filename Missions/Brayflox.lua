@@ -6,6 +6,8 @@ function Brayflox:initialize()
 
 	Mission.initialize(self)
 
+	self:SetMaps({[45] = true})
+
 	self.battle_fov    = 23
 
 	self.event_npc_objects = {
@@ -31,8 +33,6 @@ end
 
 function Brayflox:Tick()
 
-	Mission.Tick(self)
-
 	if not self.found_key and InventoryManager.GetItemCount(self.headgate_key) > 0 then
 		self.found_key = true
 	end
@@ -42,7 +42,6 @@ function Brayflox:Tick()
 end
 
 function Brayflox:ExitCallback()
-
 	self.found_key   = false
 	self.opened_door = false
 	self.destination = Vector3(-11.08,35.5,-233.82)

@@ -9,6 +9,8 @@ function TheHowlingEye:initialize()
     self.event_fov     = 99
     self.is_trial      = true
 
+    self:SetMaps({[39] = true})
+
 	self.destination   = Vector3(0.89,-1.87,-6.34)
     
     self.feathers_filter = function (obj)

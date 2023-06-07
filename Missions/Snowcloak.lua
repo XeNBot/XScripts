@@ -8,6 +8,8 @@ function Snowcloak:initialize()
 
 	self.battle_fov    =  50
 
+	self:SetMaps({[174] = true})
+
     self.event_objects = {
 		-- Door to Silence
 		[2004203] = true,

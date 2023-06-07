@@ -6,6 +6,8 @@ function TotoRak:initialize()
 
     Mission.initialize(self)
 
+    self:SetMaps({[9] = true})
+
     self.destination = Vector3(237.77,-38.91,-144.02)
 
 end

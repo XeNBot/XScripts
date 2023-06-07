@@ -8,6 +8,8 @@ function TheNavel:initialize()
 	self.battle_fov    = 50
     self.is_trial      = true
 
+    self:SetMaps({[33] = true})
+
 	self.destination   = Vector3(0.47,-0.01,-8.4)
     
     self.heart_filter = function (obj)

@@ -6,7 +6,9 @@ function Deepcroft:initialize()
 
     Mission.initialize(self)
 
-    self.battle_fov = 20;
+    self:SetMaps({[8] = true})
+
+    self.battle_fov = 20
 
     self.priority_event_objects = {
         -- Sealed Barrier
@@ -24,12 +26,10 @@ function Deepcroft:initialize()
     }
 
     self.items = {
-        cultist_rosary = { id =  2000244, pos = Vector3(-178.58,14,-5.32) }
+        cultist_rosary = { id =  2000244, pos = Vector3(-178.53,14,-5.1) }
     }
 
-    self.changed_destination = false
-
-    self.destination = Vector3(-43.31,14.04,-17.03)
+    self.destination = Vector3(-178.53,14,-5.1)
     
     self.sealed_barrier_filter = function (obj)
         local sealed_barrier = ObjectManager.EventObject(function (obj)
@@ -53,15 +53,10 @@ function Deepcroft:initialize()
 end
 
 function Deepcroft:Tick()
-
-    Mission.Tick(self)
-
-   if not self.changed_destination and InventoryManager.GetItemCount(2000244) == 0 then
-        self.destination = self.items.cultist_rosary.pos
+   if self.destination == Vector3(-178.53,14,-5.1) and InventoryManager.GetItemCount(2000244) == 0 then
         self.priority_event_objects[2000060] = nil
     else
         self.destination = Vector3(-43.31,14.04,-17.03)
-        self.changed_destination    = true
         self.priority_event_objects[2000060] = true
     end
 

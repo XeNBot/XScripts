@@ -9,6 +9,8 @@ function StoneVigil:initialize()
 	self.battle_fov   = 40
 	self.treasure_fov = 50
 
+	self:SetMaps({[37] = true})
+
 	self.destination = Vector3(45.75,4,-79.94)
 	self.defeated_koshchei = false
 
@@ -39,7 +41,7 @@ end
 function StoneVigil:ExitCallback()
 
 	self.defeated_koshchei = false
-	self.destination = Vector3(45.75,4,-79.94)
+	self.destination       = Vector3(45.75,4,-79.94)
 
 end
 

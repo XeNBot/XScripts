@@ -5,6 +5,8 @@ function BowlofEmbers:initialize()
 
 	Mission.initialize(self)
     
+    self:SetMaps({[35] = true})
+
 	self.battle_fov    = 50
     self.is_trial      = true
 
