@@ -35,12 +35,12 @@ function Common:initialize()
 
 	self.guard_actions = {
 
-		[29097] = {name = "Seiton Tenchu", type = "TARGET"},
+		[29097] = {name = "Seiton Tenchu",   type = "TARGET"},
 		[29415] = {name = "Markman's Spite", type = "TARGET"},
-		[29498] = {name = "Sky Shatter", type = "POS", range = 10},
-		[29515] = {name = "EventTide", type = "POSCHECK"},
-		[29554] = {name = "Communio", type = "AOE", range = 5}
-
+		[29497] = {name = "Sky High",        type = "POS", range = 5},
+		[29498] = {name = "Sky Shatter",     type = "POS", range = 10},
+		[29515] = {name = "EventTide",       type = "POSCHECK"},
+		[29554] = {name = "Communio",        type = "AOE", range = 5}
 	}
 
 	self.menu = nil
@@ -148,8 +148,7 @@ function Common:Tick(log)
 	elseif menu["PURIFY"]["USE"].bool and self:ShouldPurify(log) and actions.purify:canUse() then
 		actions.purify:use()
 		return true
-	elseif player.classJob == 39 and (player.maxHealth - player.health) > 18000 and
-		self.actions.arcane:canUse() then
+	elseif player.classJob == 39 and (player.maxHealth - player.health) > 18000 and	self.actions.arcane:canUse() then
 		self.actions.arcane:use()
 		return true
 	elseif menu["RECUPERATE"].bool and (player.maxHealth - player.health) > 15000 and actions.recuperate:canUse() then
