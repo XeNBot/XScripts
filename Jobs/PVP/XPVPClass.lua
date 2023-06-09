@@ -56,8 +56,8 @@ function XPVPClass:Ticker()
 end
 
 function XPVPClass:CanTick()
-    
-    if player.classJob ~= self.class_id or not self:IsInPVP() then
+
+    if player.classJob ~= self.class_id or not self:IsInPVP() or player:hasStatus(3054) then
         return false
     end
 
