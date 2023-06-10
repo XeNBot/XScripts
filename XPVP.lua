@@ -30,11 +30,13 @@ function XPVP:initialize()
 	self.summoner    = LoadModule("XScripts", "\\Jobs\\PVP\\Summoner")
 	self.redmage     = LoadModule("XScripts", "\\Jobs\\PVP\\RedMage")
 	-- Common Actions
-	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common") 
+	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common")
 
-	-- Temp Loading for new classes
+	-- Sets Main Modules
+	self.darkknight:SetMainModule(self)
 	self.bard:SetMainModule(self)
 	self.reaper:SetMainModule(self)
+	self.dragoon:SetMainModule(self)
 
 	-- Loads the menus of each Job
 	-- Healers
@@ -44,14 +46,11 @@ function XPVP:initialize()
 	-- Tanks
 	self.warrior:Load(self.menu)
 	self.paladin:Load(self.menu)
-	self.darkknight:Load(self.menu)
 	self.gunbreaker:Load(self.menu)
 	-- Melee DPS
 	self.monk:Load(self.menu)
-	self.dragoon:Load(self.menu)
 	self.ninja:Load(self.menu)
 	self.samurai:Load(self.menu)
-
 	-- Ranged Physical DPS
 	self.dancer:Load(self.menu)
 	self.machinist:Load(self.menu)
@@ -139,8 +138,6 @@ function XPVP:Tick()
 			self.monk:Tick(self.getTarget, self.log)
 		elseif player.classJob == 21 then
 			self.warrior:Tick(self.log)
-		elseif player.classJob == 22 then
-			self.dragoon:Tick(self.getTarget, self.log)
 		elseif player.classJob == 25 then
 			self.blackmage:Tick(self.getTarget, self.log)
 		elseif player.classJob == 27 then
@@ -150,9 +147,7 @@ function XPVP:Tick()
 		elseif player.classJob == 30 then
 			self.ninja:Tick(self.getTarget, self.log)
 		elseif player.classJob == 31 then
-			self.machinist:Tick(self.log)
-		elseif player.classJob == 32 then
-			self.darkknight:Tick(self.getTarget, self.log)
+			self.machinist:Tick(self.log)		
 		elseif player.classJob == 33 then
 			self.astrologian:Tick(self.getTarget, self.log)
 		elseif player.classJob == 34 then
@@ -196,8 +191,7 @@ end
 function XPVP:GetTarget(range)
 	-- PVP Training Map
 
-	local mapId  = 0
-	local target = TargetManager.Target
+	local mapId = 0
 
 	local agentMap = AgentManager.GetAgent("Map")
 
@@ -206,7 +200,14 @@ function XPVP:GetTarget(range)
 	end
 
 	if mapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
-		return target
+		local target = TargetManager.Target
+		if target.valid and not target.ally then
+			--print("Returning TargetManager.Target")
+			return target
+		end
+
+		return nil
+
 	end
 
 	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil and not self.lockTarget:hasStatus(3054) then
@@ -215,15 +216,18 @@ function XPVP:GetTarget(range)
 	end
 
 	if self.menu["TARGET"]["MODE"].int == 0 then
-		target = ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)
+		local target = ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)
+
+		if target.valid then
+			--print("Returning target : " .. target.name)
+		end
 
 		return target
 	else
+		--print("Returning Closest Enemy!")
 		return ObjectManager.GetClosestEnemy(self.targetFilter)
 
 	end
-
-	return target
 end
 
 XPVP:new()
