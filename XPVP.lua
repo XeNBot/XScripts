@@ -33,7 +33,6 @@ function XPVP:initialize()
 	self.common      = LoadModule("XScripts", "\\Jobs\\PVP\\Common")
 
 	-- Sets Main Modules
-	self.darkknight:SetMainModule(self)
 	self.bard:SetMainModule(self)
 	self.reaper:SetMainModule(self)
 	self.dragoon:SetMainModule(self)
@@ -46,6 +45,7 @@ function XPVP:initialize()
 	-- Tanks
 	self.warrior:Load(self.menu)
 	self.paladin:Load(self.menu)
+	self.darkknight:Load(self.menu)
 	self.gunbreaker:Load(self.menu)
 	-- Melee DPS
 	self.monk:Load(self.menu)
@@ -146,8 +146,10 @@ function XPVP:Tick()
 			self.scholar:Tick(self.getTarget, self.log)
 		elseif player.classJob == 30 then
 			self.ninja:Tick(self.getTarget, self.log)
-		elseif player.classJob == 31 then
-			self.machinist:Tick(self.log)		
+		elseif player.classJob == 31 then			
+			self.machinist:Tick(self.log)
+		elseif player.classJob == 32 then
+			self.darkknight:Tick(self.getTarget, self.log)
 		elseif player.classJob == 33 then
 			self.astrologian:Tick(self.getTarget, self.log)
 		elseif player.classJob == 34 then
