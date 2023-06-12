@@ -200,14 +200,7 @@ function XPVP:GetTarget(range)
 	end
 
 	if mapId == 51 or not self.menu["TARGET"]["AUTO"].bool then
-		local target = TargetManager.Target
-		if target.valid and not target.ally then
-			--print("Returning TargetManager.Target")
-			return target
-		end
-
-		return nil
-
+		return TargetManager.Target
 	end
 
 	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil and not self.lockTarget:hasStatus(3054) then
