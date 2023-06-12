@@ -230,4 +230,4 @@ function XPVP:GetTarget(range)
 	end
 end
 
-XPVP:new()
+_G.XPVP = XPVP:new()
