@@ -36,6 +36,7 @@ function XPVP:initialize()
 	self.bard:SetMainModule(self)
 	self.reaper:SetMainModule(self)
 	self.dragoon:SetMainModule(self)
+	self.monk:SetMainModule(self)
 
 	-- Loads the menus of each Job
 	-- Healers
@@ -48,7 +49,6 @@ function XPVP:initialize()
 	self.darkknight:Load(self.menu)
 	self.gunbreaker:Load(self.menu)
 	-- Melee DPS
-	self.monk:Load(self.menu)
 	self.ninja:Load(self.menu)
 	self.samurai:Load(self.menu)
 	-- Ranged Physical DPS
@@ -134,8 +134,6 @@ function XPVP:Tick()
 	if (self.menu["COMBO_MODE"].int == 0 and not self.menu["COMBO_KEY"].keyDown)  or (self.menu["COMBO_MODE"].int ~= 0 and self.menu["COMBO_KEY"].keyDown) or self.menu["JUMP_KEY"].keyDown then
 		if player.classJob == 19 then
 			self.paladin:Tick(self.log)
-		elseif player.classJob == 20 then
-			self.monk:Tick(self.getTarget, self.log)
 		elseif player.classJob == 21 then
 			self.warrior:Tick(self.log)
 		elseif player.classJob == 25 then

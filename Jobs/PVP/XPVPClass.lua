@@ -48,10 +48,19 @@ function XPVPClass:Drawer()
 end
 
 function XPVPClass:Ticker()
+
+	if self:IsInPVP() and player.classJob == self.class_id
+	 and (_G.XPVP.current_class == nil or player.classJob ~= _G.XPVP.current_class.class_id) then
+		_G.XPVP.current_class = self
+		if self.class_menu ~= nil then
+			self.class_menu.visible = true
+		end	
+	elseif player.classJob ~= self.class_id and self.class_menu ~= nil and self.class_menu.visible then
+		self.class_menu.visible = false
+	end
+
 	if self:CanTick() then
 		self:Tick()
-	elseif self.class_widget ~= nil and self.class_widget.visible then
-		self.class_widget.visible = false
 	end
 end
 
