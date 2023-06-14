@@ -37,6 +37,7 @@ function XPVP:initialize()
 	self.reaper:SetMainModule(self)
 	self.dragoon:SetMainModule(self)
 	self.monk:SetMainModule(self)
+	self.blackmage:SetMainModule(self)
 
 	-- Loads the menus of each Job
 	-- Healers
@@ -55,7 +56,6 @@ function XPVP:initialize()
 	self.dancer:Load(self.menu)
 	self.machinist:Load(self.menu)
 	-- Ranged Magic DPS
-	self.blackmage:Load(self.menu)
 	self.summoner:Load(self.menu)
 	self.redmage:Load(self.menu)
 	-- Common Actions
@@ -77,9 +77,6 @@ function XPVP:initialize()
 		end
 
 	end)
-
-	self.shot   = Action(1, 8)
-	self.attack = Action(1, 7)
 
 	self.log:print("XPVP Loaded!")
 
@@ -136,8 +133,6 @@ function XPVP:Tick()
 			self.paladin:Tick(self.log)
 		elseif player.classJob == 21 then
 			self.warrior:Tick(self.log)
-		elseif player.classJob == 25 then
-			self.blackmage:Tick(self.getTarget, self.log)
 		elseif player.classJob == 27 then
 			self.summoner:Tick(self.getTarget, self.log)
 		elseif player.classJob == 28 then
@@ -175,17 +170,11 @@ end
 
 function XPVP:TargetFilter(target)
 
-	local dist_pass = self:CanAttack(target)
-
 	if self.menu["TARGET"]["GUARD_CHECK"].bool then
-		return not target:hasStatus(3054) and dist_pass
+		return target:hasStatus(3054)
 	end
 
-	return not target.ally and dist_pass
-end
-
-function XPVP:CanAttack(target)
-	return self.attack:canUse(target) or self.shot:canUse(target)
+	return true
 end
 
 function XPVP:GetTarget(range)
@@ -204,17 +193,13 @@ function XPVP:GetTarget(range)
 	end
 
 	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil and not self.lockTarget:hasStatus(3054) then
-		--print("Returning Lock Target!")
+		TargetManager.Target = self.lockTarget
 		return self.lockTarget
 	end
 
 	if self.menu["TARGET"]["MODE"].int == 0 then
 		local target = ObjectManager.GetLowestHealthEnemy(range, self.targetFilter)
-
-		if target.valid then
-			--print("Returning target : " .. target.name)
-		end
-
+		TargetManager.Target = target
 		return target
 	else
 		--print("Returning Closest Enemy!")
