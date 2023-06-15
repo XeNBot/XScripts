@@ -171,10 +171,10 @@ end
 function XPVP:TargetFilter(target)
 
 	if self.menu["TARGET"]["GUARD_CHECK"].bool then
-		return target:hasStatus(3054)
+		return not target:hasStatus(3054)
 	end
 
-	return true
+	return not target.ally and not target.isDead
 end
 
 function XPVP:GetTarget(range)
@@ -193,7 +193,7 @@ function XPVP:GetTarget(range)
 	end
 
 	if self.menu["TARGET"]["LOCK"].bool and self.lockTarget ~= nil and not self.lockTarget:hasStatus(3054) then
-		TargetManager.Target = self.lockTarget
+		--print("Returning Lock Target!")
 		return self.lockTarget
 	end
 
@@ -207,5 +207,6 @@ function XPVP:GetTarget(range)
 
 	end
 end
+
 
 _G.XPVP = XPVP:new()
