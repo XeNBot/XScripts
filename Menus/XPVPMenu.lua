@@ -17,6 +17,7 @@ local menu = Menu("XPVP")
 		menu["ACTIONS"]:subMenu("Magic Ranged DPS", "RANGE_DPS_M")
 		menu["ACTIONS"]:checkbox("Action Directional Check", "DIRECTION_CHECK", false)
 
+	menu:checkbox("Disable Casting while moving", "MOVING_CHECK", true)
 
 	menu:subMenu("Extra Settings", "EXTRA")
 		menu["EXTRA"]:checkbox("Practice Combo Dummies", "PRACTICE", true)
@@ -36,7 +37,6 @@ local menu = Menu("XPVP")
 	menu:button("Open Class Menu", "OPEN_CLASS_WIDGET", function()
 
 		if _G.XPVP ~= nil and _G.XPVP.current_class ~= nil and _G.XPVP.current_class.class_menu ~= nil then
-			print("yurr")
 			_G.XPVP.current_class.class_menu.visible = true
 		end
 	end)
