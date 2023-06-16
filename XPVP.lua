@@ -63,7 +63,7 @@ function XPVP:initialize()
 
 	self.lockTarget       = nil
 
-	self.lastGuard        = 0
+	self.last_guard       = 0
 	self.last_auto_target = 0
 
 	self.getTarget    = function (dist) return self:GetTarget(dist) end
@@ -73,7 +73,7 @@ function XPVP:initialize()
 
 	Callbacks:Add(CALLBACK_ACTION_REQUESTED, function(actionType, actionId, targetId, result)
 		if result == 1 and actionId == 29054 then
-			self.lastGuard = os.clock()
+			self.last_guard = os.clock()
 		end
 
 	end)
@@ -83,7 +83,7 @@ function XPVP:initialize()
 end
 
 function XPVP:Tick()
-	if (os.clock() - self.lastGuard < 4.5) then return end
+	if (os.clock() - self.last_guard < 4.5) then return end
 
 	Game.ActionDirectionCheck = self.menu["ACTIONS"]["DIRECTION_CHECK"].bool
 
