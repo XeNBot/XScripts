@@ -42,12 +42,14 @@ function XPVPClass:Draw() end
 function XPVPClass:ActionEffect(source, pos, action_id, target_id) end
 
 function XPVPClass:Drawer()
-	if self:CanTick() then
+	if self:IsInPVP() and player.classJob == self.class_id then
 		self:Draw()
 	end
 end
 
 function XPVPClass:Ticker()
+	
+	if (os.clock() - _G.XPVP.last_guard < 4.5) or player:hasStatus(3054) then return end
 
 	if self:IsInPVP() and player.classJob == self.class_id
 	 and (_G.XPVP.current_class == nil or player.classJob ~= _G.XPVP.current_class.class_id) then
@@ -65,9 +67,12 @@ function XPVPClass:Ticker()
 end
 
 function XPVPClass:CanTick()
+	if _G.XPVP.menu["MOVING_CHECK"].bool and player.isMoving and player.classJob ~= 23 and not player:hasStatus(1325) then 
+		return false
+	end
 
-    if player.classJob ~= self.class_id or not self:IsInPVP() or player:hasStatus(3054) then
-        return false
+    if player.classJob ~= self.class_id or not self:IsInPVP() or player:hasStatus(3054) or player.isCasting then
+		return false
     end
 
     return (self.main_module.menu["COMBO_MODE"].int == 0 and not self.main_module.menu["COMBO_KEY"].keyDown)  

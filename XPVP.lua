@@ -170,8 +170,12 @@ end
 
 function XPVP:TargetFilter(target)
 
-	if self.menu["TARGET"]["GUARD_CHECK"].bool then
-		return not target:hasStatus(3054)
+	if Navigation.Raycast(player.pos, target.pos) ~= Vector3.Zero then
+		return false
+	end
+
+	if self.menu["TARGET"]["GUARD_CHECK"].bool and target:hasStatus(3054) then
+		return false
 	end
 
 	return not target.ally and not target.isDead
