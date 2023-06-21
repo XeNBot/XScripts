@@ -100,7 +100,7 @@ function XDutyRunner:initialize()
 			name           = "Sohm Al",
 			tab_index      = 2,
 			mission_index  = 1,
-			module         = LoadModule("XScriptsT", "/Missions/SohmAl"),
+			module         = LoadModule("XScripts", "/Missions/SohmAl"),
 			map_ids        = {[227] = true, [228] = true, [229] = true},
 			level          = 53,
 		},
