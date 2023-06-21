@@ -95,6 +95,15 @@ function XDutyRunner:initialize()
 			map_ids        = {[174] = true},
 			level          = 50,
 		},
+		{
+		
+			name           = "The Antitower",
+			tab_index      = 2,
+			mission_index  = 6,
+			module         = LoadModule("XScripts", "/Missions/TheAntitower"),
+			map_ids        = {[277] = true, [278] = true, [279] = true},
+			level          = 60,
+		},
 	}
 
 	for i, mission in ipairs(self.missions) do
@@ -134,8 +143,6 @@ function XDutyRunner:Tick()
 				self.current_mission.mission_index,
 				self.callbacks.EnterMission)
 		end
-	else
-		self.current_mission.module:Tick()
 	end
 
 end
@@ -156,7 +163,7 @@ function XDutyRunner:BestDuty()
 	local result = nil
 
 	for i, mission in ipairs(self.missions) do
-		if mission.level < player.classLevel and mission.level > highest_level then
+		if not mission.module.is_trial and	mission.level < player.classLevel and mission.level > highest_level then
 			highest_level = mission.level
 			result = mission
 		end
@@ -165,39 +172,11 @@ function XDutyRunner:BestDuty()
 	return result
 end
 
-
-function XDutyRunner:Draw()
-	
-	if self.current_mission == nil then return end
-
-	if self.is_trial then
-		Graphics.DrawLine3D(player.pos, self.current_mission.module.destination, Colors.Yellow)		
-	elseif self.current_mission.module.current_nav ~= nil then
-
-		local last_pos = nil
-		local end_pos  = self.current_mission.module.current_nav.waypoints[#self.current_mission.module.current_nav.waypoints]
-
-		for i, pos in ipairs(self.current_mission.module.current_nav.waypoints) do
-			if i ~= 1 then
-				Graphics.DrawCircle3D(pos, 4, 0.25, Colors.Blue)
-			end
-			if last_pos ~= nil then
-				Graphics.DrawLine3D(last_pos, pos, Colors.Yellow)
-			end
-			last_pos = pos
-		end
-		if last_pos ~= nil and self.end_pos ~= Vector3.Zero then
-			Graphics.DrawLine3D(last_pos, end_pos, Colors.Yellow)
-		end
-	end
-end
-
 function XDutyRunner:setupCallbacks()
 
 	self.callbacks = {
 
 		Tick          = function () return self:Tick() end,
-		Draw          = function () return self:Draw() end,
 		Shortcut = function ()
 			self.last_shortcut = os.clock()
 			self.log:print("Using Shortcut")
@@ -223,11 +202,9 @@ function XDutyRunner:setupCallbacks()
 		ExitMission = function ()
 			self.stats.missions_finished          = self.stats.missions_finished + 1
 			self.widget["MISSIONS_FINISHED"].str  = "Missions Finished: " .. tostring(self.stats.missions_finished)
-			self.log:print("Finished Mission: " .. self.currentMission.name)
 			self.current_mission                  = nil
 		end,
 		InteractFilter = function(obj) return obj.pos:dist(player.pos) < 4 and obj.isTargetable end
-
 	}
 
 end
@@ -266,4 +243,4 @@ function XDutyRunner:initializeMenu()
 
 end
 
-return XDutyRunner:new()
+_G.XDUTY_HELPER = XDutyRunner:new()

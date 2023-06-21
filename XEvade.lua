@@ -19,11 +19,21 @@ function XEvade:initialize()
 	CONE_SOURCE   = 3
 	LINE_AOE      = 4
 	CIRCLE_SOURCE = 5
+	MAP_AOE       = 10
+	LINE_AOE_2    = 12
 	CONE_BEHIND   = 13
 	OBJ_COLLISION = 20
 
-	self.evade_objects = {
+	self.evade_objects   = {
 		[28731] = { name = "Typhoon", cast_type = OBJ_COLLISION, width = 2.5, effect_range = 0, duration = 10 }
+	}
+
+	self.custom_actions = {
+		
+	}
+
+	self.ignore_actions = {
+		[31835] = true
 	}
 
 	self.obj_filter = function(obj) return self:ObjectFilter(obj) end
@@ -63,7 +73,11 @@ function XEvade:Tick()
 
 	_G.EvadeOn = self.menu["ENABLED"].bool
 
-	if self.menu["STOP_KEY"].keyDown and _G.Evading then
+	if (self.menu["STOP_KEY"].keyDown and _G.Evading) or player.isDead then
+		self:Stop()
+	end
+
+	if _G.Evading and self:InDanger(self.evade_pos) then
 		self:Stop()
 	end
 
@@ -76,7 +90,7 @@ function XEvade:Tick()
 				os.clock() - info.time_recorded > info.time_remaining and not info.source.isCasting
 
 		if time_check then
-			print("Removing Action : " .. info.action.name)
+			print("Removing Action : " .. info.action.name .. " / " .. tostring(info.action.id) .. " / " .. tostring(info.action.degrees))
 			self.current_actions[info.hash] = nil
 			table.remove(self.current_actions, hash)
 		elseif info.draw_obj ~= nil and self:CanDodge(info) then
@@ -97,8 +111,6 @@ function XEvade:Tick()
 
 		local id          = s.castInfo.actionId
 		local action      = Action(id)
-		local h           = tonumber(tostring(s.id) .. tostring(id))
-		local info        = self:GetActionInfo(action, s)
 
 		if self:ValidCastType(action) then
 
@@ -106,7 +118,7 @@ function XEvade:Tick()
 			info.draw_obj = self:GetDrawObject(info)
 
 			if not self.current_actions[info.hash] then
-				print("Found Evade Action : " .. action.name .. " / " .. action.castType)
+				print("Found Evade Action : " .. action.name .. " / " .. action.castType .. " / " .. tostring(action.id) .. " / " .. tostring(action.degrees))
 
 				self.current_actions[info.hash] = info
 
@@ -146,10 +158,12 @@ function XEvade:Draw()
 end
 
 function XEvade:CanDodge(info)
-	if not _G.EvadeOn and info.action.effectRange >= 25 and ((info.action.castType == CIRCLE_SOURCE) or (info.action.castType == CIRCLE_TARGET)) then
+	if self.ignore_actions[info.action.id] ~= nil then
 		return false
 	end
-
+	if not _G.EvadeOn or ( info.action.cast_type == CIRCLE_SOURCE and info.action.effectRange  >= 30) then
+		return false
+	end
 	return _G.EvadeOn and not _G.Evading and info.draw_obj:is_point_inside(player.pos)
 end
 
@@ -160,9 +174,7 @@ function XEvade:DodgeAction(info)
 	if dodge_pos == nil then return end
 
 	_G.Evading        = true
-
 	_G.Evade_Action   = info
-
 	self.evade_pos    = dodge_pos
 	self.evade_source = info.source
 
@@ -172,23 +184,37 @@ end
 function XEvade:GetDrawObject(info)
 	if info.action.castType == CIRCLE_TARGET or info.action.castType == CIRCLE_SOURCE then
 		return self:GetDrawCircleObj(info)
-	elseif info.action.castType == LINE_AOE or info.action.castType == OBJ_COLLISION then
+	elseif info.action.castType == LINE_AOE or info.action.castType == LINE_AOE_2 or info.action.castType == OBJ_COLLISION then
 		return self:GetDrawLineObject(info)
 	elseif info.action.castType == CONE_SOURCE or info.action.castType == CONE_BEHIND then
 		return self:GetDrawConeObject(info)
+	elseif info.action.castType == MAP_AOE then
+		return self:GetMapAoEObject(info)
 	end
+end
+
+function XEvade:GetMapAoEObject(info)
+
+	local circle = Circle()
+
+	circle.center = info.cast_info.castLocation
+	circle.radius = 5
+
+	return circle:polygon(100)
 end
 
 function XEvade:GetDrawCircleObj(info)
 
 	local circle   = Circle()
+	circle.radius  = info.action.effectRange
 
 	if not info.action.targetArea then
 		circle.center = info.source.pos
-		circle.radius  = info.action.effectRange + info.source.radius
+		if not Game.InInstanceArea then
+			circle.radius = circle.radius + info.source.radius
+		end
 	else
 		circle.center = info.cast_info.castLocation
-		circle.radius  = info.action.effectRange
 	end
 
 	return circle:polygon(100)
@@ -266,7 +292,7 @@ function XEvade:CalculateDodgePos(info)
 	if #safe_points > 0 then
 		for i, p in ipairs(safe_points) do
 			local dist = player.pos:dist(p)
-			if Navigation.Raycast(player.pos, p) == Vector3.Zero and not draw_obj:is_point_inside(p) and dist < best_dist then
+			if not self:InDanger(p) and Navigation.Raycast(player.pos, p) == Vector3.Zero and not draw_obj:is_point_inside(p) and dist < best_dist then
 				best_pos  = p
 				best_dist = dist
 			end
@@ -274,6 +300,14 @@ function XEvade:CalculateDodgePos(info)
 	end
 
 	return best_pos
+end
+
+function XEvade:InDanger(pos)
+	for hash, info in pairs(self.current_actions) do
+		if info.draw_obj ~= nil and info.draw_obj:is_point_inside(pos) then
+			return true
+		end
+	end
 end
 
 function XEvade:Stop()
@@ -334,6 +368,8 @@ function XEvade:ValidCastType(action)
 		action.castType == 3  or
 		action.castType == 4  or
 		action.castType == 5  or
+		action.castType == 10 or
+		action.castType == 12 or
 		action.castType == 13 or
 		action.castType == 20
 
