@@ -210,9 +210,9 @@ function XEvade:GetDrawCircleObj(info)
 
 	if not info.action.targetArea then
 		circle.center = info.source.pos
-		if not Game.InInstanceArea then
+		--[[if not Game.InInstanceArea then
 			circle.radius = circle.radius + info.source.radius
-		end
+		end]]--
 	else
 		circle.center = info.cast_info.castLocation
 	end
