@@ -96,6 +96,15 @@ function XDutyRunner:initialize()
 			level          = 50,
 		},
 		{
+
+			name           = "Sohm Al",
+			tab_index      = 2,
+			mission_index  = 1,
+			module         = LoadModule("XScriptsT", "/Missions/SohmAl"),
+			map_ids        = {[227] = true, [228] = true, [229] = true},
+			level          = 53,
+		},
+		{
 		
 			name           = "The Antitower",
 			tab_index      = 2,
