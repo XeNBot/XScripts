@@ -38,6 +38,7 @@ function XPVP:initialize()
 	self.dragoon:SetMainModule(self)
 	self.monk:SetMainModule(self)
 	self.blackmage:SetMainModule(self)
+	self.ninja:SetMainModule(self)
 
 	-- Loads the menus of each Job
 	-- Healers
@@ -50,7 +51,6 @@ function XPVP:initialize()
 	self.darkknight:Load(self.menu)
 	self.gunbreaker:Load(self.menu)
 	-- Melee DPS
-	self.ninja:Load(self.menu)
 	self.samurai:Load(self.menu)
 	-- Ranged Physical DPS
 	self.dancer:Load(self.menu)
@@ -137,8 +137,6 @@ function XPVP:Tick()
 			self.summoner:Tick(self.getTarget, self.log)
 		elseif player.classJob == 28 then
 			self.scholar:Tick(self.getTarget, self.log)
-		elseif player.classJob == 30 then
-			self.ninja:Tick(self.getTarget, self.log)
 		elseif player.classJob == 31 then			
 			self.machinist:Tick(self.log)
 		elseif player.classJob == 32 then

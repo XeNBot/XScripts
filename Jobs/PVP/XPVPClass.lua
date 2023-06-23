@@ -115,6 +115,11 @@ function XPVPClass:Use(action, target)
 
 end
 
+function XPVPClass:UsePos(action, pos)
+	self.actions[action]:use(pos)
+	self.log:print("Using " .. self.actions[action].name)
+end
+
 function XPVPClass:IsInPVP()
     -- PVP Maps
 	local mapId = 0
