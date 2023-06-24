@@ -88,6 +88,10 @@ function Ninja:Menu()
 		self.class_menu["SHUKUCHI"]:checkbox("Jump to multiple enemies", "JUMP", true)
 		self.class_menu["SHUKUCHI"]:slider("Max Enemies", "MAX_ENEMIES", 1, 1, 5, 3)
 		self.class_menu["SHUKUCHI"]:checkbox("Jump to killable enemies", "KS", true)
+		self.class_menu["SHUKUCHI"]:subMenu("Assassinate", "ASSASINATE")
+			self.class_menu["SHUKUCHI"]["ASSASINATE"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvP\\Assassinate.png")
+			self.class_menu["SHUKUCHI"]["ASSASINATE"]:checkbox("Use",     "USE", true)
+			
 
 	self.class_menu:subMenu("Seiton Tenchu", "SEITON_TENCHU")
 		self.class_menu["SEITON_TENCHU"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvP\\Seiton_Tenchu.png")
@@ -99,7 +103,7 @@ function Ninja:Tick()
 	local far_target   = self:GetTarget(20)
 	local close_target = self:GetTarget(7)
 
-	if player:hasStatus(1316) and close_target.valid and not close_target.ally then
+	if self.class_menu["SHUKUCHI"]["ASSASINATE"].bool and player:hasStatus(1316) and close_target.valid and not close_target.ally then
 		self:Use("assasinate", close_target)
 	end
 

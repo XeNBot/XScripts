@@ -27,7 +27,7 @@ function Bard:Menu()
 		self.class_menu["POWERFUL_SHOT"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvP\\Powerful_Shot.png")
 		self.class_menu["POWERFUL_SHOT"]:checkbox("Use",     "USE", true)
 	self.class_menu:subMenu("Apex Arrow", "APEX_ARROW")
-		self.class_menu["APEX_ARROW"]:setIcon("XScriptsT", "\\Resources\\Icons\\Actions\\PvP\\Apex_Arrow.png")
+		self.class_menu["APEX_ARROW"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvP\\Apex_Arrow.png")
 		self.class_menu["APEX_ARROW"]:checkbox("Use",        "USE", true)
 	self.class_menu:subMenu("Silent Nocturne", "SILENT_NOCTURNE")
 		self.class_menu["SILENT_NOCTURNE"]:setIcon("XScripts", "\\Resources\\Icons\\Actions\\PvP\\Silent_Nocturne.png")
@@ -54,7 +54,7 @@ function Bard:Tick()
 	local target = self:GetTarget(25)
 
 	if target.valid and not target.ally then
- 
+
 		if self.class_menu["FINAL_FANTASIA"]["USE"] and self:CanUse("final_fantasia") then
 			local allies = ObjectManager.Players(
 				function (obj) return not obj.dead and obj.ally and obj.pos:dist(player.pos) < 30 
@@ -89,10 +89,10 @@ end
 
 function Bard:Weave(target)
 
-	if self.last_action ~= self.actions.silent_nocturne.id and self:CanUse("powerful_shot", target) then
+	if self.class_menu["POWERFUL_SHOT"]["USE"].bool and self.last_action ~= self.actions.silent_nocturne.id and self:CanUse("powerful_shot", target) then
 		self:Use("powerful_shot", target)
 		return true
-	elseif self.last_action ~= self.actions.apex_arrow.id and self:CanUse("apex_arrow", target)	 then
+	elseif self.class_menu["EMPYREAL_ARROW"]["USE"].bool and self.last_action ~= self.actions.apex_arrow.id and self:CanUse("apex_arrow", target)	 then
 		self:Use("apex_arrow", target)
 		return true
 	end
