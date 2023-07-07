@@ -154,7 +154,7 @@ function Ninja:Shukuchi(target)
 			end
 		end)
 	end
-	if target.healt > 0 and target.valid and not target.ally and target.pos:dist(player.pos) > 7 and self.class_menu["SHUKUCHI"]["JUMP"].bool then
+	if target.health > 0 and target.valid and not target.ally and target.pos:dist(player.pos) > 7 and self.class_menu["SHUKUCHI"]["JUMP"].bool then
 		local max_enemies = self.class_menu["SHUKUCHI"]["MAX_ENEMIES"].int
 		if ObjectManager.EnemiesAroundObject(target, 5) < max_enemies then
 			self:UsePos("shukuchi", target.pos)
