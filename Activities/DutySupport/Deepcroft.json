@@ -1,0 +1,59 @@
+{
+    "BattleFoV": 30,
+    "DutyIndex": 2,
+    "EventFoV": 50,
+    "EventObjects": [
+        2000061,
+        2000062,
+        2000063,
+        2000067
+    ],
+    "FileName": "Deepcroft",
+    "Filters": [
+        {
+            "Objects": [
+                {
+                    "ID": 137,
+                    "Type": 0
+                },
+                {
+                    "ID": 1345,
+                    "Type": 0
+                },
+                {
+                    "ID": 2000063,
+                    "Type": 1
+                },
+                {
+                    "ID": 2000067,
+                    "Type": 1
+                }
+            ],
+            "SourceID": 2000060,
+            "SourceType": 1,
+            "Type": 0,
+            "Value": 45
+        }
+    ],
+    "Level": 16,
+    "LoSFoV": 15,
+    "MapList": [
+        {
+            "Destination": "Vector3(-43.31,14.04,-17.03)",
+            "Gates": [
+                {
+                    "ID": 2000060,
+                    "KeyID": 2000244,
+                    "NpcDrop": true,
+                    "NpcID": 2000057,
+                    "NpcLocation": "Vector3(-178.53,14,-5.1)"
+                }
+            ],
+            "ID": 8
+        }
+    ],
+    "Name": "The Tam-Tara Deepcroft",
+    "TabIndex": 1,
+    "TreasureFoV": 99,
+    "Type": 0
+}
