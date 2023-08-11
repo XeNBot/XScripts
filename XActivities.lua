@@ -13,11 +13,20 @@ function XActivities:initialize()
 
     self.menu:subMenu("Duty Support", "DUTY_SUPPORT")
         self:LoadDutySupportMenu()
+	
+	self.xa_tools = LoadModule("XScripts", "/Utilities/XActivitiesTool")
+
+	self.xa_tools:Load(self.menu)
 
     Callbacks:Add(CALLBACK_PLAYER_TICK, function () self:Tick() end)
 end
 
 function XActivities:Tick()
+
+	if self.xa_tools.widget.visible then
+		self.xa_tools:Tick()
+	end
+
     if self.current_activity ~= nil then        
         if self.current_activity.type == ACTIVITY_DUTY_SUPPORT then
             self:HandleDutySupportActivity()
@@ -57,7 +66,6 @@ function XActivities:LoadDutySupportMenu()
 
 			table.insert(self.duty_supports, duty_module)
 
-			self.menu["DUTY_SUPPORT"]:separator()
 			self.menu["DUTY_SUPPORT"]:label(duty_module.name .. " (Level: " .. tostring(duty_module.level) .. ")", duty_id)
 			self.menu["DUTY_SUPPORT"]:sameline()
 			self.menu["DUTY_SUPPORT"]:button("Start", "START_" .. duty_id, function ()
