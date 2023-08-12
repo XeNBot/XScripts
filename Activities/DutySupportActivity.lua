@@ -1,8 +1,9 @@
 local DutySupportActivity = Class("DutySupportActivity")
 
 function DutySupportActivity:initialize()
+	self.running                = false
 	-- interactables
-	self.interactables       = LoadModule("XScripts", "/Enums/Interactables")
+	self.interactables          = LoadModule("XScripts", "/Enums/Interactables")
 	-- Map Ids
 	self.maps                   = {}
 	-- Current MapId
@@ -49,25 +50,24 @@ function DutySupportActivity:initialize()
 	self.exit_callback          = nil
 	self.performed_exit         = false
 
-	Callbacks:Add(CALLBACK_PLAYER_TICK, function() self:Ticker() end)
-	Callbacks:Add(CALLBACK_PLAYER_DRAW, function() self:Drawer() end)
-
 end
 
 function DutySupportActivity:ExitCallback() end
 
 function DutySupportActivity:Ticker()
 	self.map_id = AgentManager.GetAgent("Map").currentMapId
-	if self:IsIn() and self:CanTick() then
+	if self:IsIn() and self:CanTick() and self.running then
 		if not self.started then
 			self.started        = true
 			self.performed_exit = false
+			_G.XACTIVITIES:OnStartDutySupport()
 		end
 		self:BeforeTick()
 		self:MainTick()
 		self:Tick()
 	elseif self.started and not self.performed_exit and not self:IsIn() then
 		self:ExitCallback()
+		_G.XACTIVITIES:OnExitDutySupport()
 		self.started        = false
 		self.performed_exit = true
 	end
@@ -381,6 +381,7 @@ function DutySupportActivity:DeathWatch()
 	if player.isDead or player.health == 0 and not self.died then
 		self.died = true
 		TaskManager:Stop()
+		_G.XACTIVITIES:OnPlayerDeath()
 	elseif self.died and player.health > 0 then
 		TaskManager:Stop()
 		self.died = false
