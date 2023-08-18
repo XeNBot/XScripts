@@ -1,13 +1,15 @@
-local DutySupportActivity = Class("DutySupportActivity")
+local XActivity           = LoadModule("XScripts", "/Activities/XActivity")
+local DutySupportActivity = Class("DutySupportActivity", XActivity)
 
 function DutySupportActivity:initialize()
-	self.running                = false
+
+	XActivity.initialize(self)
+
+	self.type                   = 0
 	-- interactables
 	self.interactables          = LoadModule("XScripts", "/Enums/Interactables")
 	-- Map Ids
 	self.maps                   = {}
-	-- Current MapId
-	self.map_id                 = 0
 	-- Started
 	-- Death Watch
 	self.died                   = false
@@ -25,15 +27,6 @@ function DutySupportActivity:initialize()
 	self.event_npc_filters      = {}
 	self.battle_filters         = {}
 
-	-- Current Navigation
-	self.current_nav            = nil
-	self.nav_type               = 0
-
-	NAV_TYPE_NONE               = 0
-	NAV_TYPE_DESTINATION        = 1
-	NAV_TYPE_MOB                = 2
-	NAV_TYPE_EVENT              = 3
-
 	-- Field of View
 		-- FoV for battle monsters
 	self.battle_fov             = 30
@@ -50,12 +43,13 @@ function DutySupportActivity:initialize()
 	self.exit_callback          = nil
 	self.performed_exit         = false
 
+	Callbacks:Add(CALLBACK_PLAYER_DRAW, function() self:Drawer() end)
+
 end
 
 function DutySupportActivity:ExitCallback() end
 
 function DutySupportActivity:Ticker()
-	self.map_id = AgentManager.GetAgent("Map").currentMapId
 	if self:IsIn() and self:CanTick() and self.running then
 		if not self.started then
 			self.started        = true
@@ -166,7 +160,7 @@ function DutySupportActivity:MainTick()
 
 	if not TaskManager:IsBusy() and self.destination ~= nil and not self:ValidTarget(TargetManager.Target) then
 		if player.pos:dist(self.destination) > 3 then
-			self:StartNav(self.destination, NAV_TYPE_DESTINATION)
+			self:StartNav(self.destination, NAV_TYPE_DESTINATION, false)
 		else
 			self:Exit()
 		end
@@ -201,7 +195,7 @@ function DutySupportActivity:HandleMobs(objects)
 				end
 			else
 				print("Navigating to closest obj : " .. closest_obj.name)
-				self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
+				self:StartNav(closest_obj.pos, NAV_TYPE_MOB, false)
 				TargetManager.Target = closest_obj
 			end
 		end
@@ -221,7 +215,7 @@ function DutySupportActivity:HandleMobs(objects)
 					self:ResetNav()
 				end
 				print("Navigating to closest obj : " .. closest_obj.name)
-				self:StartNav(closest_obj.pos, NAV_TYPE_MOB)
+				self:StartNav(closest_obj.pos, NAV_TYPE_MOB, false)
 				TargetManager.Target = closest_obj
 			end
 		else
@@ -254,7 +248,7 @@ function DutySupportActivity:HandleObjects(objects)
 				end
 			elseif not TaskManager:IsBusy() then
 				print("Navigating to closest obj : " .. closest_object.name)
-				self:StartNav(closest_object.pos, NAV_TYPE_EVENT)
+				self:StartNav(closest_object.pos, NAV_TYPE_EVENT, false)
 				TargetManager.Target = closest_object
 			end
 		else
@@ -295,28 +289,6 @@ end
 
 function DutySupportActivity:AddEventNpcFilter(id, func)
 	self.event_npc_filters[id] = func
-end
-
-function DutySupportActivity:StartNav(pos, nav_type)
-	if self.current_nav == nil then
-		self.current_nav = Navigation(player.pos, pos)
-	else
-		if #self.current_nav.waypoints > 0 then
-			self.nav_type = nav_type
-			TaskManager:Navigate(self.current_nav, function () self:ResetNav() end)
-		else
-			print("Bad Navigation Received, Resetting")
-			self.current_nav = nil
-		end
-	end
-end
-
-function DutySupportActivity:ResetNav()
-	TaskManager:Stop()
-	self.current_nav = nil
-	self.nav_type    = NAV_TYPE_NONE
-	TargetManager.SetTarget()
-	Keyboard.SendKey(38)
 end
 
 function DutySupportActivity:HandleInteractions()

@@ -49,14 +49,17 @@ function XAQueue:GetNextActivity()
 end
 
 function XAQueue:AddActivity(activity)
-
     table.insert(self.activities, activity)
 
     if self.current_activity == nil then
         self.current_activity = activity
     end
 
-    self.widget["QUEUE_TABLE"]["ACTIVITY_NAME"]:row(activity.module.name, activity.id)
+    if activity.type == ACTIVITY_DUTY_SUPPORT then
+        self.widget["QUEUE_TABLE"]["ACTIVITY_NAME"]:row(activity.module.name, activity.id)
+    elseif activity.type == ACTIVITY_GATHERING then
+        self.widget["QUEUE_TABLE"]["ACTIVITY_NAME"]:row(activity.module.name .. " / [" .. tostring(#activity.module.items) .. "] ITEM(S)", activity.id)
+    end
     self.widget["QUEUE_TABLE"]["ACTIVITY_TYPE"]:row(self:GetActivityTypeStr(activity), activity.id)
     self.widget["QUEUE_TABLE"]["ACTIVITY_REMOVE"]:row("X", activity.id, function ()
         self.widget["QUEUE_TABLE"]:remove_row(activity.id)
@@ -84,6 +87,8 @@ end
 function XAQueue:GetActivityTypeStr(activity)
     if activity.type == 0 then
         return "DUTY_SUPPORT"
+    elseif activity.type == 1 then
+        return "GATHERING"
     end
 end
 

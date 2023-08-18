@@ -1,12 +1,12 @@
 local XActivities = Class("XActivities")
 
--- Activity Types
-ACTIVITY_DUTY_SUPPORT       = 0
-
 function XActivities:initialize()
 
     -- XActivity Vars
+		-- List of Duty Support Activities
     self.duty_supports    = {}
+		-- List of Gathering Activities
+	self.gatherings       = {}
 
 	-- XActivity Stats
 	self.stats            = {
@@ -43,8 +43,9 @@ function XActivities:Tick()
 	if activity ~= nil then
 		if activity.type == ACTIVITY_DUTY_SUPPORT then
             self:HandleDutySupportActivity(activity)
-        end
-		
+        elseif activity.type == ACTIVITY_GATHERING then
+			self:HandleGatheringActivity(activity)
+		end
 	end
 
 end
@@ -52,6 +53,14 @@ end
 function XActivities:CanTick()
 	if self.xa_queue:GetNextActivity() then
 		return true
+	end
+end
+
+function XActivities:HandleGatheringActivity(activity)
+	if not activity.module.running then
+		activity.module.running = true
+	else
+		activity.module:Tick()
 	end
 end
 
@@ -64,6 +73,7 @@ function XActivities:HandleDutySupportActivity(activity)
 		)
 	elseif not activity.module.running then
 		activity.module.running = true
+	elseif activity.module:IsIn() and activity.module.running then
 		activity.module:Ticker()
 	end
 end
@@ -125,25 +135,64 @@ function XActivities:LoadMenuStats()
 end
 
 function XActivities:LoadGatheringMenu()
+	
 	self.menu:subMenu("Gathering", "GATHERING")
+
+	local gathering_list = GetFileList("/Activities/Gathering/")
+
+	for i, activity in ipairs(gathering_list) do
+
+		if activity.find(activity, ".lua") then
+			local module = LoadModule("ROOT", "/Activities/Gathering/" .. activity)
+			local id     = string.upper(module.name)
+	
+			self.gatherings[id] = module
+
+			self.menu["GATHERING"]:subMenu(module.name, id)
+				self.menu["GATHERING"][id]:separator()
+				self.menu["GATHERING"][id]:label("Gathering List", "GATHER_LIST", true)
+				self.menu["GATHERING"][id]:separator()
+
+				for i, it in ipairs(module.items) do
+					local item    = Item(it.id)
+					local item_id = string.upper(item.name)
+					self.menu["GATHERING"][id]:subMenu(item.name .. "(Lvl " .. tostring(item.gatheringLevel) .. ")", item_id)
+					self.menu["GATHERING"][id][item_id]:label("Item Information", "ITEM_INFO_" .. item_id , true)
+					self.menu["GATHERING"][id][item_id]:separator()
+					self.menu["GATHERING"][id][item_id]:label("Map Id: " .. tostring(it.map), "MAP_ID", true)
+					self.menu["GATHERING"][id][item_id]:label("Aetheryte Id: " .. tostring(it.aetheryte), "AETHERYTE_ID", true)
+					self.menu["GATHERING"][id][item_id]:label("Gathering Level: " .. tostring(item.level), "GATHER_LEVEL", true)
+					self.menu["GATHERING"][id][item_id]:number("Gather Amount", "GATHER_AMOUNT", it.amount)
+					self.menu["GATHERING"][id][item_id]:button("Add To Queue", "QUEUE_SINGLE", function()
+						self.xa_queue:AddActivity(self:CreateGatheringActivity(self.gatherings[id], it))
+						self.xa_queue.widget.visible = true
+					end)
+				end
+
+				self.menu["GATHERING"][id]:separator()
+				self.menu["GATHERING"][id]:button("Add All To Queue", "QUEUE_ALL", function()
+					self.xa_queue:AddActivity(self:CreateGatheringActivity(self.gatherings[id], nil))
+					self.xa_queue.widget.visible = true
+				end)
+		end
+	end
+
 end
 
 function XActivities:LoadDutySupportMenu()
 
 	self.menu:subMenu("Duty Support", "DUTY_SUPPORT")
 
-    local ds_list = GetFileList("/Scripts/XScripts/Activities/DutySupport/")
+    local ds_list = GetFileList("/Activities/DutySupport/")
 
     for i, duty in ipairs(ds_list) do
 
 		if duty.find(duty, ".lua") then
 
-			local duty_module = LoadModule("XScripts", "/Activities/DutySupport/" .. duty)
+			local duty_module = LoadModule("ROOT", "/Activities/DutySupport/" .. duty)
 			local duty_id     = string.upper(duty_module.name)
 
 			self.duty_supports[duty_id] = duty_module
-
-			table.insert(self.duty_supports, duty_module)
 
 			self.menu["DUTY_SUPPORT"]:subMenu(duty_module.name, duty_id)
 				self.menu["DUTY_SUPPORT"][duty_id]:separator()
@@ -179,6 +228,37 @@ function XActivities:LoadDutySupportMenu()
 		end
     end
 
+end
+
+function XActivities:CreateGatheringActivity(module, it)
+	local activity = {}
+
+	local id = string.upper(module.name)
+	id = id:gsub(" ", "_")
+	
+	activity.id        = id
+	activity.type      = module.type
+
+	local mod_id = string.upper(module.name)
+
+	if it ~= nil then
+		module.items = {}
+		local item    = Item(it.id)
+		local item_id = string.upper(item.name)
+		it.amount = self.menu["GATHERING"][mod_id][item_id]["GATHER_AMOUNT"].int
+		table.insert(module.items, it)
+	else
+		for i, itt in ipairs(module.items) do
+			local item    = Item(itt.id)
+			local item_id = string.upper(item.name)
+			module.items[i].amount = self.menu["GATHERING"][mod_id][item_id]["GATHER_AMOUNT"].int
+		end
+
+	end
+
+	activity.module = module
+
+	return activity
 end
 
 function XActivities:CreateDutySupportActivity(module, run_type, until_level, until_count)

@@ -2,7 +2,11 @@ local XATools   = Class("XATools")
 
 function XATools:initialize()
 
-    self.menu = nil
+    self.menu    = nil
+
+    self.circles = {}
+
+    Callbacks:Add(CALLBACK_PLAYER_DRAW, function () self:Draw() end)
 
 end
 
@@ -32,6 +36,7 @@ function XATools:Load(menu)
     self.widget:subMenu("Event Objects", "EVENT_OBJECTS")
     self.widget:subMenu("Event Npc Objects", "EVENT_NPC_OBJECTS")
     self:AddUpdateButton()
+    self:AddDeleteDrawsButton()
 
     self.obj_filter = function (obj)
         if self.widget["TARGETABLE_OBJS"].bool and not obj.isTargetable then
@@ -49,14 +54,23 @@ function XATools:Tick()
 
 end
 
+function XATools:Draw()
+    for obj_hash, pos in pairs(self.circles) do
+        Graphics.DrawCircle3D(pos, 20, 1, Colors.Green)
+    end
+end
+
 function XATools:UpdateAllLists()
 
     self.widget["UPDATE_ALL_LISTS"]:remove()
+    self.widget["DELETE_ALL_CIRCLES"]:remove()
 
     self:UpdateObjectList("Battle Objects", ObjectManager.Battle(self.obj_filter))
     self:UpdateObjectList("Event Objects", ObjectManager.EventObjects(self.obj_filter))
     self:UpdateObjectList("Event Npc Objects", ObjectManager.EventNpcObjects(self.obj_filter))
+    
     self:AddUpdateButton()
+    self:AddDeleteDrawsButton()
 
 end
 
@@ -81,6 +95,13 @@ function XATools:UpdateObjectList(name, list)
         self:AddObjectCopyLabel(id, obj_hash, "Data ID", tostring(obj.dataId))
         self:AddObjectCopyLabel(id, obj_hash, "Position", tostring(obj.pos))
         self:AddObjectLabel(id, obj_hash, "Distance", tostring(player.pos:dist(obj.pos)))
+        self.widget[id][obj_hash]:space()
+        self.widget[id][obj_hash]:button("Draw Circle Around Object", "DRAW_CIRCLE", function ()
+            self.circles[obj_hash] = obj.pos
+        end)
+        self.widget[id][obj_hash]:button("Remove Circle Around Object", "DRAW_CIRCLE", function ()
+            self.circles[obj_hash] = nil
+        end)
 
     end
 
@@ -88,7 +109,6 @@ end
 
 function XATools:AddObjectLabel(id, obj_hash, str, value)
     self.widget[id][obj_hash]:label(str .. ": " .. value)
-    self.widget[id][obj_hash]:sameline()
 end
 
 function XATools:AddObjectCopyLabel(id, obj_hash, str, value)
@@ -107,6 +127,12 @@ end
 function XATools:AddUpdateButton()
     self.widget:button("Update All Lists", "UPDATE_ALL_LISTS", function ()
         self:UpdateAllLists()
+    end)
+end
+
+function XATools:AddDeleteDrawsButton()
+    self.widget:button("Delete All Circles", "DELETE_ALL_CIRCLES", function ()
+        self.circles = {}
     end)
 end
 
